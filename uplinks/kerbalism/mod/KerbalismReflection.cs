@@ -30,6 +30,7 @@ namespace Gonogo.KerbalismUplink
             internal static readonly Handles Empty = new();
 
             internal Assembly? _asm;
+            internal KerbalismReadiness? _readiness;
             internal Type? _apiType;
             internal Type? _featuresType;
             internal Type? _dbType;
@@ -80,6 +81,8 @@ namespace Gonogo.KerbalismUplink
             internal Handles(Assembly asm)
             {
                 _asm = asm;
+                _readiness = new KerbalismReadiness(
+                    FindType("KERBALISM.Kerbalism"), FindType("KERBALISM.Sim"), SceneStands);
 
                 _apiType = FindType("KERBALISM.API") ?? FindType("Kerbalism.API") ?? FindType("Kerbalism.System.API");
                 _featuresType = FindType("KERBALISM.Features") ?? FindType("Kerbalism.Features") ?? FindType("Kerbalism.System.Features");
@@ -197,7 +200,18 @@ namespace Gonogo.KerbalismUplink
 
         private readonly KerbalismBindGate<Handles> _gate;
 
-        private Handles H => _gate.Peek ?? Handles.Empty;
+        /// <summary>The bound handles once Kerbalism can be asked, and none before: see <see cref="KerbalismReadiness"/>.</summary>
+        private Handles H
+        {
+            get
+            {
+                var bound = _gate.Peek;
+                return KerbalismReadiness.Usable(bound, bound?._readiness, Handles.Empty);
+            }
+        }
+
+        /// <summary>Whether the scene has finished loading: always outside flight, and in flight once the active vessel is in.</summary>
+        private static bool SceneStands() => !HighLogic.LoadedSceneIsFlight || FlightGlobals.ready;
 
         public KerbalismReflection()
             : this(new KerbalismAssemblyLocator(() => AppDomain.CurrentDomain.GetAssemblies()))
@@ -210,13 +224,23 @@ namespace Gonogo.KerbalismUplink
         }
 
         /// <summary>
-        /// True once Kerbalism's assembly is loaded and its API type resolved. Asks
-        /// again on each call until it is, because a bootstrap-loaded Kerbalism
-        /// appears after the plugin is constructed; a moved or missing Kerbalism
-        /// stays false. Asked from the main thread and the Courier thread alike:
-        /// the handles are published whole, so a true answer means every handle is bound.
+        /// True once Kerbalism's assembly is loaded, its API type resolved, and
+        /// Kerbalism has set itself up for the loaded game (see
+        /// <see cref="KerbalismReadiness"/>). Asks again on each call until it is,
+        /// because a bootstrap-loaded Kerbalism appears after the plugin is
+        /// constructed and sets itself up some frames into the first scene; a
+        /// moved or missing Kerbalism stays false. Asked from the main thread and
+        /// the Courier thread alike: the handles are published whole, so a true
+        /// answer means every handle is bound.
         /// </summary>
-        public bool IsAvailable => _gate.Resolve()?._apiType != null;
+        public bool IsAvailable
+        {
+            get
+            {
+                var bound = _gate.Resolve();
+                return bound?._apiType != null && (bound._readiness == null || bound._readiness.IsReady);
+            }
+        }
 
         /// <summary>Invoke a public static (Vessel)->double API method (Radiation, Pressure, Comfort, ...).</summary>
         public double? Api(string method, Vessel v) => AsDouble(InvokeVessel(method, v));
