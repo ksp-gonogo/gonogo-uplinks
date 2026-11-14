@@ -32,6 +32,11 @@ namespace Gonogo.ScansatUplink
         private readonly Dictionary<string, ScanPublication> _lastPublishedByTopic = new Dictionary<string, ScanPublication>();
         private readonly Dictionary<string, double> _lastReseedUtByTopic = new Dictionary<string, double>();
 
+        // Both threads, under the gate: the Courier's last hash of each body's grid, and the reset it had applied when it took it.
+        private readonly object _seenGate = new object();
+        private readonly Dictionary<string, ulong> _seenHashByBody = new Dictionary<string, ulong>();
+        private int _seenGeneration;
+
         /// <summary>Forget everything published so far. Safe from any thread.</summary>
         public void RequestReset() => Interlocked.Increment(ref _resetGeneration);
 
@@ -52,6 +57,23 @@ namespace Gonogo.ScansatUplink
         }
 
         /// <summary>
+        /// MAIN THREAD: whether a coverage grid of <paramref name="bodyName"/> that hashes
+        /// to <paramref name="hash"/> is the grid <see cref="Compute"/> last saw for the
+        /// body, so a capture of it would publish nothing and need not be taken. False
+        /// after a reset until a capture has been through <see cref="Compute"/> again,
+        /// which is what sends every layer again.
+        /// </summary>
+        public bool AlreadySeen(string bodyName, ulong hash)
+        {
+            lock (_seenGate)
+            {
+                return _seenGeneration == Volatile.Read(ref _resetGeneration)
+                    && _seenHashByBody.TryGetValue(bodyName, out var seen)
+                    && seen == hash;
+            }
+        }
+
+        /// <summary>
         /// COURIER THREAD: the publications one capture yields, after the change gates,
         /// remembered for the late-subscriber reseed.
         /// </summary>
@@ -59,6 +81,13 @@ namespace Gonogo.ScansatUplink
         {
             ApplyResetOnCourier();
             var publications = ScanPublications.Compute(capture, _lastHashByBody, _lastPackedByBodyType);
+            if (_lastHashByBody.TryGetValue(capture.BodyName, out var seen))
+            {
+                lock (_seenGate)
+                {
+                    _seenHashByBody[capture.BodyName] = seen;
+                }
+            }
             foreach (var publication in publications)
             {
                 _lastPublishedByTopic[FullTopicFor(publication.Kind, publication.SubTopic)] = publication;
@@ -118,6 +147,11 @@ namespace Gonogo.ScansatUplink
                 return;
             }
             _courierSeenGeneration = generation;
+            lock (_seenGate)
+            {
+                _seenHashByBody.Clear();
+                _seenGeneration = generation;
+            }
             _lastPackedByBodyType.Clear();
             _lastHashByBody.Clear();
             _lastPublishedByTopic.Clear();

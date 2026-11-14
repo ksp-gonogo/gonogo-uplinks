@@ -40,6 +40,28 @@ namespace Gonogo.ScansatUplink
         }
 
         /// <summary>
+        /// The same hash as <see cref="Hash(short[,])"/> of a grid whose cells are
+        /// laid out row after row in the first <paramref name="count"/> entries of
+        /// <paramref name="cells"/>, which is how a two-dimensional array is held
+        /// in memory.
+        /// </summary>
+        public static ulong Hash(short[] cells, int count)
+        {
+            if (cells == null) throw new ArgumentNullException(nameof(cells));
+
+            ulong hash = FnvOffsetBasis;
+            for (int i = 0; i < count; i++)
+            {
+                short v = cells[i];
+                hash ^= (byte)(v & 0xFF);
+                hash *= FnvPrime;
+                hash ^= (byte)((v >> 8) & 0xFF);
+                hash *= FnvPrime;
+            }
+            return hash;
+        }
+
+        /// <summary>
         /// True when <paramref name="snapshot"/>'s hash differs from
         /// <paramref name="lastHash"/> (or there was no previous hash),
         /// the body-level "did anything change" gate before per-type plane

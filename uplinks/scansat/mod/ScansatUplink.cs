@@ -379,8 +379,10 @@ namespace Gonogo.ScansatUplink
                 }
 
                 var bodies = FlightGlobals.Bodies.Where(b => b != null).ToDictionary(b => b.name);
+                // A body whose grid the Courier has already seen, with nothing built for it this tick, has nothing to hand over.
                 var captures = ScanChannels.WatchedBodies(bodies.Keys, _host.IsAnyTopicSubscribed)
                     .Select(name => CaptureBody(snapshot.Ut, name, bodies[name]))
+                    .Where(capture => capture.IncludeHeightBiome || capture.Coverage != null)
                     .ToList();
 
                 _captureFailLogged = false; // a good capture clears the failure streak
@@ -444,7 +446,7 @@ namespace Gonogo.ScansatUplink
                 }
             }
 
-            if (TryGetBodyCoverage(body, out var coverage))
+            if (TryGetBodyCoverage(body, bodyName, out var coverage))
             {
                 capture.Coverage = coverage;
                 var percents = new Dictionary<short, double?>();
@@ -479,9 +481,18 @@ namespace Gonogo.ScansatUplink
                 return; // Register hasn't wired the dynamic sources (unavailable uplink), nothing to publish.
             }
 
-            foreach (var publication in captures.SelectMany(capture => _state.Compute(capture)))
+            foreach (var capture in captures)
             {
-                SourceForKind(publication.Kind)?.Publisher(publication.SubTopic).Publish(publication.Payload, publication.Ut);
+                foreach (var publication in _state.Compute(capture))
+                {
+                    SourceForKind(publication.Kind)?.Publisher(publication.SubTopic).Publish(publication.Payload, publication.Ut);
+                }
+                // No publication holds the grid: a mask is packed into bytes of its own. So it goes back for the next capture to fill.
+                if (capture.Coverage != null && _spareGrids.Count < SpareGridsKept)
+                {
+                    _spareGrids.Enqueue(capture.Coverage);
+                }
+                capture.Coverage = null;
             }
         }
 
@@ -594,12 +605,28 @@ namespace Gonogo.ScansatUplink
         // headlessly tested.
         // ----------------------------------------------------------------
 
+        /// <summary>How many grids are kept for reuse: one per capture that can be between the two threads at once, and one over.</summary>
+        private const int SpareGridsKept = 4;
+
+        /// <summary>Grids the Courier has finished with, for the main thread to fill again.</summary>
+        private readonly System.Collections.Concurrent.ConcurrentQueue<short[,]> _spareGrids =
+            new System.Collections.Concurrent.ConcurrentQueue<short[,]>();
+
+        /// <summary>Main thread only: the cells of a grid laid out in one row, for hashing it without a copy that outlives the call.</summary>
+        private short[] _hashCells = new short[0];
+
         /// <summary>
-        /// Snapshots the body's <c>SCANdata.Coverage</c> grid (spec §0C:
-        /// "returns the LIVE array; snapshot per read"), or false when
-        /// SCANsat has no data for it yet (never scanned).
+        /// Snapshots the body's <c>SCANdata.Coverage</c> grid, which is the live
+        /// array and so is copied per read. False when SCANsat has no data for
+        /// the body yet (never scanned), and when the grid is the one the
+        /// Courier last saw, which would publish nothing.
+        ///
+        /// <para>The grid is hashed here before it is copied. A copy is about
+        /// 130 KB of new memory, and taking one on every tick for every watched
+        /// body makes the game's collector run, which stops every thread while
+        /// it does.</para>
         /// </summary>
-        private static bool TryGetBodyCoverage(CelestialBody body, out short[,] coverage)
+        private bool TryGetBodyCoverage(CelestialBody body, string bodyName, out short[,] coverage)
         {
             coverage = null!;
             var data = SCANUtil.getData(body);
@@ -608,7 +635,21 @@ namespace Gonogo.ScansatUplink
             {
                 return false;
             }
-            var snapshot = new short[live.GetLength(0), live.GetLength(1)];
+            if (_hashCells.Length < live.Length)
+            {
+                _hashCells = new short[live.Length];
+            }
+            Buffer.BlockCopy(live, 0, _hashCells, 0, live.Length * sizeof(short));
+            if (_state.AlreadySeen(bodyName, CoverageHash.Hash(_hashCells, live.Length)))
+            {
+                return false;
+            }
+            if (!_spareGrids.TryDequeue(out var snapshot)
+                || snapshot.GetLength(0) != live.GetLength(0)
+                || snapshot.GetLength(1) != live.GetLength(1))
+            {
+                snapshot = new short[live.GetLength(0), live.GetLength(1)];
+            }
             Array.Copy(live, snapshot, live.Length);
             coverage = snapshot;
             return true;

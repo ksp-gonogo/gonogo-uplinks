@@ -81,5 +81,46 @@ namespace GonogoScansatUplink.Tests
         {
             TimelineListenerConformance.AssertSurvivesResets(new ScanPublishState());
         }
+
+        [Fact]
+        public void AGridIsAlreadySeenOnlyOnceItHasBeenThroughComputeAndUntilAReset()
+        {
+            var state = new ScanPublishState();
+            var capture = Capture(state, 10);
+            var hash = CoverageHash.Hash(capture.Coverage!);
+
+            Assert.False(state.AlreadySeen("Kerbin", hash));
+
+            state.Compute(capture);
+
+            Assert.True(state.AlreadySeen("Kerbin", hash));
+            Assert.False(state.AlreadySeen("Kerbin", hash + 1));
+            Assert.False(state.AlreadySeen("Mun", hash));
+
+            state.RequestReset();
+
+            // Not seen from the moment of the reset, before the Courier has acted on it, so the next capture is taken and every layer goes again.
+            Assert.False(state.AlreadySeen("Kerbin", hash));
+            AssertEveryLayerSent(state.Compute(Capture(state, 20)));
+            Assert.True(state.AlreadySeen("Kerbin", hash));
+        }
+
+        [Fact]
+        public void AGridThatWouldPublishNothingIsTheOnlyOneReportedAsAlreadySeen()
+        {
+            var state = new ScanPublishState();
+            state.Compute(Capture(state, 10));
+            var changed = Capture(state, 20);
+            changed.Coverage![5, 5] = 2;
+            var hash = CoverageHash.Hash(changed.Coverage);
+
+            Assert.False(state.AlreadySeen("Kerbin", hash));
+            Assert.NotEmpty(state.Compute(changed));
+            Assert.True(state.AlreadySeen("Kerbin", hash));
+
+            var again = Capture(state, 30);
+            again.Coverage![5, 5] = 2;
+            Assert.Empty(state.Compute(again));
+        }
     }
 }

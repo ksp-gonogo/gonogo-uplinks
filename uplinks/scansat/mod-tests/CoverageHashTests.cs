@@ -56,5 +56,24 @@ namespace GonogoScansatUplink.Tests
             var after = new short[360, 180]; // bit cleared
             Assert.True(CoverageHash.HasChanged(after, hash, out _));
         }
+
+        [Fact]
+        public void AGridLaidOutInOneRowHashesAsTheGridDoes()
+        {
+            var random = new System.Random(7);
+            var grid = new short[360, 180];
+            for (var i = 0; i < 360; i++)
+            {
+                for (var j = 0; j < 180; j++)
+                {
+                    grid[i, j] = (short)random.Next(short.MinValue, short.MaxValue + 1);
+                }
+            }
+            // Longer than the grid, as a row kept for reuse is after a larger grid has been through it.
+            var cells = new short[grid.Length + 50];
+            System.Buffer.BlockCopy(grid, 0, cells, 0, grid.Length * sizeof(short));
+
+            Assert.Equal(CoverageHash.Hash(grid), CoverageHash.Hash(cells, grid.Length));
+        }
     }
 }
