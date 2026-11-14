@@ -21,6 +21,15 @@ on:
         required: false
         type: string
         default: ""
+      scope:
+        description: >-
+          all runs the repo-wide checks, the scaffold proof and the legs. shared
+          runs the first two only and legs runs the legs only, with a marker
+          artifact when they pass, so a release can run each Uplink's legs beside
+          the others' and tag exactly the ones that passed.
+        required: false
+        type: string
+        default: all
 
 jobs:
   # Discovery is its own job so a broken walk fails HERE with a message, rather
@@ -41,14 +50,22 @@ jobs:
       - id: matrix
         env:
           UPLINKS: ${{ inputs.uplinks }}
-        run: node scripts/uplink-matrix.mjs --github --only "$UPLINKS" >> "$GITHUB_OUTPUT"
+          SCOPE: ${{ inputs.scope }}
+        run: |
+          if [ "$SCOPE" = shared ]; then
+            echo 'matrix={"include":[]}' >> "$GITHUB_OUTPUT"
+          else
+            node scripts/uplink-matrix.mjs --github --only "$UPLINKS" >> "$GITHUB_OUTPUT"
+          fi
       - id: sibling
         run: echo "name=$(node scripts/uplink-matrix.mjs --scaffold-sibling)" >> "$GITHUB_OUTPUT"
-      - run: node scripts/uplink-matrix.mjs
+      - if: inputs.scope != 'legs'
+        run: node scripts/uplink-matrix.mjs
       # The repo's front door describes the repo. Generated from the same
       # uplink.json files the matrix reads, so it cannot drift into describing a
       # set of Uplinks that no longer exists.
-      - run: node tooling/generate-root-readme.mjs --check
+      - if: inputs.scope != 'legs'
+        run: node tooling/generate-root-readme.mjs --check
       # Does every client-bearing Uplink HAVE a generated page. A second's worth
       # of filesystem, and here rather than in a leg because it is a question
       # about the SET: a leg can only report on itself, and the failure this
@@ -57,7 +74,8 @@ jobs:
       #
       # It plants three trees and proves it can see a missing page before
       # reporting on the real ones, and refuses if discovery hands it nothing.
-      - run: node tooling/uplink-docs.mjs --gate
+      - if: inputs.scope != 'legs'
+        run: node tooling/uplink-docs.mjs --gate
       # Are the vendored artefacts every client installs from actually HERE, and
       # does each Uplink resolve the bytes its own lockfile describes. Here
       # rather than in a leg because it is a question about the SET: the failure
@@ -65,23 +83,27 @@ jobs:
       # looking only at itself can see. It is also the cheapest possible early
       # warning, a second of hashing before twelve legs each spend a minute
       # discovering the same missing tarball at `npm ci`.
-      - run: node scripts/check-vendor-pins.mjs
+      - if: inputs.scope != 'legs'
+        run: node scripts/check-vendor-pins.mjs
       # Does every Uplink that ships a client give its manifest a ClientSource.
       # A question about the SET, and a null one compiles and loads in game with
       # the client never fetched. Plants a violation and fails as BLIND if unseen.
-      - run: node tooling/check-client-source.mjs
+      - if: inputs.scope != 'legs'
+        run: node tooling/check-client-source.mjs
       # Is any assistant working-notes or tool-config file tracked. The
       # repo is public. Plants a violation and fails as BLIND if unseen.
-      - run: node tooling/check-private-notes.mjs
+      - if: inputs.scope != 'legs'
+        run: node tooling/check-private-notes.mjs
       # Does each commit a push or pull request adds name the Uplinks it
       # touches. The same module the commit-msg hook runs, over commits after
       # the sha named in tooling/commit-scope.mjs.
-      - if: inputs.ref == ''
+      - if: inputs.ref == '' && inputs.scope != 'legs'
         env:
           BASE: ${{ github.event.pull_request.base.sha || github.event.before }}
           HEAD_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
         run: node tooling/commit-scope.mjs --since "$BASE" --to "$HEAD_SHA"
-      - run: node --test "tooling/*.test.mjs"
+      - if: inputs.scope != 'legs'
+        run: node --test "tooling/*.test.mjs"
 
   # Does every Uplink here register what it declares, and declare what it
   # registers. A question about the SET, so not a leg of `_uplink-tasks.yml`: the
@@ -114,6 +136,7 @@ jobs:
 
   uplink:
     needs: discover
+    if: inputs.scope != 'shared'
     strategy:
       fail-fast: false
       matrix: ${{ fromJson(needs.discover.outputs.matrix) }}
@@ -142,6 +165,7 @@ jobs:
   # sits in no Uplink's leg.
   scaffold:
     needs: discover
+    if: inputs.scope != 'legs'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -154,3 +178,20 @@ jobs:
         run: npm ci --no-audit --no-fund
       - name: Scaffold proof
         run: scripts/scaffold-proof.sh "${{ needs.discover.outputs.scaffold_sibling }}"
+
+  # Written only by a `legs` run whose Uplink passed, so the release that called
+  # it can tell which Uplinks may be tagged. A reusable workflow reports one
+  # result however many legs it ran, and an artifact is the one thing it can hand
+  # back by name.
+  passed:
+    needs: [discover, uplink]
+    if: ${{ !cancelled() && inputs.scope == 'legs' && needs.discover.result == 'success' && needs.uplink.result == 'success' }}
+    runs-on: ubuntu-latest
+    steps:
+      - env:
+          UPLINKS: ${{ inputs.uplinks }}
+        run: echo "$UPLINKS" > passed.txt
+      - uses: actions/upload-artifact@v4
+        with:
+          name: ci-passed-${{ inputs.uplinks }}
+          path: passed.txt

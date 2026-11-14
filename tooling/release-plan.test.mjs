@@ -140,8 +140,8 @@ test("only the release job pushes, only when the run is not a dry run, and no jo
 
 test("the tags go on the commit that was checked, whatever staging has done since", () => {
   const text = workflow("prepare-release.yml");
-  const ci = text.slice(text.indexOf("  ci:"), text.indexOf("  release:"));
-  assert.match(ci, /ref: \$\{\{ github\.sha \}\}/);
+  const ci = text.slice(text.indexOf("\n  ci-shared:"), text.indexOf("\n  release:"));
+  assert.equal(ci.match(/ref: \$\{\{ github\.sha \}\}/g)?.length, 2, "both ci calls check the prepared commit");
   const release = text.slice(text.indexOf("  release:"));
   assert.match(release, /ref: \$\{\{ github\.sha \}\}/);
   assert.match(release, /git push --atomic origin "\$sha:refs\/heads\/main"/);

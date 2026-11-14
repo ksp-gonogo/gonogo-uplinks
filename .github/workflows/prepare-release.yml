@@ -15,13 +15,16 @@
 #      leg's checkout, and the same checks a release is held to run, ending in a
 #      full release build into a scratch folder. A leg commits and pushes
 #      nothing, and uploads the version and tag it settled on. Every leg runs, so
-#      one failure is reported beside the others, and any failure stops the release
-#   3. settle: gathers the legs' tags
-#   4. ci: ci.yml on the staging head the legs prepared, with the repo-wide
-#      checks, the scaffold proof and the legs of the chosen Uplinks only
-#   5. release: only when ci is green, the tags go on that commit and main
-#      fast-forwards to it, in one atomic push, and release.yml is dispatched on
-#      each tag. release.yml builds each tag stamped with its own version
+#      one failure is reported beside the others and stops only its own Uplink
+#   3. settle: gathers the tags of the legs that passed
+#   4. ci-shared: the repo-wide checks and the scaffold proof, on the staging head
+#      the legs prepared. A failure here is about the repository and stops all
+#   5. ci: one run of ci.yml per Uplink, with only that Uplink's legs
+#   6. release: the Uplinks whose prepare leg and legs both passed are tagged on
+#      that commit and main fast-forwards to it, in one atomic push, and
+#      release.yml is dispatched on each tag. An Uplink that failed is named and
+#      makes the run red, and holds back no other. release.yml builds each tag
+#      stamped with its own version
 #
 # A tag exists only after every check has passed on the commit it names, and the
 # commit is the one that was checked even when staging has moved on during the
@@ -145,9 +148,13 @@ jobs:
 
   settle:
     needs: [plan, prepare]
+    # Runs when some legs failed: the ones that passed go on, each judged alone.
+    if: ${{ !cancelled() && needs.plan.result == 'success' }}
     runs-on: ubuntu-latest
     outputs:
       tags: ${{ steps.tags.outputs.tags }}
+      matrix: ${{ steps.tags.outputs.matrix }}
+      count: ${{ steps.tags.outputs.count }}
     steps:
       - uses: actions/setup-node@v4
         with: { node-version: "24" }
@@ -158,37 +165,62 @@ jobs:
           path: ${{ runner.temp }}/legs
           merge-multiple: true
 
+      # A leg writes its prepare file as the last thing it does, so a file is the
+      # record that the leg passed, and a failed leg leaves none.
       - id: tags
+        env:
+          PLANNED: ${{ needs.plan.outputs.ids }}
         run: |
           set -euo pipefail
           legs="$RUNNER_TEMP/legs"
-          tags="$(node -e '
+          mkdir -p "$legs"
+          node -e '
             const fs = require("fs");
             const dir = process.argv[1];
             const released = fs.readdirSync(dir).filter((f) => /^prepare-.*\.json$/.test(f))
               .map((f) => JSON.parse(fs.readFileSync(dir + "/" + f, "utf8")))
               .sort((a, b) => a.id.localeCompare(b.id));
-            console.log(JSON.stringify(released.map((r) => r.id + "-v" + r.version)));
-          ' "$legs")"
-          echo "tags=$tags" >> "$GITHUB_OUTPUT"
-          {
-            echo "### Tags on $GITHUB_SHA"
-            echo
-            echo "$tags"
-          } >> "$GITHUB_STEP_SUMMARY"
+            const out = [];
+            out.push("tags=" + JSON.stringify(released.map((r) => r.id + "-v" + r.version)));
+            out.push("matrix=" + JSON.stringify({ include: released.map((r) => ({ id: r.id })) }));
+            out.push("count=" + released.length);
+            const planned = process.env.PLANNED.split(",").filter(Boolean);
+            const prepared = new Set(released.map((r) => r.id));
+            const failed = planned.filter((id) => !prepared.has(id));
+            console.log(out.join("\n"));
+            fs.writeFileSync(dir + "/summary.md", "### Prepared\n\n" + (released.map((r) => "- " + r.id + "-v" + r.version).join("\n") || "nothing") + (failed.length ? "\n\n### Failed to prepare, not released\n\n" + failed.map((id) => "- " + id).join("\n") : "") + "\n");
+          ' "$legs" >> "$GITHUB_OUTPUT"
+          cat "$legs/summary.md" >> "$GITHUB_STEP_SUMMARY"
 
-  ci:
+  # The repo-wide checks and the scaffold proof: a failure here is about the
+  # repository, so it stops every release.
+  ci-shared:
     needs: [plan, settle]
-    if: inputs.dry_run == false
+    if: ${{ !cancelled() && inputs.dry_run == false && needs.settle.result == 'success' && needs.settle.outputs.count != '0' }}
     uses: ./.github/workflows/ci.yml
     secrets: inherit
     with:
       ref: ${{ github.sha }}
-      uplinks: ${{ needs.plan.outputs.ids }}
+      scope: shared
+
+  # One run of the legs per Uplink, so one Uplink's failing check stops that
+  # Uplink's release and no other.
+  ci:
+    needs: [plan, settle]
+    if: ${{ !cancelled() && inputs.dry_run == false && needs.settle.result == 'success' && needs.settle.outputs.count != '0' }}
+    strategy:
+      fail-fast: false
+      matrix: ${{ fromJson(needs.settle.outputs.matrix) }}
+    uses: ./.github/workflows/ci.yml
+    secrets: inherit
+    with:
+      ref: ${{ github.sha }}
+      uplinks: ${{ matrix.id }}
+      scope: legs
 
   release:
-    needs: [settle, ci]
-    if: inputs.dry_run == false
+    needs: [plan, settle, ci-shared, ci]
+    if: ${{ !cancelled() && inputs.dry_run == false && needs.settle.result == 'success' && needs.ci-shared.result == 'success' }}
     runs-on: ubuntu-latest
     permissions:
       contents: write
@@ -199,11 +231,41 @@ jobs:
           ref: ${{ github.sha }}
           fetch-depth: 0
 
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: ci-passed-*
+          path: ${{ runner.temp }}/passed
+          merge-multiple: true
+
+      # An Uplink is tagged only when its own prepare leg and its own legs both
+      # passed. The others are named in the run's summary and make it red once
+      # the passing ones are out.
+      - id: pick
+        env:
+          TAGS: ${{ needs.settle.outputs.tags }}
+          PLANNED: ${{ needs.plan.outputs.ids }}
+        run: |
+          set -euo pipefail
+          mkdir -p "$RUNNER_TEMP/passed"
+          node -e '
+            const fs = require("fs");
+            const dir = process.argv[1];
+            const passed = new Set(fs.readdirSync(dir).filter((f) => f.endsWith(".txt"))
+              .map((f) => fs.readFileSync(dir + "/" + f, "utf8").trim()));
+            const tags = JSON.parse(process.env.TAGS);
+            const ready = tags.filter((t) => passed.has(t.replace(/-v\d.*$/, "")));
+            const readyIds = new Set(ready.map((t) => t.replace(/-v\d.*$/, "")));
+            const held = process.env.PLANNED.split(",").filter(Boolean).filter((id) => !readyIds.has(id));
+            console.log("tags=" + JSON.stringify(ready));
+            console.log("held=" + held.join(","));
+          ' "$RUNNER_TEMP/passed" >> "$GITHUB_OUTPUT"
+
       # main moves to the commit that was checked and the tags go with it, in one push
       # that either lands whole or not at all.
       - name: main moves to the checked commit
+        if: steps.pick.outputs.tags != '[]'
         env:
-          TAGS: ${{ needs.settle.outputs.tags }}
+          TAGS: ${{ steps.pick.outputs.tags }}
         run: |
           set -euo pipefail
           sha="$(git rev-parse HEAD)"
@@ -222,12 +284,23 @@ jobs:
       # release is started on the tag's own ref. release.yml serialises the
       # publishing.
       - name: Start each release
+        if: steps.pick.outputs.tags != '[]'
         env:
           GH_TOKEN: ${{ github.token }}
-          TAGS: ${{ needs.settle.outputs.tags }}
+          TAGS: ${{ steps.pick.outputs.tags }}
         run: |
           set -euo pipefail
           for tag in $(echo "$TAGS" | node -e 'console.log(JSON.parse(require("fs").readFileSync(0, "utf8")).sort().join(" "))'); do
             gh workflow run release.yml --ref "$tag"
             echo "started release.yml on $tag"
           done
+
+      - name: Report the Uplinks that were not released
+        env:
+          HELD: ${{ steps.pick.outputs.held }}
+        run: |
+          if [ -n "$HELD" ]; then
+            echo "### Not released: $HELD" >> "$GITHUB_STEP_SUMMARY"
+            echo "::error::Not released: $HELD. Each failed its own checks above; the others went out."
+            exit 1
+          fi

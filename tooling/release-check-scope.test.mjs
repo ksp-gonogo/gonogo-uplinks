@@ -36,12 +36,15 @@ test("the scaffold sibling is an Uplink that has a client", () => {
   assert.ok(legs.find((l) => l.name === out.stdout.trim())?.client);
 });
 
-test("a release is checked on the chosen Uplinks only, and the scaffold gates it from a job of its own", () => {
+test("each Uplink's legs run on their own, the repo-wide checks once, and the scaffold gates from a job of its own", () => {
   const release = read("prepare-release.yml");
-  const ci = release.slice(release.indexOf("  ci:"), release.indexOf("  release:"));
+  const ci = release.slice(release.indexOf("\n  ci:"), release.indexOf("\n  release:"));
   assert.match(ci, /uses: \.\/\.github\/workflows\/ci\.yml/);
-  assert.match(ci, /uplinks: \$\{\{ needs\.plan\.outputs\.ids \}\}/);
-  assert.match(release, /needs: \[settle, ci\]/);
+  assert.match(ci, /fail-fast: false/, "one Uplink's failure does not cancel another's legs");
+  assert.match(ci, /uplinks: \$\{\{ matrix\.id \}\}/);
+  assert.match(ci, /scope: legs/);
+  assert.match(release, /ci-shared:[\s\S]*scope: shared/);
+  assert.match(release, /needs: \[plan, settle, ci-shared, ci\]/);
 
   const workflow = read("ci.yml");
   assert.match(workflow, /--only "\$UPLINKS"/);
@@ -49,6 +52,17 @@ test("a release is checked on the chosen Uplinks only, and the scaffold gates it
   assert.match(workflow, /scripts\/scaffold-proof\.sh/);
   assert.doesNotMatch(workflow, /matrix\.name == /, "no leg is picked by name");
   assert.doesNotMatch(read("_uplink-tasks.yml"), /scaffold/i, "the scaffold proof is in no Uplink's leg");
+});
+
+test("a failed Uplink holds back only itself: settle and release run past a failed leg", () => {
+  const release = read("prepare-release.yml");
+  const settle = release.slice(release.indexOf("\n  settle:"), release.indexOf("\n  ci-shared:"));
+  assert.match(settle, /if: \$\{\{ !cancelled\(\) && needs\.plan\.result == 'success' \}\}/);
+  const tail = release.slice(release.indexOf("\n  release:"));
+  assert.match(tail, /if: \$\{\{ !cancelled\(\)[^\n]*needs\.ci-shared\.result == 'success'/);
+  assert.match(tail, /pattern: ci-passed-\*/, "only an Uplink whose legs passed is tagged");
+  assert.match(tail, /exit 1/, "an Uplink that was held back makes the run red");
+  assert.match(read("ci.yml"), /name: ci-passed-\$\{\{ inputs\.uplinks \}\}/);
 });
 
 test("a push to staging still runs every leg", () => {
