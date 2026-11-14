@@ -157,6 +157,22 @@ namespace GonogoKosUplink.Tests
         }
 
         [Fact]
+        public void Open_RenewalByTheHolder_DoesNotForceAFullRepaint()
+        {
+            var h = new Harness();
+            h.Subscribe(7);
+            h.Manager.Open(7, "tokenA");
+            h.Tick();
+            var polled = h.Screens[7].ReseedCalls.Count;
+
+            h.Manager.Open(7, "tokenA");
+            h.Tick();
+
+            Assert.Equal(polled + 1, h.Screens[7].ReseedCalls.Count);
+            Assert.False(h.Screens[7].ReseedCalls[polled]);
+        }
+
+        [Fact]
         public void Open_ByDifferentToken_IsRejected_NotStolen()
         {
             var h = new Harness();

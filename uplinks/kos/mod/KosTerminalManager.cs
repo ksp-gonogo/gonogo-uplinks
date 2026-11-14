@@ -333,10 +333,17 @@ namespace Gonogo.KosUplink
                 // Rejected with a reason, never a silent steal.
                 return CommandResult.Fail(KosErrorCodes.TerminalHeld);
             }
+            var renewal = _leases.TryGetValue(coreId, out var current)
+                && current == leaseToken
+                && !HolderIdle(coreId);
             _leases[coreId] = leaseToken;
             _leaseLastSeen[coreId] = _clockSeconds;
-            // Seed a clean full repaint to the opener on the next poll.
-            GetOrCreateSession(coreId).PendingReseed = true;
+            // A renewal by the live holder repeats every few seconds and has
+            // nothing new to show; only a new or lapsed holder needs a repaint.
+            if (!renewal)
+            {
+                GetOrCreateSession(coreId).PendingReseed = true;
+            }
             return CommandResult.Ok();
         }
 
