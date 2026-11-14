@@ -45,6 +45,10 @@ namespace Gonogo.RealAntennasUplink
         private readonly Dictionary<CommNode, List<RaPlannedAntenna>?> _plannedAt = new Dictionary<CommNode, List<RaPlannedAntenna>?>();
         private double _plannedUt = double.NaN;
 
+        /// <summary>The bodies read at one instant, shared by every model made at it. Nothing that holds the list changes it.</summary>
+        private List<RaOccluder>? _occludersAt;
+        private double _occludersUt = double.NaN;
+
         /// <param name="kernel">
         /// Core's capability registry, for the <c>activeVessel</c> resolution
         /// described on <see cref="ScopedVessel"/>. Optional, and null resolves
@@ -253,13 +257,25 @@ namespace Gonogo.RealAntennasUplink
             return fromAntennas == null || toAntennas == null || fromAntennas.Count == 0 || toAntennas.Count == 0
                 ? null
                 : new RaContactLinkModel(
-                    fromAntennas, toAntennas, _ra.MinRelayTechLevel() ?? 0, fromNode?.isHome == true, toNode?.isHome == true, Occluders());
+                    fromAntennas, toAntennas, _ra.MinRelayTechLevel() ?? 0, fromNode?.isHome == true, toNode?.isHome == true, Occluders(ut));
         }
 
         /// <summary>Every body, with the temperature RealAntennas gives it, for the noise a dish picks up from one in its beam.</summary>
-        private List<RaOccluder> Occluders()
+        private List<RaOccluder> Occluders(double ut)
         {
+            /*
+             * One capture asks for a link model for every pair of nodes and a retarget
+             * model for every craft, all at the same instant, and each wants this list.
+             * Read once for the instant, it is one call into RealAntennas for each body
+             * and not one for each body of each pair.
+             */
+            if (_occludersAt != null && ut == _occludersUt)
+            {
+                return _occludersAt;
+            }
             var occluders = new List<RaOccluder>();
+            _occludersAt = occluders;
+            _occludersUt = ut;
             var bodies = FlightGlobals.Bodies;
             if (bodies == null)
             {
@@ -440,7 +456,7 @@ namespace Gonogo.RealAntennasUplink
                 planned,
                 id => _rosterAntennas.TryGetValue(id, out var antennas) ? antennas : null,
                 id => AutoRetargetAllowed(id),
-                occluders: Occluders());
+                occluders: Occluders(ut));
         }
 
         public bool AutoRetargetAllowed(string nodeId) =>

@@ -97,6 +97,10 @@ namespace Gonogo.RealAntennasUplink
         /// <summary>Antenna transmit power (dBm), or null.</summary>
         public double? TxPower(object antenna) => ReadDouble(_txPower, antenna);
 
+        /// <summary>RealAntennas' body temperature call, looked up on first use. Main thread only.</summary>
+        private MethodInfo? _bodyBaseTemperature;
+        private bool _bodyBaseTemperatureSought;
+
         /// <summary>
         /// A body's base temperature in kelvin as RealAntennas reads it
         /// (<c>Physics.BodyBaseTemperature</c>), or null when the call is not found
@@ -106,8 +110,12 @@ namespace Gonogo.RealAntennasUplink
         {
             try
             {
-                var method = SafeGetType("RealAntennas.Physics")?.GetMethod("BodyBaseTemperature", BindingFlags.Public | BindingFlags.Static);
-                return method?.Invoke(null, new[] { body }) switch
+                if (!_bodyBaseTemperatureSought)
+                {
+                    _bodyBaseTemperature = SafeGetType("RealAntennas.Physics")?.GetMethod("BodyBaseTemperature", BindingFlags.Public | BindingFlags.Static);
+                    _bodyBaseTemperatureSought = true;
+                }
+                return _bodyBaseTemperature?.Invoke(null, new[] { body }) switch
                 {
                     float f => f,
                     double d => d,
