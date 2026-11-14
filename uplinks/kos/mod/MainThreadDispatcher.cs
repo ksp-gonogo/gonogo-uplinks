@@ -131,6 +131,17 @@ namespace Gonogo.KosUplink
             }
         }
 
+        /// <summary>
+        /// Names the calling thread as the one that drains this dispatcher,
+        /// before its first <see cref="Drain"/>. Called on the game's main
+        /// thread when the draining addon is created, so a command that
+        /// reaches <see cref="KosExtension.RunOnMainThread"/> on that thread
+        /// before the addon's first update runs inline. Without it the command
+        /// queues its work and waits for a drain that only its own thread can
+        /// make, and the game stands still until the wait times out.
+        /// </summary>
+        public void ClaimDrainThread() => _drainThreadId = Thread.CurrentThread.ManagedThreadId;
+
         /// <summary>Actions currently queued, awaiting the next <see cref="Drain"/>. Test/diagnostic use.</summary>
         public int PendingCount => _queue.Count;
 
@@ -142,7 +153,7 @@ namespace Gonogo.KosUplink
         /// <see cref="Dispatch"/>-and-block when it is already on the main
         /// thread: the production reality once the <c>ChannelEngine</c> has
         /// marshalled a command handler onto the main-thread pump. False until
-        /// the first <see cref="Drain"/> (nothing has claimed the thread yet).
+        /// <see cref="ClaimDrainThread"/> or the first <see cref="Drain"/>.
         /// </summary>
         public bool IsOnDrainThread => _drainThreadId == Thread.CurrentThread.ManagedThreadId;
     }

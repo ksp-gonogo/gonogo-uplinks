@@ -90,6 +90,7 @@ namespace Gonogo.MechJebUplink
             UnityEngine.Object.DontDestroyOnLoad(go);
             var addon = go.AddComponent<MechJebMainThreadDispatcherAddon>();
             addon.Dispatcher = dispatcher;
+            dispatcher.ClaimDrainThread();
             _boundAddon = addon;
         }
     }

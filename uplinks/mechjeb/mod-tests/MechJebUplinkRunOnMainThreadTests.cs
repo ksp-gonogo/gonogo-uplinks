@@ -231,5 +231,48 @@ namespace GonogoMechJebUplink.Tests
             Assert.Equal(FaultCode.CommandUnavailable, fault.Code);
             Assert.Contains("boom", fault.Message);
         }
+
+        /// <summary>
+        /// A command can reach the main thread before the draining addon has had
+        /// its first update. The thread that creates the addon is named as the
+        /// drain thread then, so the work runs inline instead of waiting out the
+        /// timeout for a drain only that same thread can make.
+        /// </summary>
+        [Fact]
+        public void RunOnMainThread_OnTheThreadThatBoundTheAddon_RunsInlineBeforeTheFirstDrain()
+        {
+            var dispatcher = new MainThreadDispatcher();
+            var uplink = new MechJebUplink(dispatcher, _ => { })
+            {
+                CommandMainThreadTimeout = TimeSpan.FromMilliseconds(200),
+            };
+            dispatcher.ClaimDrainThread();
+
+            var ran = 0;
+            var result = uplink.RunOnMainThread(() =>
+            {
+                Interlocked.Increment(ref ran);
+                return CommandResult.Ok();
+            });
+
+            Assert.True(result.Success);
+            Assert.Equal(1, ran);
+            Assert.Equal(0, dispatcher.PendingCount);
+        }
+
+        [Fact]
+        public void ClaimingTheDrainThreadLeavesOtherThreadsQueueing()
+        {
+            var dispatcher = new MainThreadDispatcher();
+            dispatcher.ClaimDrainThread();
+
+            var onOther = true;
+            var other = new Thread(() => onOther = dispatcher.IsOnDrainThread);
+            other.Start();
+            other.Join();
+
+            Assert.True(dispatcher.IsOnDrainThread);
+            Assert.False(onOther);
+        }
     }
 }

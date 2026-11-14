@@ -469,6 +469,7 @@ namespace Gonogo.KosUplink
             UnityEngine.Object.DontDestroyOnLoad(go);
             var addon = go.AddComponent<KosMainThreadDispatcherAddon>();
             addon.Dispatcher = dispatcher;
+            dispatcher.ClaimDrainThread();
             // Held so Register can attach the terminal poll once the manager
             // exists (the addon drives both the dispatcher drain and the
             // ~20 Hz terminal downlink on the main thread).
