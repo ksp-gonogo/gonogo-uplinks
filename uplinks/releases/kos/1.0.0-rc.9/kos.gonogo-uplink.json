@@ -1,0 +1,19 @@
+{
+  "id": "kos",
+  "name": "kOS",
+  "description": "Puts a kOS CPU's real terminal on the dashboard, streamed in process with no proxy to run, and dispatches kerboscripts to a chosen CPU.",
+  "author": "jpeps",
+  "repo": "https://github.com/ksp-gonogo/gonogo-uplinks",
+  "mod": {
+    "name": "kOS",
+    "builtAgainst": "1.6.0.1"
+  },
+  "version": "1.0.0-rc.9",
+  "minAppVersion": "0.0.0",
+  "apiVersion": "6.0.0",
+  "contractMajor": 52,
+  "contractMinor": 2,
+  "bundleUrl": "kos/kos.client.js",
+  "integrity": "sha256-34dee99c39ca7fe7539a705d9e61f646c0390577beb8ec298fb0af8f3385e3e4",
+  "sdkVersion": "0.0.1"
+}
