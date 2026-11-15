@@ -31,7 +31,7 @@ test("an Uplink depends on its mod at builtAgainst, and on Gonogo", () => {
   assert.deepEqual(internalCkan(kerbcast), {
     depends: [
       { name: "Kerbcast", min_version: kerbcast.uplink.mod.builtAgainst },
-      { name: "Gonogo" },
+      { name: "Gonogo", min_version: "1.0.0" },
     ],
   });
 });
@@ -101,7 +101,7 @@ test("an Uplink lists Harmony2 exactly when its mod project references 0Harmony"
 test("ckanDepends reach the generated file, ahead of Gonogo", () => {
   assert.deepEqual(internalCkan(readUplink("principia")).depends, [
     { name: "Harmony2" },
-    { name: "Gonogo" },
+    { name: "Gonogo", min_version: "1.0.0" },
   ]);
 });
 

@@ -28,10 +28,9 @@
  * and a `v` above no prefix, so the bare `builtAgainst` of a mod CKAN lists as
  * `v4.7.0.0` or `1:1.6.0.1` is met by every release of it.
  *
- * Gonogo carries no version: the Uplinks build against a pinned gonogo
- * commit (vendor/gonogo-ref), which is not a Gonogo release, and a
- * min_version CKAN cannot find a release for would make the Uplink
- * uninstallable.
+ * Gonogo carries `GONOGO_MIN_VERSION`, the first Gonogo release on CKAN,
+ * which CKAN lists as its tag without the `v`. Whether a newer Gonogo can load
+ * the Uplink is the contract version Gonogo checks at load, not this.
  */
 import { execFileSync } from "node:child_process";
 import { copyFileSync, existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
@@ -40,6 +39,8 @@ import { dirname, join, resolve } from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), "..");
+
+export const GONOGO_MIN_VERSION = "1.0.0";
 
 function readJson(path) {
   return JSON.parse(readFileSync(path, "utf8"));
@@ -65,7 +66,7 @@ export function internalCkan({ uplink, manifest }) {
     }
     depends.push({ name: mod.ckan, min_version: mod.ckanVersion ?? builtAgainst });
   }
-  depends.push(...(uplink.ckanDepends ?? []), { name: "Gonogo" });
+  depends.push(...(uplink.ckanDepends ?? []), { name: "Gonogo", min_version: GONOGO_MIN_VERSION });
   const recommends = uplink.ckanRecommends ?? [];
   return recommends.length > 0 ? { depends, recommends } : { depends };
 }
