@@ -11,6 +11,7 @@
     "tier": "ckan",
     "ckan": "ContractConfigurator",
     "builtAgainst": "2.13.3.0",
+    "ckanVersion": "v2.13.3.0",
     "assembly": "ContractConfigurator/ContractConfigurator.dll",
     "channels": [{ "ckan": "ContractConfigurator" }, { "github": "KSP-RO/ContractConfigurator" }]
   },
