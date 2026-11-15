@@ -9,7 +9,7 @@
     "find": "^kerbcast-[vV]?(?<version>.+)$",
     "replace": "${version}"
   },
-  "name": "Gonogo kerbcast Uplink",
+  "name": "Gonogo Kerbcast Uplink",
   "abstract": "Live in-flight camera views from Hullcam VDS parts on the Gonogo dashboard, with aim and zoom controls.",
   "author": "jpeps",
   "license": "MIT",
