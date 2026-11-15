@@ -10,7 +10,7 @@
     "replace": "${version}"
   },
   "name": "Gonogo Action Groups Extended Uplink",
-  "abstract": "Sends Action Groups Extended's action groups and their state to the Gonogo dashboard.",
+  "abstract": "Gonogo integration for Action Groups Extended.",
   "author": "jpeps",
   "license": "MIT",
   "release_status": "stable",

@@ -10,7 +10,7 @@
     "replace": "${version}"
   },
   "name": "Gonogo Kerbcast Uplink",
-  "abstract": "Live in-flight camera views from Hullcam VDS parts on the Gonogo dashboard, with aim and zoom controls.",
+  "abstract": "Gonogo integration for Kerbcast.",
   "author": "jpeps",
   "license": "MIT",
   "release_status": "stable",

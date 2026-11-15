@@ -10,7 +10,7 @@
     "replace": "${version}"
   },
   "name": "Gonogo SCANsat Uplink",
-  "abstract": "SCANsat's orbital survey data on the Gonogo mission-control dashboard.",
+  "abstract": "Gonogo integration for SCANsat.",
   "author": "jpeps",
   "license": "GPL-3.0",
   "release_status": "stable",

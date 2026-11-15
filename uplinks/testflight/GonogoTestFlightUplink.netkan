@@ -10,7 +10,7 @@
     "replace": "${version}"
   },
   "name": "Gonogo TestFlight Uplink",
-  "abstract": "TestFlight engine reliability on the Gonogo dashboard's fleet roster.",
+  "abstract": "Gonogo integration for TestFlight.",
   "author": "jpeps",
   "license": "MIT",
   "release_status": "stable",

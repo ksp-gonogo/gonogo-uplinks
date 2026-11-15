@@ -10,7 +10,7 @@
     "replace": "${version}"
   },
   "name": "Gonogo kOS Uplink",
-  "abstract": "A kOS CPU's real terminal on the Gonogo dashboard, streamed in process with no proxy to run.",
+  "abstract": "Gonogo integration for kOS.",
   "author": "jpeps",
   "license": "GPL-3.0",
   "release_status": "stable",

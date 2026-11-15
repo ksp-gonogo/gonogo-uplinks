@@ -10,7 +10,7 @@
     "replace": "${version}"
   },
   "name": "Gonogo RP-1 Uplink",
-  "abstract": "RP-1's career layer on the Gonogo dashboard: Programs, objectives, deadlines and funding curves.",
+  "abstract": "Gonogo integration for RP-1.",
   "author": "jpeps",
   "license": "MIT",
   "release_status": "stable",

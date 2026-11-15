@@ -10,7 +10,7 @@
     "replace": "${version}"
   },
   "name": "Gonogo RealFuels Uplink",
-  "abstract": "Per-engine RealFuels limits on the Gonogo dashboard: ignitions remaining, ullage stability and pressure feed.",
+  "abstract": "Gonogo integration for RealFuels.",
   "author": "jpeps",
   "license": "MIT",
   "release_status": "stable",

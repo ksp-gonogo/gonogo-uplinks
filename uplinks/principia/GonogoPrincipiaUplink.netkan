@@ -10,7 +10,7 @@
     "replace": "${version}"
   },
   "name": "Gonogo Principia Uplink",
-  "abstract": "Principia's n-body flight on the Gonogo dashboard: trajectory reliability, the flight plan and its manoeuvres.",
+  "abstract": "Gonogo integration for Principia.",
   "author": "jpeps",
   "license": "MIT",
   "release_status": "stable",

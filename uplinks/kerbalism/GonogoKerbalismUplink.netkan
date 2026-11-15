@@ -10,7 +10,7 @@
     "replace": "${version}"
   },
   "name": "Gonogo Kerbalism Uplink",
-  "abstract": "Kerbalism life support on the Gonogo dashboard, as one ledger of every profile resource.",
+  "abstract": "Gonogo integration for Kerbalism.",
   "author": "jpeps",
   "license": "MIT",
   "release_status": "stable",

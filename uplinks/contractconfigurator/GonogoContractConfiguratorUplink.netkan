@@ -10,7 +10,7 @@
     "replace": "${version}"
   },
   "name": "Gonogo Contract Configurator Uplink",
-  "abstract": "Sends Contract Configurator's contracts and their parameters to the Gonogo dashboard.",
+  "abstract": "Gonogo integration for Contract Configurator.",
   "author": "jpeps",
   "license": "MIT",
   "release_status": "stable",

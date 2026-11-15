@@ -10,7 +10,7 @@
     "replace": "${version}"
   },
   "name": "Gonogo Ferram Aerospace Research Uplink",
-  "abstract": "Puts Ferram Aerospace Research's aerodynamic numbers on the Gonogo dashboard.",
+  "abstract": "Gonogo integration for Ferram Aerospace Research.",
   "author": "jpeps",
   "license": "MIT",
   "release_status": "stable",

@@ -10,7 +10,7 @@
     "replace": "${version}"
   },
   "name": "Gonogo MechJeb2 Uplink",
-  "abstract": "Flies the vessel from the Gonogo dashboard with MechJeb's autopilots.",
+  "abstract": "Gonogo integration for MechJeb2.",
   "author": "jpeps",
   "license": "GPL-3.0",
   "release_status": "stable",
