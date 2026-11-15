@@ -123,10 +123,11 @@ jobs:
           TAG: ${{ inputs.tag || github.ref_name }}
         run: node tooling/resolve-release-tag.mjs "$TAG" --github >> "$GITHUB_OUTPUT"
 
-      # A full release is uploaded to SpaceDock, so it fails here, before the
-      # build and before anything is published, when it cannot be: no listing id
-      # in the Uplink's uplink.json (an id is never guessed), or, outside a dry
-      # run, no SpaceDock login. A dry run sends nothing, so it only checks the id.
+      # A full release of an Uplink with a SpaceDock listing is uploaded to it, so
+      # it fails here, before the build and before anything is published, when the
+      # login is missing outside a dry run. An Uplink with no listing id yet goes to
+      # GitHub and CKAN only: SpaceDock makes a listing from a first upload, so the
+      # first release always comes before the id. An id is never guessed.
       - name: A full release can reach SpaceDock
         if: steps.which.outputs.prerelease != 'true'
         env:
@@ -135,7 +136,11 @@ jobs:
           DRY: ${{ steps.which.outputs.dry }}
         run: |
           set -euo pipefail
-          node tooling/spacedock-release.mjs require-mod-id "uplinks/$NAME/uplink.json"
+          MOD_ID="$(node tooling/spacedock-release.mjs mod-id "uplinks/$NAME/uplink.json")"
+          if [ -z "$MOD_ID" ]; then
+            echo "::notice::$NAME has no SpaceDock listing id, so this release goes to GitHub and CKAN alone"
+            exit 0
+          fi
           if [ "$DRY" != true ] && [ "$LOGIN" != true ]; then
             echo "::error::The SpaceDock login (secrets SPACEDOCK_USERNAME and SPACEDOCK_PASSWORD) is not visible to this repository, and a full release is uploaded to SpaceDock. Nothing was published."
             exit 1
@@ -285,9 +290,10 @@ jobs:
             $([ "$PRERELEASE" = true ] && echo --prerelease)
 
       # SpaceDock, and through it CKAN, for a full release only. The listing id
-      # is `spacedock.modId` in the Uplink's own uplink.json, and `resolve`
-      # already failed the run if it, or the login, is missing. A version the
-      # listing already holds is not uploaded twice.
+      # is `spacedock.modId` in the Uplink's own uplink.json; an Uplink without
+      # one has no listing yet and nothing is sent. `resolve` already failed the
+      # run if a listed Uplink's login is missing. A version the listing already
+      # holds is not uploaded twice.
       - name: Decide whether SpaceDock gets this release
         id: sd
         if: needs.resolve.outputs.prerelease != 'true' && needs.resolve.outputs.dry != 'true'
@@ -298,7 +304,12 @@ jobs:
             exit 1
           fi
           VERSION="$(node tooling/spacedock-release.mjs version "$TAG")"
-          MOD_ID="$(node tooling/spacedock-release.mjs require-mod-id "uplinks/$NAME/uplink.json")"
+          MOD_ID="$(node tooling/spacedock-release.mjs mod-id "uplinks/$NAME/uplink.json")"
+          if [ -z "$MOD_ID" ]; then
+            echo "upload=false" >> "$GITHUB_OUTPUT"
+            echo "### $ID has no SpaceDock listing yet; it is on GitHub and CKAN" >> "$GITHUB_STEP_SUMMARY"
+            exit 0
+          fi
           echo "version=${VERSION}" >> "$GITHUB_OUTPUT"
           echo "mod_id=${MOD_ID}" >> "$GITHUB_OUTPUT"
           # Public read, no login: the listing names every version it holds.
@@ -383,7 +394,11 @@ jobs:
             exit 0
           fi
           VERSION="$(node tooling/spacedock-release.mjs version "$TAG")"
-          MOD_ID="$(node tooling/spacedock-release.mjs require-mod-id "uplinks/$NAME/uplink.json")"
+          MOD_ID="$(node tooling/spacedock-release.mjs mod-id "uplinks/$NAME/uplink.json")"
+          if [ -z "$MOD_ID" ]; then
+            echo "$NAME has no SpaceDock listing id, so a full release would go to GitHub and CKAN alone."
+            exit 0
+          fi
           echo "Would upload $(ls artifacts/*.zip | head -1) to SpaceDock mod $MOD_ID as version $VERSION."
           if [ -f "uplinks/$NAME/README.md" ]; then
             node tooling/spacedock-description.mjs sync "uplinks/$NAME/README.md" \

@@ -67,13 +67,15 @@ test("the SpaceDock login is read only by the guarded steps and the presence che
   }
 });
 
-test("a full release with no listing id or no login fails before the build, and the dry run only checks the id", () => {
+test("a listed Uplink's full release with no login fails before the build, and an unlisted one skips SpaceDock", () => {
   const release = read("release.yml");
   const resolve = release.slice(release.indexOf("  resolve:"), release.indexOf("  build:"));
-  assert.match(resolve, /spacedock-release\.mjs require-mod-id/);
+  assert.match(resolve, /spacedock-release\.mjs mod-id/);
+  assert.match(resolve, /no SpaceDock listing id/);
   assert.match(resolve, /not visible to this repository/);
   assert.match(resolve, /workflow_dispatch/);
-  assert.doesNotMatch(release, /skipping the upload|NOT updated/, "an unconfigured upload is a failure, never a skip");
+  assert.doesNotMatch(release, /require-mod-id/, "SpaceDock makes a listing from a first upload, so no release may need an id first");
+  assert.doesNotMatch(release, /skipping the upload|NOT updated/, "a listed Uplink's failed upload is a failure, never a skip");
 });
 
 test("the guard check flags a SpaceDock step whose guard was taken out", () => {
