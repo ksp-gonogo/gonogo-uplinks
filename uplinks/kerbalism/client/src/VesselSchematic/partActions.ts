@@ -6,7 +6,7 @@ import { lastValue } from "../lastValue.js";
 import { readKerbalismScienceInstrumentExt } from "../science.js";
 import { KERBALISM } from "../uplink.js";
 
-type PartActionEntry = ContributionEntry<"ship-map.part-actions">;
+type PartActionEntry = ContributionEntry<"vessel-schematic.part-actions">;
 
 /**
  * The buttons Kerbalism's experiments give a part's menu on the Vessel
@@ -50,8 +50,8 @@ export function computeKerbalismPartActions(
 }
 
 KERBALISM.registerContribution({
-  id: "ship-map-part-actions",
-  contributes: "ship-map.part-actions",
+  id: "vessel-schematic-part-actions",
+  contributes: "vessel-schematic.part-actions",
   deps: ["science.instruments"],
   requires: "kerbalism",
   compute: (topics) =>

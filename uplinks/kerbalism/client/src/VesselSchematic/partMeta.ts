@@ -5,14 +5,14 @@ import { lastValue } from "../lastValue.js";
 import { KERBALISM } from "../uplink.js";
 
 // ---------------------------------------------------------------------------
-// The Kerbalism `ship-map.part-meta` contribution: per-part status rows for
+// The Kerbalism `vessel-schematic.part-meta` contribution: per-part status rows for
 // things that aren't a fill-level meter. Today the ONLY real per-part
 // granularity on the wire is a fitted process's running/broken/idle/unknown
 // state (`KerbalismLifeSupport.processes[].flightId`), so that's all this
 // emits.
 //
 // Habitat pressure, radiation dose, and reliability MTBF are named in the
-// design plan as the eventual `ship-map.part-meta` payload, but NONE of them
+// design plan as the eventual `vessel-schematic.part-meta` payload, but NONE of them
 // are on the wire with per-part granularity today:
 //   - `KerbalismLifeSupport.habitat` is one vessel-wide aggregate, not
 //     per-part. Attaching it to every crewed part would fabricate a
@@ -25,7 +25,7 @@ import { KERBALISM } from "../uplink.js";
 // this pass. Flagged rather than faked with a fabricated per-part number.
 // ---------------------------------------------------------------------------
 
-type PartMetaEntry = ContributionEntry<"ship-map.part-meta">;
+type PartMetaEntry = ContributionEntry<"vessel-schematic.part-meta">;
 
 /**
  * Pure core of the Kerbalism part-meta contribution, exported so a test can
@@ -73,8 +73,8 @@ export function computeKerbalismPartMeta(
 }
 
 KERBALISM.registerContribution({
-  id: "ship-map-part-meta",
-  contributes: "ship-map.part-meta",
+  id: "vessel-schematic-part-meta",
+  contributes: "vessel-schematic.part-meta",
   deps: ["kerbalism.lifesupport"],
   requires: "kerbalism",
   compute: (topics) =>

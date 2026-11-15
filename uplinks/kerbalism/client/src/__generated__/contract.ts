@@ -460,12 +460,12 @@ export interface KerbalismProcessEntry
 	running?: boolean | null;
 	broken?: boolean | null;
 	/**
-	* Host part, as KSP's `Part.flightID`: matches `ShipMapPart.flightId` exactly,
-	* so a ledger row joins straight onto a part in the ship diagram. flightID and
-	* not the part name: the dev dump records its `_part` as a part name
-	* ("mk1pod.v2") for readability, which would collapse a vessel carrying two
-	* identical pods into one row. Without this field the ledger can say what is
-	* consuming but never where.
+	* Host part, as KSP's `Part.flightID`: matches `VesselSchematicPart.flightId`
+	* exactly, so a ledger row joins straight onto a part in the ship diagram.
+	* flightID and not the part name: the dev dump records its `_part` as a part
+	* name ("mk1pod.v2") for readability, which would collapse a vessel carrying
+	* two identical pods into one row. Without this field the ledger can say what
+	* is consuming but never where.
 	*/
 	flightId?: number | null;
 	/**
@@ -715,8 +715,9 @@ export interface KerbalismLifeSupport
 	*
 	* **Amounts and capacities are deliberately not here.** `vessel.resources`
 	* already carries them for every resource on the vessel, and
-	* `ShipMapPart.resources` carries them per part. The rate is the one number
-	* the generic path cannot derive, so it is the only one this channel adds.
+	* `VesselSchematicPart.resources` carries them per part. The rate is the one
+	* number the generic path cannot derive, so it is the only one this channel
+	* adds.
 	*
 	* **Three-way absence**, identical to `vessel.resources`'s convention: a key
 	* absent means Kerbalism reports no rate for that resource; a key present with

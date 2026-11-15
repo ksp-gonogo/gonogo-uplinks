@@ -115,7 +115,7 @@ describe("parseKosData", () => {
     const chunk = `[KOSDATA]${wrapped}`;
     expect(parseKosData(chunk)).toMatchObject({
       // The inner ANSI between value chars survives as part of the string;
-      // that's fine for shipmap (it parses parts as JSON afterwards).
+      // that's fine for vessel-schematic (it parses parts as JSON afterwards).
       // What matters is that the marker pair was found at all.
       parts: expect.stringContaining('{"uid":"123"'),
     });
@@ -128,7 +128,7 @@ describe("parseKosData", () => {
   });
 
   it("accepts a topic-tagged block and ignores the topic id (last-block contract)", () => {
-    expect(parseKosData("[KOSDATA:shipmap] parts=[] [/KOSDATA]")).toEqual({
+    expect(parseKosData("[KOSDATA:vessel-schematic] parts=[] [/KOSDATA]")).toEqual({
       parts: "[]",
     });
   });
@@ -147,27 +147,27 @@ describe("parseKosDataTopics", () => {
   });
 
   it("keys a topic-tagged block under its topic id", () => {
-    const result = parseKosDataTopics("[KOSDATA:shipmap] parts=[] [/KOSDATA]");
-    expect(result?.get("shipmap")).toEqual({ parts: "[]" });
+    const result = parseKosDataTopics("[KOSDATA:vessel-schematic] parts=[] [/KOSDATA]");
+    expect(result?.get("vessel-schematic")).toEqual({ parts: "[]" });
     expect(result?.has(DEFAULT_KOS_TOPIC)).toBe(false);
   });
 
   it("returns one entry per topic when multiple topics are interleaved", () => {
     const chunk = [
-      "[KOSDATA:shipmap] parts=[] [/KOSDATA]",
+      "[KOSDATA:vessel-schematic] parts=[] [/KOSDATA]",
       "[KOSDATA:processors] list=[] [/KOSDATA]",
       "[KOSDATA] dv=42 [/KOSDATA]",
     ].join("\n");
     const result = parseKosDataTopics(chunk);
-    expect(result?.get("shipmap")).toEqual({ parts: "[]" });
+    expect(result?.get("vessel-schematic")).toEqual({ parts: "[]" });
     expect(result?.get("processors")).toEqual({ list: "[]" });
     expect(result?.get(DEFAULT_KOS_TOPIC)).toEqual({ dv: 42 });
   });
 
   it("keeps the LAST block per topic when a topic appears more than once", () => {
     const chunk =
-      "[KOSDATA:shipmap] v=1 [/KOSDATA]\n[KOSDATA:shipmap] v=2 [/KOSDATA]";
-    expect(parseKosDataTopics(chunk)?.get("shipmap")).toEqual({ v: 2 });
+      "[KOSDATA:vessel-schematic] v=1 [/KOSDATA]\n[KOSDATA:vessel-schematic] v=2 [/KOSDATA]";
+    expect(parseKosDataTopics(chunk)?.get("vessel-schematic")).toEqual({ v: 2 });
   });
 
   it("accepts kebab-case topic ids", () => {

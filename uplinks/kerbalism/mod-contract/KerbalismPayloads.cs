@@ -331,7 +331,7 @@ public class KerbalismProcessEntry
     [SitrepUnit(Units.Flag)]
     public bool? Broken { get; set; }
     /// <summary>
-    /// Host part, as KSP's <c>Part.flightID</c>: matches <c>ShipMapPart.flightId</c>
+    /// Host part, as KSP's <c>Part.flightID</c>: matches <c>VesselSchematicPart.flightId</c>
     /// exactly, so a ledger row joins straight onto a part in the ship diagram.
     /// flightID and not the part name: the dev dump records its <c>_part</c> as
     /// a part name ("mk1pod.v2") for readability, which would collapse a vessel
@@ -627,7 +627,7 @@ public class KerbalismLifeSupport
     ///
     /// <para><b>Amounts and capacities are deliberately not here.</b>
     /// <c>vessel.resources</c> already carries them for every resource on the
-    /// vessel, and <c>ShipMapPart.resources</c> carries them per part. The rate
+    /// vessel, and <c>VesselSchematicPart.resources</c> carries them per part. The rate
     /// is the one number the generic path cannot derive, so it is the only one
     /// this channel adds.</para>
     ///

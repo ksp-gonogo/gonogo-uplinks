@@ -1,14 +1,14 @@
 {
   "_meta": {
     "synthetic": true,
-    "notes": "SYNTHETIC. One vessel, two contributors on one slot: the fuel tank (LiquidFuel/Oxidizer) gets its meters from the built-in contribution, the life support tank (Water/Food) from this Uplink's `ShipMap/partMeters.ts`. Both supplies carry flow-mode ordinal 3 (STACK_PRIORITY_SEARCH), which does not pool, so each earns a per-part meter; without an ordinal the contribution cannot tell pooling and draws nothing. The tank also carries this Uplink's fitted-process part-meta row (a running water recycler, `ShipMap/partMeta.ts`), which shows in the part tooltip. Food.amount is deliberately small (0.4) to catch a rounding-to-zero bug in the tooltip's meter label. Then the link drops: the transport disconnects after the scene is staged, so every reading this widget draws is held rather than current.",
-    "scenario": "supply-tank-meters-stopped-arriving"
+    "notes": "SYNTHETIC. One vessel, two contributors on one slot: the fuel tank (LiquidFuel/Oxidizer) gets its meters from the built-in contribution, the life support tank (Water/Food) from this Uplink's `VesselSchematic/partMeters.ts`. Both supplies carry flow-mode ordinal 3 (STACK_PRIORITY_SEARCH), which does not pool, so each earns a per-part meter; without an ordinal the contribution cannot tell pooling and draws nothing. The tank also carries this Uplink's fitted-process part-meta row (a running water recycler, `VesselSchematic/partMeta.ts`), which shows in the part tooltip. Food.amount is deliberately small (0.4) to catch a rounding-to-zero bug in the tooltip's meter label."
   },
   "_scene": {
-    "contribution": "kerbalism:ship-map-part-meters",
-    "hostWidget": "ship-map",
-    "caption": "The same tanks once the link drops",
+    "contribution": "kerbalism:vessel-schematic-part-meters",
+    "hostWidget": "vessel-schematic",
+    "caption": "Supply tank meters contributed into Vessel Schematic beside the built-in propellant meters, Food drained low enough to carry a status border",
     "modes": ["default"],
+    "hero": true,
     "size": {
       "w": 8,
       "h": 10
@@ -188,7 +188,6 @@
           "greenhouses": []
         }
       }
-    ],
-    "stopsArriving": true
+    ]
   }
 }

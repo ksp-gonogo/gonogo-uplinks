@@ -1400,34 +1400,6 @@
       "settings": []
     },
     {
-      "id": "kerbalism:ship-map-part-actions",
-      "contributes": "ship-map.part-actions",
-      "deps": [
-        "science.instruments"
-      ],
-      "requires": "kerbalism",
-      "settings": []
-    },
-    {
-      "id": "kerbalism:ship-map-part-meta",
-      "contributes": "ship-map.part-meta",
-      "deps": [
-        "kerbalism.lifesupport"
-      ],
-      "requires": "kerbalism",
-      "settings": []
-    },
-    {
-      "id": "kerbalism:ship-map-part-meters",
-      "contributes": "ship-map.part-meters",
-      "deps": [
-        "vessel.parts",
-        "kerbalism.profile"
-      ],
-      "requires": "kerbalism",
-      "settings": []
-    },
-    {
       "id": "kerbalism:ship-systems-badge",
       "contributes": "ship-systems.badges",
       "deps": [
@@ -1450,6 +1422,34 @@
       "contributes": "tracking-station.entities",
       "deps": [
         "kerbalism.spaceweather"
+      ],
+      "requires": "kerbalism",
+      "settings": []
+    },
+    {
+      "id": "kerbalism:vessel-schematic-part-actions",
+      "contributes": "vessel-schematic.part-actions",
+      "deps": [
+        "science.instruments"
+      ],
+      "requires": "kerbalism",
+      "settings": []
+    },
+    {
+      "id": "kerbalism:vessel-schematic-part-meta",
+      "contributes": "vessel-schematic.part-meta",
+      "deps": [
+        "kerbalism.lifesupport"
+      ],
+      "requires": "kerbalism",
+      "settings": []
+    },
+    {
+      "id": "kerbalism:vessel-schematic-part-meters",
+      "contributes": "vessel-schematic.part-meters",
+      "deps": [
+        "vessel.parts",
+        "kerbalism.profile"
       ],
       "requires": "kerbalism",
       "settings": []

@@ -26,10 +26,10 @@ namespace GonogoKosUplink.Tests
         [Fact]
         public void ParseTopics_TopicTagged_KeyedUnderTopic()
         {
-            var result = KosDataParser.ParseTopics("[KOSDATA:ship-map]parts=[];count=3[/KOSDATA]");
+            var result = KosDataParser.ParseTopics("[KOSDATA:vessel-schematic]parts=[];count=3[/KOSDATA]");
 
-            Assert.True(result.ContainsKey("ship-map"));
-            var fields = result["ship-map"];
+            Assert.True(result.ContainsKey("vessel-schematic"));
+            var fields = result["vessel-schematic"];
             Assert.Equal("[]", fields["parts"]);
             Assert.Equal(3.0, fields["count"]);
         }

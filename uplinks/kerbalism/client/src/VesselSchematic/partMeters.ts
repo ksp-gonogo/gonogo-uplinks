@@ -11,11 +11,11 @@ import { resourceFacts } from "../ecosystem.js";
 import { lastValue } from "../lastValue.js";
 import { KERBALISM } from "../uplink.js";
 
-// The Kerbalism half of the `ship-map.part-meters` self-contribution:
+// The Kerbalism half of the `vessel-schematic.part-meters` self-contribution:
 // supply-tank resources this
 // vessel carries, on the SAME slot the built-in `core` contribution feeds
 // its five classic drainable propellants into
-// (`packages/components/src/ShipMap/partMetersContribution.ts`). ShipMap
+// (`packages/components/src/VesselSchematic/partMetersContribution.ts`). VesselSchematic
 // itself has no idea which of these two contributed the entries it renders,
 // and doesn't need to.
 //
@@ -40,7 +40,7 @@ import { KERBALISM } from "../uplink.js";
 // that's confirmed live.
 // ---------------------------------------------------------------------------
 
-type PartMeterEntry = ContributionEntry<"ship-map.part-meters">;
+type PartMeterEntry = ContributionEntry<"vessel-schematic.part-meters">;
 
 /** Default "low" fraction when the profile declares no `lowThreshold` for a
  *  resource: mirrors the stock game's own convention, never invented to
@@ -121,7 +121,7 @@ export function computeKerbalismPartMeters(
 
 /**
  * One tank's amount on the arm the parts reading it came from arrived on, so
- * ShipMap can mark a held level rather than draw it as the tank now.
+ * VesselSchematic can mark a held level rather than draw it as the tank now.
  */
 function amountReading(
   parts: Reading<VesselParts | undefined>,
@@ -167,8 +167,8 @@ export function kerbalismPartMeterReadings(
 }
 
 KERBALISM.registerContribution({
-  id: "ship-map-part-meters",
-  contributes: "ship-map.part-meters",
+  id: "vessel-schematic-part-meters",
+  contributes: "vessel-schematic.part-meters",
   deps: ["vessel.parts", "kerbalism.profile"],
   requires: "kerbalism",
   compute: (topics) =>

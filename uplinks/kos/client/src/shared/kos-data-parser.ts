@@ -10,7 +10,7 @@
  * one wins. That matches the intended contract: scripts emit exactly one,
  * so if we see more than one the later one is always newer.
  *
- * Topics: blocks may optionally carry a topic id like `[KOSDATA:shipmap]...
+ * Topics: blocks may optionally carry a topic id like `[KOSDATA:vessel-schematic]...
  * [/KOSDATA]`, which multiplexes several feeds on one CPU's print stream.
  * `parseKosData` is the last-block contract: it ignores the topic and returns
  * the body of the last block found. `parseKosDataTopics` returns one entry
@@ -40,7 +40,7 @@ export type KosData = Record<string, KosDataValue>;
 export type KosScriptArg = number | string | boolean;
 
 /**
- * Group 1 = optional topic id (`shipmap` in `[KOSDATA:shipmap]`); undefined
+ * Group 1 = optional topic id (`vessel-schematic` in `[KOSDATA:vessel-schematic]`); undefined
  * for bare `[KOSDATA]`. Group 2 = body. Topic charset is `[\w-]` so script
  * authors can use kebab-case ids without clashing with `;` or `=` in the body.
  */

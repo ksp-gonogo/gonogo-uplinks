@@ -64,7 +64,7 @@ import { KERBALISM } from "../uplink.js";
 // practice) is skipped outright rather than drawn with a fabricated bearing.
 //
 // Colour: always the shared yellow token (`--color-tag-yellow-fg`, the same
-// one `ThermalStatus`'s "warm" state and `ShipMap`'s highlight already use),
+// one `ThermalStatus`'s "warm" state and `VesselSchematic`'s highlight already use),
 // deliberately distinct from the muted warning tokens and from the accent
 // green SystemView reserves for selection. `stormState`
 // distinguishes inbound (faint) from arrived (normal emphasis, the same

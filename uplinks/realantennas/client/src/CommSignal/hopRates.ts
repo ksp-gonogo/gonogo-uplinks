@@ -12,7 +12,7 @@ import { REALANTENNAS } from "../uplink.js";
 // renders (and flags the bottleneck) without ever importing backend-aware code
 // or naming RealAntennas: it only knows the slot id.
 //
-// This is the `ship-map.part-meters` pattern (a contribution whose `compute`
+// This is the `vessel-schematic.part-meters` pattern (a contribution whose `compute`
 // reads a live Topic and yields data), the reader for a channel that reached the
 // SDK end to end and then had nowhere to render. `requires: "realantennas"`
 // gates it on the Domain presence channel, so bare CommNet yields no
@@ -28,7 +28,7 @@ type HopRateEntry = ContributionEntry<"comm-signal.hop-rates">;
 /**
  * Pure core of the contribution, exported so a test can call it directly against
  * a plain `RealAntennasHopRate[]` fixture without going through the contribution
- * registry (mirrors the ShipMap contributions' export-the-pure-core pattern).
+ * registry (mirrors the VesselSchematic contributions' export-the-pure-core pattern).
  * `bitsPerSec` arrives hydrated as `Value<"bit/s">`; the entry carries its plain
  * magnitude so the schedule can compare rates for the bottleneck and wrap the
  * number in `<Unit>` itself.

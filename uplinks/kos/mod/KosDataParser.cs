@@ -29,7 +29,7 @@ namespace Gonogo.KosUplink
 
         private const char Esc = '\u001b';
 
-        // Group 1 = optional topic id ("shipmap" in [KOSDATA:shipmap]); group
+        // Group 1 = optional topic id ("vessel-schematic" in [KOSDATA:vessel-schematic]); group
         // 2 = body. Topic charset is [\w-] so kebab-case ids don't clash with
         // the body's ; or =. Mirrors the TS BLOCK_RE exactly.
         private static readonly Regex BlockRe = new Regex(

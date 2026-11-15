@@ -149,14 +149,14 @@ import "./SpaceWeather/badge.js";
 // one faint blob per active storm. SystemView itself stays in
 // @ksp-gonogo/components and has no idea Kerbalism exists.
 import "./SystemViewCme/contribution.js";
-// ShipMap's self-contribution: supply-tank part-meters and
+// VesselSchematic's self-contribution: supply-tank part-meters and
 // fitted-process part-meta, on the SAME two slots the built-in `core`
-// contribution feeds (`packages/components/src/ShipMap/
-// partMetersContribution.ts`). ShipMap itself stays in @ksp-gonogo/components;
+// contribution feeds (`packages/components/src/VesselSchematic/
+// partMetersContribution.ts`). VesselSchematic itself stays in @ksp-gonogo/components;
 // only these two Kerbalism-derived contributions live here.
-import "./ShipMap/partActions.js";
-import "./ShipMap/partMeta.js";
-import "./ShipMap/partMeters.js";
+import "./VesselSchematic/partActions.js";
+import "./VesselSchematic/partMeta.js";
+import "./VesselSchematic/partMeters.js";
 // ResourceOps' filter slot: Kerbalism's per-process axis over its own
 // converter list, contributed because Kerbalism is the only party that knows
 // which process each row is (see ./ResourceOps/processFilters.ts for what it
@@ -217,7 +217,7 @@ export type {
 // shapes, no React and no KSP, so a widget calls them and so does a test.
 // Exported rather than kept private because the graph is the interesting part
 // of this Domain and more than one surface wants it (the life-support ledger,
-// the ecosystem view, and ShipMap's per-part resource meters).
+// the ecosystem view, and VesselSchematic's per-part resource meters).
 export {
   buildGraph,
   buildLedger,

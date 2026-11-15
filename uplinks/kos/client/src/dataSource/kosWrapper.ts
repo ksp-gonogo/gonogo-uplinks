@@ -10,13 +10,13 @@ import type { KosManagedScript } from "../shared/ScriptableDataSource.js";
  *
  * Wire cost: the bundled body is embedded in the wrapper text every
  * dispatch, so every executeScript pays the body's byte cost on the
- * wire. For ShipMap (~5KB) at command-mode dispatch rates that's
+ * wire. For VesselSchematic (~5KB) at command-mode dispatch rates that's
  * negligible; if interval-mode kOS widgets ever push this past a
  * problem, switch to a session-level "we synced this version already"
  * cache.
  */
 export interface BuildKosWrapperOptions {
-  /** Target kerboscript path on the kOS volume, e.g. "0:/widget_scripts/shipmap.ks". */
+  /** Target kerboscript path on the kOS volume, e.g. "0:/widget_scripts/vessel-schematic.ks". */
   path: string;
   /** Bundled script body (the same text users used to copy-paste). */
   body: string;
