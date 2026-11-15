@@ -224,6 +224,13 @@ namespace Gonogo.KerbalismUplink
         }
 
         /// <summary>
+        /// True once Kerbalism's assembly is loaded and its API type resolved,
+        /// whether or not Kerbalism has set itself up for the loaded game. Asks
+        /// again on each call until it is, as <see cref="IsAvailable"/> does.
+        /// </summary>
+        public bool IsLoaded => _gate.Resolve()?._apiType != null;
+
+        /// <summary>
         /// True once Kerbalism's assembly is loaded, its API type resolved, and
         /// Kerbalism has set itself up for the loaded game (see
         /// <see cref="KerbalismReadiness"/>). Asks again on each call until it is,

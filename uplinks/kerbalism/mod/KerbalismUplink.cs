@@ -682,14 +682,7 @@ namespace Gonogo.KerbalismUplink
 
         public ModSettingValue ReadModSetting(string id) => _modSettings.ReadModSetting(id);
 
-        public UplinkHealth Health()
-        {
-            if (!_k.IsAvailable)
-            {
-                return new UplinkHealth(UplinkHealthState.Unavailable, "Kerbalism assembly not loaded");
-            }
-            return UplinkHealth.Healthy;
-        }
+        public UplinkHealth Health() => KerbalismHealth.For(_k.IsLoaded, _k.IsAvailable);
 
         /// <summary>Plain cross-thread bundle: no live KSP references.</summary>
         internal sealed class KerbalismCaptured
