@@ -1,0 +1,19 @@
+{
+  "id": "scansat",
+  "name": "SCANsat",
+  "description": "Brings [SCANsat](https://github.com/S-C-A-N/SCANsat)'s orbital survey data onto the mission-control dashboard: what has been scanned, by which craft, and where the anomalies are.",
+  "author": "jpeps",
+  "repo": "https://github.com/ksp-gonogo/gonogo-uplinks",
+  "mod": {
+    "name": "SCANsat",
+    "builtAgainst": "21.1"
+  },
+  "version": "1.0.0-rc.8",
+  "minAppVersion": "0.0.0",
+  "apiVersion": "6.0.0",
+  "contractMajor": 52,
+  "contractMinor": 2,
+  "bundleUrl": "scansat/scansat.client.js",
+  "integrity": "sha256-427db91124705b5015d062aa4b0c81f630dacaede336641c2b82c00ea28f2296",
+  "sdkVersion": "0.0.1"
+}
