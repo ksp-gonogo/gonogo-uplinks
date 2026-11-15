@@ -11,6 +11,7 @@
     "tier": "ckan",
     "ckan": "RealAntennas",
     "builtAgainst": "2.11.1.0",
+    "ckanVersion": "v2.11.1.0",
     "channels": [{ "ckan": "RealAntennas" }, { "github": "KSP-RO/RealAntennas" }]
   },
   "codegen": {
