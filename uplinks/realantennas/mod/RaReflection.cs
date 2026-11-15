@@ -44,7 +44,7 @@ namespace Gonogo.RealAntennasUplink
         // resolve-either-kind helper keyed by (type, name) is simpler than a
         // PropertyInfo per member. Main-thread only (capture-on-main), so a plain
         // Dictionary needs no synchronisation.
-        private readonly Dictionary<string, MemberInfo?> _memberCache = new Dictionary<string, MemberInfo?>();
+        private readonly Dictionary<Type, Dictionary<string, MemberInfo?>> _memberCache = new Dictionary<Type, Dictionary<string, MemberInfo?>>();
 
         // RealAntenna public link-budget property inputs (§4.3).
         private readonly PropertyInfo? _gain;
@@ -182,6 +182,10 @@ namespace Gonogo.RealAntennasUplink
         /// </summary>
         public double? RequiredEbN0Db(object antenna) => ReadDoubleMember(antenna, "RequiredCI");
 
+        /// <summary>RealAntennas' receiver noise call, looked up on first use. Main thread only.</summary>
+        private MethodInfo? _antennaMicrowaveTemp;
+        private bool _antennaMicrowaveTempSought;
+
         /// <summary>
         /// The receiver's own noise temperature in kelvin as RealAntennas takes it
         /// when it solves a link (<c>Physics.AntennaMicrowaveTemp</c>): the tech
@@ -193,12 +197,16 @@ namespace Gonogo.RealAntennasUplink
         {
             try
             {
-                var realAntenna = SafeGetType("RealAntennas.RealAntenna");
-                var method = realAntenna == null
-                    ? null
-                    : SafeGetType("RealAntennas.Physics")?.GetMethod(
-                        "AntennaMicrowaveTemp", BindingFlags.Public | BindingFlags.Static, null, new[] { realAntenna }, null);
-                var read = method?.Invoke(null, new[] { antenna });
+                if (!_antennaMicrowaveTempSought)
+                {
+                    var realAntenna = SafeGetType("RealAntennas.RealAntenna");
+                    _antennaMicrowaveTemp = realAntenna == null
+                        ? null
+                        : SafeGetType("RealAntennas.Physics")?.GetMethod(
+                            "AntennaMicrowaveTemp", BindingFlags.Public | BindingFlags.Static, null, new[] { realAntenna }, null);
+                    _antennaMicrowaveTempSought = true;
+                }
+                var read = _antennaMicrowaveTemp?.Invoke(null, new[] { antenna });
                 if (read is float f)
                 {
                     return f;
@@ -387,6 +395,21 @@ namespace Gonogo.RealAntennasUplink
             return name != null && !name.Equals("Omni", StringComparison.Ordinal);
         }
 
+        /// <summary>The encoder the antenna is pinned to by name (<c>RealAntenna.EncoderOverride</c>), or null when it takes its tech level's.</summary>
+        public string? EncoderOverride(object antenna) => ReadMember(antenna, "EncoderOverride") as string;
+
+        /// <summary>The antenna's own noise temperature setting in kelvin (<c>RealAntenna.AMWTemp</c>), or null.</summary>
+        public double? AmwTemp(object antenna) => ReadDoubleMember(antenna, "AMWTemp");
+
+        /// <summary>The antenna's band object (<c>RealAntenna.RFBand</c>), for telling one band from another by identity.</summary>
+        public object? Band(object antenna) => ReadMember(antenna, "RFBand");
+
+        /// <summary>The antenna's tech level object (<c>RealAntenna.TechLevelInfo</c>), for telling one level from another by identity.</summary>
+        public object? TechLevelInfo(object antenna) => ReadMember(antenna, "TechLevelInfo");
+
+        /// <summary>The antenna's modulator object (<c>RealAntennaDigital.modulator</c>), or null for an antenna with none.</summary>
+        public object? Modulator(object antenna) => ReadMember(antenna, "modulator");
+
         /// <summary>
         /// Whether the antenna currently holds a target:
         /// <c>RealAntenna.CanTarget</c>, renamed. Null when unreadable.
@@ -473,6 +496,10 @@ namespace Gonogo.RealAntennasUplink
         /// <summary>An <c>OrbitRelative</c> target's deflection from prograde (degrees).</summary>
         public double? TargetForward(object? target) => ReadDoubleMember(target, "forward");
 
+        /// <summary>RealAntennas' relay tech level field, looked up on first use. Main thread only.</summary>
+        private FieldInfo? _minRelayTl;
+        private bool _minRelayTlSought;
+
         /// <summary>
         /// The lowest antenna tech level RealAntennas lets carry another craft's
         /// traffic (<c>RACommNetScenario.minRelayTL</c>), or null when it will not read.
@@ -481,9 +508,13 @@ namespace Gonogo.RealAntennasUplink
         {
             try
             {
-                return SafeGetType("RealAntennas.RACommNetScenario")
-                    ?.GetField("minRelayTL", BindingFlags.Public | BindingFlags.Static)
-                    ?.GetValue(null) as int?;
+                if (!_minRelayTlSought)
+                {
+                    _minRelayTl = SafeGetType("RealAntennas.RACommNetScenario")
+                        ?.GetField("minRelayTL", BindingFlags.Public | BindingFlags.Static);
+                    _minRelayTlSought = true;
+                }
+                return _minRelayTl?.GetValue(null) as int?;
             }
             catch (Exception)
             {
@@ -660,6 +691,9 @@ namespace Gonogo.RealAntennasUplink
         /// <summary>Whether RealAntennas' assembly is loaded, the election gate (§2.2/§4.2).</summary>
         public bool IsAvailable => _raAssembly != null;
 
+        /// <summary>The reads over <paramref name="assembly"/>, for an assembly that carries RealAntennas' type names without being loaded under its name.</summary>
+        internal static RaReflection ForAssembly(Assembly assembly) => new RaReflection(assembly);
+
         /// <summary>
         /// Probe for the loaded RealAntennas assembly. Returns null when RA is not
         /// installed/loaded: the caller then never registers the RA comms provider,
@@ -731,13 +765,17 @@ namespace Gonogo.RealAntennasUplink
             try
             {
                 var type = target.GetType();
-                var key = type.FullName + "|" + name;
-                if (!_memberCache.TryGetValue(key, out var member))
+                if (!_memberCache.TryGetValue(type, out var members))
+                {
+                    members = new Dictionary<string, MemberInfo?>(StringComparer.Ordinal);
+                    _memberCache[type] = members;
+                }
+                if (!members.TryGetValue(name, out var member))
                 {
                     member =
                         (MemberInfo?)type.GetProperty(name, BindingFlags.Public | BindingFlags.Instance)
                         ?? type.GetField(name, BindingFlags.Public | BindingFlags.Instance);
-                    _memberCache[key] = member;
+                    members[name] = member;
                 }
                 return member switch
                 {

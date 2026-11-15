@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using Sitrep.Contract;
-using CommNet;
 
 namespace Gonogo.RealAntennasUplink
 {
@@ -83,77 +82,52 @@ namespace Gonogo.RealAntennasUplink
         /// case apart from a failed read: both come back as no solvable budget.
         /// Saying so is honest; guessing which one it was is not.</para>
         /// </summary>
-        internal static ICommsReachModel Between(RaReflection? ra, CommNode? from, CommNode? to)
+        /// <param name="from">One end's antennas as the plan read them, or null when they would not read.</param>
+        /// <param name="to">The other end's.</param>
+        internal static ICommsReachModel Between(
+            IReadOnlyList<RaPlannedAntenna>? from, IReadOnlyList<RaPlannedAntenna>? to, bool? fromHasCharge, bool? toHasCharge) =>
+            WithPower(BudgetReach(from, to), fromHasCharge, toHasCharge);
+
+        /// <summary>
+        /// The pair's reach from its antennas alone, whatever charge either end
+        /// holds: a function of the two lists and nothing else, so it stands for
+        /// as long as both lists do.
+        /// </summary>
+        internal static ICommsReachModel BudgetReach(IReadOnlyList<RaPlannedAntenna>? from, IReadOnlyList<RaPlannedAntenna>? to)
         {
-            if (ra == null)
+            if (from == null || to == null || from.Count == 0 || to.Count == 0)
             {
                 return CommsReachModels.Unknown;
             }
 
-            try
-            {
-                var fromCharge = ra.NodeHasCharge(from);
-                var toCharge = ra.NodeHasCharge(to);
-                return WithPower(BudgetReach(ra, from, to), fromCharge, toCharge);
-            }
-            catch (Exception)
+            var forward = BestDirection(from, to);
+            var reverse = BestDirection(to, from);
+            if (forward == null || reverse == null)
             {
                 return CommsReachModels.Unknown;
             }
-        }
 
-        private static ICommsReachModel BudgetReach(RaReflection ra, CommNode? from, CommNode? to)
-        {
-            try
-            {
-                var fromAntennas = ra.NodeAntennas(from);
-                var toAntennas = ra.NodeAntennas(to);
-                if (fromAntennas.Count == 0 || toAntennas.Count == 0)
-                {
-                    return CommsReachModels.Unknown;
-                }
-
-                var forward = BestDirection(ra, fromAntennas, toAntennas);
-                var reverse = BestDirection(ra, toAntennas, fromAntennas);
-                if (forward == null || reverse == null)
-                {
-                    return CommsReachModels.Unknown;
-                }
-
-                var limiting = Math.Min(forward.Value, reverse.Value);
-                return new MaxRangeReachModel(ModelId, ModelName, limiting);
-            }
-            catch (Exception)
-            {
-                return CommsReachModels.Unknown;
-            }
+            var limiting = Math.Min(forward.Value, reverse.Value);
+            return new MaxRangeReachModel(ModelId, ModelName, limiting);
         }
 
         /// <summary>
         /// The furthest-reaching transmit/receive antenna pairing in one
         /// direction, or null when no pairing yields a solvable budget.
         /// </summary>
-        private static double? BestDirection(
-            RaReflection ra,
-            IReadOnlyList<object> transmitters,
-            IReadOnlyList<object> receivers)
+        private static double? BestDirection(IReadOnlyList<RaPlannedAntenna> transmitters, IReadOnlyList<RaPlannedAntenna> receivers)
         {
             double? best = null;
             foreach (var tx in transmitters)
             {
-                var txPower = ra.TxPower(tx);
-                var txGain = ra.Gain(tx);
-                var frequency = ra.Frequency(tx);
-                var symbolRate = ra.SymbolRate(tx);
-                if (txPower == null || txGain == null || frequency == null || symbolRate == null)
+                if (tx.TxPowerDbm == null || tx.GainDbi == null || tx.FrequencyHz == null || tx.SymbolRateHz == null)
                 {
                     continue;
                 }
 
                 foreach (var rx in receivers)
                 {
-                    var rxGain = ra.Gain(rx);
-                    if (rxGain == null)
+                    if (rx.GainDbi == null)
                     {
                         continue;
                     }
@@ -163,25 +137,27 @@ namespace Gonogo.RealAntennasUplink
                     // than removing the rule.
                     // RealAntennas keeps a link by stepping its symbol rate down, so the
                     // pair reaches as far as the slowest rate both ends can run closes.
-                    var rxRate = ra.SymbolRate(rx);
                     var slowest = RaRateLadder.SlowestCommonSymbolRate(
-                        symbolRate, ra.MinSymbolRate(tx), rxRate ?? symbolRate, rxRate == null ? ra.MinSymbolRate(tx) : ra.MinSymbolRate(rx));
+                        tx.SymbolRateHz,
+                        tx.MinSymbolRateHz,
+                        rx.SymbolRateHz ?? tx.SymbolRateHz,
+                        rx.SymbolRateHz == null ? tx.MinSymbolRateHz : rx.MinSymbolRateHz);
                     if (slowest == null)
                     {
                         continue;
                     }
                     // The pair talks through the lower-level encoder of the two.
-                    var txLevel = ra.EncoderTechLevel(tx);
-                    var rxLevel = ra.EncoderTechLevel(rx);
-                    var encoderEnd = txLevel != null && rxLevel != null && rxLevel.Value < txLevel.Value ? rx : tx;
+                    var encoderEnd = tx.EncoderTechLevel != null && rx.EncoderTechLevel != null && rx.EncoderTechLevel.Value < tx.EncoderTechLevel.Value
+                        ? rx
+                        : tx;
                     var range = RaLinkBudget.MaxRangeMeters(
-                        txPower.Value,
-                        txGain.Value,
-                        rxGain.Value,
-                        frequency.Value,
-                        ra.NoiseTemperatureKelvin(rx) ?? DefaultReceiverNoiseTempKelvin,
+                        tx.TxPowerDbm.Value,
+                        tx.GainDbi.Value,
+                        rx.GainDbi.Value,
+                        tx.FrequencyHz.Value,
+                        rx.NoiseTemperatureKelvin ?? DefaultReceiverNoiseTempKelvin,
                         slowest.Value,
-                        ra.EncoderRequiredEbN0Db(encoderEnd) ?? ra.RequiredEbN0Db(rx) ?? DefaultRequiredEbN0Db);
+                        encoderEnd.EncoderRequiredEbN0Db ?? rx.RequiredEbN0Db ?? DefaultRequiredEbN0Db);
 
                     if (range != null && (best == null || range.Value > best.Value))
                     {

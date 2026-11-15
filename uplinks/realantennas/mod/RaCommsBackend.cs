@@ -41,9 +41,24 @@ namespace Gonogo.RealAntennasUplink
         private readonly System.Collections.Concurrent.ConcurrentDictionary<string, IReadOnlyList<RaPlannedAntenna>> _rosterAntennas =
             new System.Collections.Concurrent.ConcurrentDictionary<string, IReadOnlyList<RaPlannedAntenna>>(StringComparer.Ordinal);
 
-        /// <summary>The antennas read at one instant, so the many pairs a capture asks about one node read it once.</summary>
-        private readonly Dictionary<CommNode, List<RaPlannedAntenna>?> _plannedAt = new Dictionary<CommNode, List<RaPlannedAntenna>?>();
-        private double _plannedUt = double.NaN;
+        /// <summary>Each node's antennas, read again only when RealAntennas has changed one.</summary>
+        private readonly RaPlannedAntennas _planned;
+
+        /// <summary>
+        /// Each pair's reach from its antennas alone, by the two lists it was
+        /// worked from. A list is replaced whenever its node changes, so an entry
+        /// can never answer for antennas other than the ones it was made of, and
+        /// the whole map is dropped at the next full read so it holds no list
+        /// longer than that.
+        /// </summary>
+        private readonly Dictionary<(List<RaPlannedAntenna>, List<RaPlannedAntenna>), ICommsReachModel> _reach =
+            new Dictionary<(List<RaPlannedAntenna>, List<RaPlannedAntenna>), ICommsReachModel>();
+        private long _reachReads;
+
+        /// <summary>What is read of the game once per frame and shared by every ask in it: who owns each node, and which nodes hold charge.</summary>
+        private readonly Dictionary<CommNode, Vessel> _owners = new Dictionary<CommNode, Vessel>();
+        private readonly Dictionary<CommNode, bool?> _charge = new Dictionary<CommNode, bool?>();
+        private long _factsAt = long.MinValue;
 
         /// <summary>The bodies read at one instant, shared by every model made at it. Nothing that holds the list changes it.</summary>
         private List<RaOccluder>? _occludersAt;
@@ -63,6 +78,7 @@ namespace Gonogo.RealAntennasUplink
             _kernel = kernel;
             _retargets = retargets;
             _turner = turner;
+            _planned = new RaPlannedAntennas(ra, new NodeFacts(this), (key, antennas) => _rosterAntennas[key] = antennas);
         }
 
         public RaCommsBackend(RaReflection ra, Kernel? kernel = null)
@@ -234,7 +250,121 @@ namespace Gonogo.RealAntennasUplink
         /// install, which is what asking the seam instead of core fixes).
         /// </summary>
         public override ICommsReachModel ReachModel(CommsNodeHandle? from, CommsNodeHandle? to)
-            => RaReach.Between(_ra, from?.As<CommNode>(), to?.As<CommNode>());
+        {
+            try
+            {
+                var fromNode = from?.As<CommNode>();
+                var toNode = to?.As<CommNode>();
+                return RaReach.WithPower(BudgetReach(Planned(fromNode), Planned(toNode)), HasCharge(fromNode), HasCharge(toNode));
+            }
+            catch (Exception)
+            {
+                return CommsReachModels.Unknown;
+            }
+        }
+
+        private ICommsReachModel BudgetReach(List<RaPlannedAntenna>? from, List<RaPlannedAntenna>? to)
+        {
+            if (from == null || to == null)
+            {
+                return CommsReachModels.Unknown;
+            }
+            if (_planned.Reads != _reachReads)
+            {
+                _reach.Clear();
+                _reachReads = _planned.Reads;
+            }
+            if (!_reach.TryGetValue((from, to), out var reach))
+            {
+                reach = RaReach.BudgetReach(from, to);
+                _reach[(from, to)] = reach;
+            }
+            return reach;
+        }
+
+        /// <summary>The frame, which is the finest step the game changes in: two asks in one frame are answered from one read.</summary>
+        private long Now()
+        {
+            var frame = (long)UnityEngine.Time.frameCount;
+            if (frame != _factsAt)
+            {
+                _factsAt = frame;
+                _owners.Clear();
+                _charge.Clear();
+                var vessels = FlightGlobals.Vessels;
+                if (vessels != null)
+                {
+                    foreach (var candidate in vessels)
+                    {
+                        var conn = candidate?.connection;
+                        var comm = conn != null ? conn.Comm : null;
+                        // The first vessel that holds a node owns it, as a walk of the list would find.
+                        if (comm != null && !_owners.ContainsKey(comm))
+                        {
+                            _owners[comm] = candidate!;
+                        }
+                    }
+                }
+            }
+            return frame;
+        }
+
+        private Vessel? OwnerOf(CommNode node)
+        {
+            Now();
+            return _owners.TryGetValue(node, out var vessel) ? vessel : null;
+        }
+
+        private bool? HasCharge(CommNode? node)
+        {
+            if (node == null)
+            {
+                return _ra.NodeHasCharge(null);
+            }
+            Now();
+            if (!_charge.TryGetValue(node, out var charge))
+            {
+                charge = _ra.NodeHasCharge(node);
+                _charge[node] = charge;
+            }
+            return charge;
+        }
+
+        /// <summary>The game's half of the antenna read.</summary>
+        private sealed class NodeFacts : IRaNodeFacts
+        {
+            private readonly RaCommsBackend _backend;
+
+            public NodeFacts(RaCommsBackend backend)
+            {
+                _backend = backend;
+            }
+
+            public string? VesselNodeId(object node) =>
+                node is CommNode comm && _backend.OwnerOf(comm) is Vessel vessel ? "vessel:" + vessel.id : null;
+
+            public string? GroundKey(object node) =>
+                node is CommNode comm && comm.isHome ? "ground:" + NodeDisplayName(comm) : null;
+
+            public (uint Part, int Ordinal)?[] PartIds(object node, IReadOnlyList<object> antennas) =>
+                RaPartIds.Of(_backend._ra, node is CommNode comm ? _backend.OwnerOf(comm) : null, antennas);
+
+            public int? GroundBodyIndex(object node)
+            {
+                if (!(node is CommNode comm) || !comm.isHome)
+                {
+                    return null;
+                }
+                var home = FlightGlobals.GetHomeBody();
+                return home == null ? (int?)null : FlightGlobals.Bodies?.IndexOf(home);
+            }
+
+            public (int Index, double RadiusMeters)? Body(string? name)
+            {
+                var body = FlightGlobals.Bodies?.Find(b => b != null && b.bodyName == name);
+                return body == null ? ((int, double)?)null : (FlightGlobals.Bodies!.IndexOf(body), body.Radius);
+            }
+        }
 
         /// <summary>
         /// The pair's link as RA would close it, from every antenna's figures and
@@ -248,12 +378,12 @@ namespace Gonogo.RealAntennasUplink
             var fromNode = from?.As<CommNode>();
             var toNode = to?.As<CommNode>();
             // The plan leaves the pair to the reach rule, which says no reach and why, rather than model a link nothing powers.
-            if (RaReach.AnEndIsUnpowered(_ra.NodeHasCharge(fromNode), _ra.NodeHasCharge(toNode)))
+            if (RaReach.AnEndIsUnpowered(HasCharge(fromNode), HasCharge(toNode)))
             {
                 return null;
             }
-            var fromAntennas = Planned(fromNode, ut);
-            var toAntennas = Planned(toNode, ut);
+            var fromAntennas = Planned(fromNode);
+            var toAntennas = Planned(toNode);
             return fromAntennas == null || toAntennas == null || fromAntennas.Count == 0 || toAntennas.Count == 0
                 ? null
                 : new RaContactLinkModel(
@@ -306,8 +436,8 @@ namespace Gonogo.RealAntennasUplink
         /// </summary>
         public IContactLinkStrength? LinkStrength(CommsNodeHandle? from, CommsNodeHandle? to, double ut)
         {
-            var fromAntennas = Planned(from?.As<CommNode>(), ut);
-            var toAntennas = Planned(to?.As<CommNode>(), ut);
+            var fromAntennas = Planned(from?.As<CommNode>());
+            var toAntennas = Planned(to?.As<CommNode>());
             return fromAntennas == null || toAntennas == null || fromAntennas.Count == 0 || toAntennas.Count == 0
                 ? null
                 : new RaLinkStrength(fromAntennas, toAntennas);
@@ -322,117 +452,7 @@ namespace Gonogo.RealAntennasUplink
         public IContactLinkModel? RestoreLinkModel(string modelId, IReadOnlyDictionary<string, object?> data) =>
             modelId == RaContactLinkModel.Model ? RaContactLinkModel.From(data) : null;
 
-        private List<RaPlannedAntenna>? Planned(CommNode? commNode, double ut)
-        {
-            if (commNode == null)
-            {
-                return null;
-            }
-            if (ut != _plannedUt)
-            {
-                _plannedAt.Clear();
-                _plannedUt = ut;
-            }
-            if (_plannedAt.TryGetValue(commNode, out var cached))
-            {
-                return cached;
-            }
-            var read = ReadPlanned(commNode);
-            _plannedAt[commNode] = read;
-            return read;
-        }
-
-        private List<RaPlannedAntenna>? ReadPlanned(CommNode node)
-        {
-            var planned = new List<RaPlannedAntenna>();
-            var index = 0;
-            var antennas = _ra.NodeAntennas(node);
-            var vessel = ResolveOwningVessel(node);
-            var nodeId = vessel == null ? null : "vessel:" + vessel.id;
-            var parts = vessel == null ? null : RaPartIds.Of(_ra, vessel, antennas);
-            foreach (var antenna in antennas)
-            {
-                var one = new RaPlannedAntenna
-                {
-                    Id = index++.ToString(),
-                    Steerable = _ra.Steerable(antenna) == true,
-                    BeamwidthRadians = _ra.Beamwidth(antenna) * (Math.PI / 180.0),
-                    Band = _ra.BandName(antenna),
-                    TxPowerDbm = _ra.TxPower(antenna),
-                    GainDbi = _ra.Gain(antenna),
-                    FrequencyHz = _ra.Frequency(antenna),
-                    SymbolRateHz = _ra.SymbolRate(antenna),
-                    NoiseTemperatureKelvin = _ra.NoiseTemperatureKelvin(antenna),
-                    RequiredEbN0Db = _ra.RequiredEbN0Db(antenna),
-                    MinSymbolRateHz = _ra.MinSymbolRate(antenna),
-                    ModulationBits = _ra.ModulationBits(antenna),
-                    TechLevel = _ra.TechLevel(antenna),
-                    EncoderName = _ra.EncoderName(antenna),
-                    EncoderTechLevel = _ra.EncoderTechLevel(antenna),
-                    CodingRate = _ra.CodingRate(antenna),
-                    EncoderRequiredEbN0Db = _ra.EncoderRequiredEbN0Db(antenna),
-                    PowerDrawEc = _ra.PowerDrawEcPerSecond(antenna),
-                    AimLabel = _ra.Target(antenna)?.ToString(),
-                };
-                var part = parts?[planned.Count];
-                if (nodeId != null && part != null && one.Steerable)
-                {
-                    one.DishId = RaDishIds.Of(nodeId, part.Value.Part, part.Value.Ordinal);
-                }
-                Aim(_ra.Target(antenna), one);
-                if (node.isHome)
-                {
-                    var home = FlightGlobals.GetHomeBody();
-                    one.GroundBodyIndex = home == null ? (int?)null : FlightGlobals.Bodies?.IndexOf(home);
-                }
-                planned.Add(one);
-            }
-            if (nodeId != null)
-            {
-                _rosterAntennas[nodeId] = planned;
-            }
-            else if (node.isHome)
-            {
-                _rosterAntennas["ground:" + NodeDisplayName(node)] = planned;
-            }
-            return planned;
-        }
-
-        /// <summary>Fills in where <paramref name="antenna"/> points, <see cref="RaAimKind.Unplaced"/> for an aim the plan cannot place.</summary>
-        private void Aim(object? target, RaPlannedAntenna antenna)
-        {
-            antenna.Aim = RaAimKind.Unplaced;
-            if (target == null || !antenna.Steerable)
-            {
-                antenna.Aim = RaAimKind.Untargeted;
-                return;
-            }
-            switch (_ra.TargetKind(target))
-            {
-                case "Vessel":
-                    if (!Guid.TryParse(_ra.TargetVesselId(target), out var guid))
-                    {
-                        return;
-                    }
-                    antenna.Aim = RaAimKind.Vessel;
-                    antenna.AimNodeId = "vessel:" + guid;
-                    return;
-                case "BodyLatLonAlt":
-                    var name = _ra.TargetBodyName(target);
-                    var body = FlightGlobals.Bodies?.Find(b => b != null && b.bodyName == name);
-                    var altitude = _ra.TargetLatLonAlt(target).Altitude;
-                    // RA stores a body-centre aim as the point one radius below the surface.
-                    if (body == null || altitude == null || Math.Abs(altitude.Value + body.Radius) > 1.0)
-                    {
-                        return;
-                    }
-                    antenna.Aim = RaAimKind.BodyCentre;
-                    antenna.AimBodyIndex = FlightGlobals.Bodies!.IndexOf(body);
-                    return;
-                default:
-                    return;
-            }
-        }
+        private List<RaPlannedAntenna>? Planned(CommNode? commNode) => _planned.Of(commNode, Now())?.Planned;
 
         // ── Turning an idle dish ──────────────────────────────────────────
 
@@ -444,16 +464,14 @@ namespace Gonogo.RealAntennasUplink
         /// </summary>
         public IRetargetModel? RetargetModel(CommsNodeHandle? node, double ut)
         {
-            var commNode = node?.As<CommNode>();
-            var planned = Planned(commNode, ut);
-            var nodeId = commNode != null && ResolveOwningVessel(commNode) is Vessel vessel ? "vessel:" + vessel.id : null;
-            if (planned == null || nodeId == null || _retargets == null)
+            var read = _planned.Of(node?.As<CommNode>(), Now());
+            if (read == null || read.NodeId == null || _retargets == null)
             {
                 return null;
             }
             return new RaRetargetModel(
-                nodeId,
-                planned,
+                read.NodeId,
+                read.Planned,
                 id => _rosterAntennas.TryGetValue(id, out var antennas) ? antennas : null,
                 id => AutoRetargetAllowed(id),
                 occluders: Occluders(ut));
@@ -485,11 +503,20 @@ namespace Gonogo.RealAntennasUplink
             return false;
         }
 
-        public string? TurnDish(string nodeId, string dishId, string peerId, double ut) =>
-            _turner?.Invoke()?.Turn(nodeId, dishId, peerId, ut);
+        public string? TurnDish(string nodeId, string dishId, string peerId, double ut)
+        {
+            var record = _turner?.Invoke()?.Turn(nodeId, dishId, peerId, ut);
+            // A turn changes an aim inside the frame, so an ask later in the same frame is not answered from before it.
+            _planned.CheckAgain();
+            return record;
+        }
 
-        public bool RestoreDish(string recordId, double ut) =>
-            _turner?.Invoke()?.Restore(recordId, ut) ?? true;
+        public bool RestoreDish(string recordId, double ut)
+        {
+            var settled = _turner?.Invoke()?.Restore(recordId, ut) ?? true;
+            _planned.CheckAgain();
+            return settled;
+        }
 
         /// <summary>
         /// RA's occlusion geometry: the bare body radius, no multiplier (see
