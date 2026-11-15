@@ -11,6 +11,7 @@
     "tier": "ckan",
     "ckan": "RealFuels",
     "builtAgainst": "15.15.0",
+    "ckanVersion": "1:v15.15.0.0",
     "assembly": "RealFuels/Plugins/RealFuels.dll",
     "channels": [{ "ckan": "RealFuels" }, { "github": "KSP-RO/RealFuels" }]
   },
