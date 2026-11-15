@@ -5,9 +5,9 @@ using Xunit;
 namespace GonogoKerbalismUplink.Tests
 {
     /// <summary>
-    /// The Uplink is unavailable until Kerbalism is both loaded and set up for the
-    /// loaded game, and says which of the two it is waiting on, so a loaded
-    /// Kerbalism that has not set up is not reported as missing.
+    /// The Uplink is unavailable while Kerbalism's assembly is missing and starting
+    /// while Kerbalism sets itself up for the loaded game, so a loaded Kerbalism that
+    /// has not set up is neither reported as missing nor has its client refused.
     /// </summary>
     public class KerbalismHealthTests
     {
@@ -21,11 +21,11 @@ namespace GonogoKerbalismUplink.Tests
         }
 
         [Fact]
-        public void SaysKerbalismHasNotSetUpWhenItIsLoadedButNotReady()
+        public void IsStartingWhileKerbalismIsLoadedButNotReady()
         {
             var health = KerbalismHealth.For(loaded: true, available: false);
 
-            Assert.Equal(UplinkHealthState.Unavailable, health.State);
+            Assert.Equal(UplinkHealthState.Starting, health.State);
             Assert.Equal("Kerbalism hasn't finished loading.", health.Detail);
         }
 

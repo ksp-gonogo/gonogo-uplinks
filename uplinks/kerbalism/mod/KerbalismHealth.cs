@@ -4,8 +4,9 @@ namespace Gonogo.KerbalismUplink
 {
     /// <summary>
     /// The Uplink's health from whether Kerbalism's assembly is loaded and whether
-    /// Kerbalism can be asked: unavailable until both hold, saying which of the two
-    /// it is waiting on.
+    /// Kerbalism can be asked: unavailable while the assembly is missing, starting
+    /// while Kerbalism is loaded and setting itself up for the game, healthy once
+    /// both hold.
     /// </summary>
     public static class KerbalismHealth
     {
@@ -19,7 +20,7 @@ namespace Gonogo.KerbalismUplink
             }
             if (!available)
             {
-                return new UplinkHealth(UplinkHealthState.Unavailable, "Kerbalism hasn't finished loading.");
+                return UplinkHealth.Starting("Kerbalism hasn't finished loading.");
             }
             return UplinkHealth.Healthy;
         }
