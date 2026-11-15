@@ -20,6 +20,12 @@ namespace Gonogo.KerbalismUplink
     ///
     /// <para>A Kerbalism build that does not carry the members read here cannot
     /// say whether it is set up, so it is asked only once the scene stands.</para>
+    ///
+    /// <para>The game only creates that scenario in sandbox, science, career and
+    /// mission games. In any other game, such as one of its built-in scenarios
+    /// or tutorials, the scenario never loads, so Kerbalism is never set up and
+    /// whatever it holds from a game loaded earlier belongs to that game: see
+    /// <see cref="IsMissingFromGame"/>.</para>
     /// </summary>
     public sealed class KerbalismReadiness
     {
@@ -29,17 +35,40 @@ namespace Gonogo.KerbalismUplink
         private readonly Func<bool>? _saveInitDone;
         private readonly FieldInfo? _suns;
         private readonly Func<bool> _sceneStands;
+        private readonly Func<bool> _scenarioMissing;
         private volatile bool _sunsListed;
 
         /// <param name="kerbalism">Kerbalism's scenario type, <c>KERBALISM.Kerbalism</c>, or null when the build has none.</param>
         /// <param name="sim">Kerbalism's <c>KERBALISM.Sim</c> type, or null when the build has none.</param>
-        /// <param name="sceneStands">Whether the scene has finished loading, asked only when Kerbalism cannot say it is set up.</param>
-        public KerbalismReadiness(Type? kerbalism, Type? sim, Func<bool> sceneStands)
+        /// <param name="sceneStands">Whether the scene has finished loading.</param>
+        /// <param name="scenarioMissing">Whether a game is loaded, in a scene Kerbalism runs in, that does not hold Kerbalism's scenario. Null when that cannot be told, which reads as never missing.</param>
+        public KerbalismReadiness(Type? kerbalism, Type? sim, Func<bool> sceneStands, Func<bool>? scenarioMissing = null)
         {
             _coreInitDone = StaticBool(kerbalism, "IsCoreGameInitDone");
             _saveInitDone = StaticBool(kerbalism, "IsSaveGameInitDone");
             _suns = sim?.GetField("suns", AnyStatic);
             _sceneStands = sceneStands;
+            _scenarioMissing = scenarioMissing ?? (() => false);
+        }
+
+        /// <summary>
+        /// True once the scene has finished loading in a game that does not hold
+        /// Kerbalism's scenario, so Kerbalism will not set itself up however long
+        /// it is waited for. Never throws.
+        /// </summary>
+        public bool IsMissingFromGame
+        {
+            get
+            {
+                try
+                {
+                    return _sceneStands() && _scenarioMissing();
+                }
+                catch
+                {
+                    return false;
+                }
+            }
         }
 
         /// <summary>True once Kerbalism can be asked. Never throws.</summary>
@@ -49,6 +78,10 @@ namespace Gonogo.KerbalismUplink
             {
                 try
                 {
+                    if (IsMissingFromGame)
+                    {
+                        return false;
+                    }
                     if (_coreInitDone == null || _saveInitDone == null || _suns == null)
                     {
                         return _sceneStands();

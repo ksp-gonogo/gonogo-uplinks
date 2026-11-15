@@ -20,7 +20,8 @@ namespace Gonogo.KerbalismUplink
 
         private static readonly IReadOnlyList<ModSetting> Listed = new[]
         {
-            ModSetting.Bool("reliability", "Part reliability", ModSettingRefresh.Launch,
+            /* Read live like the rest, never once per launch: the host keeps a per-launch value for good once one read succeeds, so it would go on showing the value from a game that runs Kerbalism in a later game that does not. */
+            ModSetting.Bool("reliability", "Part reliability", ModSettingRefresh.Live,
                 description: "Parts wear, fail and need repair",
                 group: Group, setIn: FeatureSetIn),
             // A difficulty setting can change from the pause menu mid-flight, so it is read live rather than per save.

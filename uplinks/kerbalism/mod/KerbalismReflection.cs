@@ -81,8 +81,10 @@ namespace Gonogo.KerbalismUplink
             internal Handles(Assembly asm)
             {
                 _asm = asm;
+                var scenario = FindType("KERBALISM.Kerbalism");
                 _readiness = new KerbalismReadiness(
-                    FindType("KERBALISM.Kerbalism"), FindType("KERBALISM.Sim"), SceneStands);
+                    scenario, FindType("KERBALISM.Sim"), SceneStands,
+                    scenario == null ? null : () => ScenarioMissingFromGame(scenario.Name));
 
                 _apiType = FindType("KERBALISM.API") ?? FindType("Kerbalism.API") ?? FindType("Kerbalism.System.API");
                 _featuresType = FindType("KERBALISM.Features") ?? FindType("Kerbalism.Features") ?? FindType("Kerbalism.System.Features");
@@ -213,6 +215,39 @@ namespace Gonogo.KerbalismUplink
         /// <summary>Whether the scene has finished loading: always outside flight, and in flight once the active vessel is in.</summary>
         private static bool SceneStands() => !HighLogic.LoadedSceneIsFlight || FlightGlobals.ready;
 
+        /// <summary>
+        /// Whether a game is loaded, in a scene Kerbalism's scenario runs in, whose
+        /// scenario list has no entry for it. The game writes that list when it
+        /// loads the save, before the scene starts.
+        /// </summary>
+        private static bool ScenarioMissingFromGame(string scenarioName)
+        {
+            var scenarios = HighLogic.CurrentGame?.scenarios;
+            if (scenarios == null)
+            {
+                return false;
+            }
+            switch (HighLogic.LoadedScene)
+            {
+                case GameScenes.SPACECENTER:
+                case GameScenes.TRACKSTATION:
+                case GameScenes.FLIGHT:
+                case GameScenes.EDITOR:
+                    break;
+                default:
+                    return false;
+            }
+            /* By index, since the Courier thread asks too and the list may be written under it: a failed read is caught by the caller and reads as not missing. */
+            for (var i = 0; i < scenarios.Count; i++)
+            {
+                if (scenarios[i]?.moduleName == scenarioName)
+                {
+                    return false;
+                }
+            }
+            return true;
+        }
+
         public KerbalismReflection()
             : this(new KerbalismAssemblyLocator(() => AppDomain.CurrentDomain.GetAssemblies()))
         {
@@ -229,6 +264,13 @@ namespace Gonogo.KerbalismUplink
         /// again on each call until it is, as <see cref="IsAvailable"/> does.
         /// </summary>
         public bool IsLoaded => _gate.Resolve()?._apiType != null;
+
+        /// <summary>
+        /// True while the loaded game does not run Kerbalism, so
+        /// <see cref="IsAvailable"/> stays false for as long as that game is
+        /// loaded (see <see cref="KerbalismReadiness.IsMissingFromGame"/>).
+        /// </summary>
+        public bool IsMissingFromGame => _gate.Resolve()?._readiness?.IsMissingFromGame ?? false;
 
         /// <summary>
         /// True once Kerbalism's assembly is loaded, its API type resolved, and

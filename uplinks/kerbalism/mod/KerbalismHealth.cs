@@ -3,26 +3,59 @@ using Sitrep.Contract;
 namespace Gonogo.KerbalismUplink
 {
     /// <summary>
-    /// The Uplink's health from whether Kerbalism's assembly is loaded and whether
-    /// Kerbalism can be asked: unavailable while the assembly is missing, starting
-    /// while Kerbalism is loaded and setting itself up for the game, healthy once
-    /// both hold.
+    /// The Uplink's health from whether Kerbalism's assembly is loaded, whether
+    /// the loaded game runs Kerbalism and whether Kerbalism can be asked:
+    /// unavailable while the assembly is missing or the game does not run
+    /// Kerbalism, starting while Kerbalism is loaded and setting itself up for
+    /// the game, healthy once it has.
     /// </summary>
     public static class KerbalismHealth
     {
+        /// <summary>Why a setting cannot be read while Kerbalism's assembly is not loaded.</summary>
+        public const string NotInstalled = "Kerbalism is not installed";
+
+        /// <summary>Why the Uplink is starting, and why a setting cannot be read while it is.</summary>
+        public const string StillLoading = "Kerbalism hasn't finished loading.";
+
+        /// <summary>Why the Uplink is unavailable, and why a setting cannot be read, in a game that does not run Kerbalism.</summary>
+        public const string MissingFromGame =
+            "Kerbalism doesn't run in this game. KSP's built-in scenarios and tutorials don't load it.";
+
         /// <param name="loaded">Whether Kerbalism's assembly is loaded and its API type resolved.</param>
         /// <param name="available">Whether Kerbalism has also set itself up for the loaded game (see <see cref="KerbalismReadiness"/>).</param>
-        public static UplinkHealth For(bool loaded, bool available)
+        /// <param name="missingFromGame">Whether the loaded game does not hold Kerbalism's scenario (see <see cref="KerbalismReadiness.IsMissingFromGame"/>).</param>
+        public static UplinkHealth For(bool loaded, bool available, bool missingFromGame = false)
         {
             if (!loaded)
             {
                 return new UplinkHealth(UplinkHealthState.Unavailable, "Kerbalism assembly not loaded");
             }
+            if (missingFromGame)
+            {
+                return new UplinkHealth(UplinkHealthState.Unavailable, MissingFromGame);
+            }
             if (!available)
             {
-                return UplinkHealth.Starting("Kerbalism hasn't finished loading.");
+                return UplinkHealth.Starting(StillLoading);
             }
             return UplinkHealth.Healthy;
+        }
+
+        /// <summary>
+        /// Why a Kerbalism setting cannot be read, or null when it can: the same
+        /// reason the health gives, so the two never disagree.
+        /// </summary>
+        public static string? SettingsUnavailableReason(bool loaded, bool available, bool missingFromGame)
+        {
+            if (!loaded)
+            {
+                return NotInstalled;
+            }
+            if (missingFromGame)
+            {
+                return MissingFromGame;
+            }
+            return available ? null : StillLoading;
         }
     }
 }

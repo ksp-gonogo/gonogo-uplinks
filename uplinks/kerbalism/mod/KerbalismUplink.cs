@@ -92,7 +92,7 @@ namespace Gonogo.KerbalismUplink
             _fleet = new KerbalismFleetChannels(_k, CaptureVessel);
             _lanes = new KerbalismLaneFeed(_k, CaptureVessel);
             _modSettings = new KerbalismModSettings(
-                () => _k.IsAvailable ? null : "Kerbalism is not installed",
+                () => KerbalismHealth.SettingsUnavailableReason(_k.IsLoaded, _k.IsAvailable, _k.IsMissingFromGame),
                 _k.Features,
                 () => HighLogic.CurrentGame != null,
                 _k.ReliabilityPreferences);
@@ -682,7 +682,7 @@ namespace Gonogo.KerbalismUplink
 
         public ModSettingValue ReadModSetting(string id) => _modSettings.ReadModSetting(id);
 
-        public UplinkHealth Health() => KerbalismHealth.For(_k.IsLoaded, _k.IsAvailable);
+        public UplinkHealth Health() => KerbalismHealth.For(_k.IsLoaded, _k.IsAvailable, _k.IsMissingFromGame);
 
         /// <summary>Plain cross-thread bundle: no live KSP references.</summary>
         internal sealed class KerbalismCaptured

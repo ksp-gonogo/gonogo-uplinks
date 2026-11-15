@@ -87,6 +87,39 @@ namespace GonogoKerbalismUplink.Tests
             Assert.False(read.IsAvailable);
         }
 
+        /// <summary>
+        /// The host stops reading a per-launch setting after its first good read.
+        /// One loaded in a career would keep its value on the page of a later
+        /// game in the same KSP process that does not run Kerbalism.
+        /// </summary>
+        [Fact]
+        public void NoSettingIsKeptFromOneGameToTheNext()
+        {
+            foreach (var setting in Source().ListModSettings())
+            {
+                Assert.NotEqual(ModSettingRefresh.Launch, setting.Refresh);
+            }
+        }
+
+        [Fact]
+        public void ASettingReadInOneGameIsUnavailableInALaterGameThatDoesNotRunKerbalism()
+        {
+            string? absent = null;
+            var source = new KerbalismModSettings(
+                () => absent,
+                () => new Dictionary<string, bool> { ["Reliability"] = true },
+                () => true,
+                () => new ReliabilityPreferencesRaw());
+            Assert.True(source.ReadModSetting("reliability").AsBool);
+
+            absent = KerbalismHealth.MissingFromGame;
+
+            foreach (var setting in source.ListModSettings())
+            {
+                Assert.Equal(KerbalismHealth.MissingFromGame, source.ReadModSetting(setting.Id).UnavailableReason);
+            }
+        }
+
         [Fact]
         public void KerbalismAbsentMakesEverySettingUnavailableWithTheReason()
         {

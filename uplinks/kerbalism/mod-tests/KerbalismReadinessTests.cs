@@ -40,8 +40,8 @@ namespace GonogoKerbalismUplink.Tests
             }
         }
 
-        private static KerbalismReadiness Readiness(bool sceneStands = true) =>
-            new(typeof(Scenario), typeof(Sim), () => sceneStands);
+        private static KerbalismReadiness Readiness(bool sceneStands = true, bool scenarioMissing = false) =>
+            new(typeof(Scenario), typeof(Sim), () => sceneStands, () => scenarioMissing);
 
         [Fact]
         public void NotReadyBeforeKerbalismsScenarioHasLoaded()
@@ -97,6 +97,53 @@ namespace GonogoKerbalismUplink.Tests
             Scenario.IsSaveGameInitDone = false;
 
             Assert.False(readiness.IsReady);
+        }
+
+        [Fact]
+        public void AScenarioInTheGameThatHasNotLoadedYetIsNotMissing()
+        {
+            Set(core: false, save: false, suns: 0);
+            var readiness = Readiness(sceneStands: true, scenarioMissing: false);
+
+            Assert.False(readiness.IsReady);
+            Assert.False(readiness.IsMissingFromGame);
+        }
+
+        [Fact]
+        public void AGameWithoutTheScenarioIsMissingItOnceTheSceneStands()
+        {
+            Set(core: false, save: false, suns: 0);
+
+            Assert.True(Readiness(sceneStands: true, scenarioMissing: true).IsMissingFromGame);
+        }
+
+        [Fact]
+        public void NothingIsCalledMissingWhileTheSceneIsStillLoading()
+        {
+            Set(core: false, save: false, suns: 0);
+
+            Assert.False(Readiness(sceneStands: false, scenarioMissing: true).IsMissingFromGame);
+        }
+
+        [Fact]
+        public void WhatAnEarlierGameSetUpDoesNotMakeAGameWithoutTheScenarioReady()
+        {
+            Set(core: true, save: true, suns: 1);
+            var readiness = Readiness(sceneStands: true, scenarioMissing: true);
+
+            Assert.False(readiness.IsReady);
+            Assert.Same("none", KerbalismReadiness.Usable("bound", readiness, "none"));
+        }
+
+        [Fact]
+        public void AScenarioCheckThatThrowsReadsAsNotMissing()
+        {
+            Set(core: true, save: true, suns: 1);
+            var readiness = new KerbalismReadiness(
+                typeof(Scenario), typeof(Sim), () => true, () => throw new System.InvalidOperationException());
+
+            Assert.False(readiness.IsMissingFromGame);
+            Assert.True(readiness.IsReady);
         }
 
         [Theory]
