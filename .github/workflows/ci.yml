@@ -182,7 +182,8 @@ jobs:
   # Written only by a `legs` run whose Uplink passed, so the release that called
   # it can tell which Uplinks may be tagged. A reusable workflow reports one
   # result however many legs it ran, and an artifact is the one thing it can hand
-  # back by name.
+  # back by name. The file is named for its Uplinks because the release merges
+  # every one into a single folder, where a shared name keeps only the last.
   passed:
     needs: [discover, uplink]
     if: ${{ !cancelled() && inputs.scope == 'legs' && needs.discover.result == 'success' && needs.uplink.result == 'success' }}
@@ -190,8 +191,8 @@ jobs:
     steps:
       - env:
           UPLINKS: ${{ inputs.uplinks }}
-        run: echo "$UPLINKS" > passed.txt
+        run: echo "$UPLINKS" > "passed-$UPLINKS.txt"
       - uses: actions/upload-artifact@v4
         with:
           name: ci-passed-${{ inputs.uplinks }}
-          path: passed.txt
+          path: passed-${{ inputs.uplinks }}.txt
