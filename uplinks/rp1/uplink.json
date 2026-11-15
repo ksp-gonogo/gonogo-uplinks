@@ -11,6 +11,7 @@
     "tier": "ckan",
     "ckan": "RP-1",
     "builtAgainst": "4.7.0.0",
+    "ckanVersion": "v4.7.0.0",
     "channels": [{ "ckan": "RP-1" }, { "github": "KSP-RO/RP-1" }]
   },
   "ckanDepends": [
