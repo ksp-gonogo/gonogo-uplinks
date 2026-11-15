@@ -13,7 +13,9 @@
 #      staging head. The next version comes from that Uplink's own newest tag
 #      (`--from`) and its own commits, is stamped over the placeholder in the
 #      leg's checkout, and the same checks a release is held to run, ending in a
-#      full release build into a scratch folder. A leg commits and pushes
+#      full release build into a scratch folder, then refuses its Uplink when the
+#      client's apiVersion or the mod's contract stamp is not the pinned Gonogo's
+#      (tooling/check-gonogo-target.mjs). A leg commits and pushes
 #      nothing, and uploads the version and tag it settled on. Every leg runs, so
 #      one failure is reported beside the others and stops only its own Uplink
 #   3. settle: gathers the tags of the legs that passed
