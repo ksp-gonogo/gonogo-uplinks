@@ -1,7 +1,7 @@
 # Do the Uplinks here still build and pass against the Gonogo packages as they
 # stand on gonogo's `ci-dev` head, nightly?
 #
-# ci.yml builds from tarballs and a nupkg vendored from one gonogo commit, and
+# ci.yml builds from the vendored published packages of one Gonogo version, and
 # rc-check.yml from a published candidate; both are behind gonogo's integration
 # branch by days. This packs the three npm packages and the contract package from
 # the head of ksp-gonogo/gonogo `ci-dev` on the runner, swaps them in for the
@@ -104,9 +104,10 @@ jobs:
             raw=$(node scripts/pack-publishable.mjs "$dir" "$RUNNER_TEMP/raw")
             node scripts/release-packages.mjs stamp "$raw" "$version" "$out"
           done
-          # The contract package is packed by the script this repo's pin comes
-          # from, into a scratch copy of this checkout so the real one stays as
-          # committed, and carries the same commit's version.
+          # The contract package is packed by gonogo's own packing script, into a
+          # scratch copy of this checkout so the real one stays as committed, and
+          # carries the same commit's version. This probe only: the pin itself is
+          # always a published release.
           scratch="$RUNNER_TEMP/uplinks-scratch"
           mkdir -p "$scratch"
           cp -R "$GITHUB_WORKSPACE/uplinks" "$GITHUB_WORKSPACE/Directory.Build.props" "$scratch/"

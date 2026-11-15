@@ -28,32 +28,39 @@ references a loose assembly of Gonogo's.
 
 ### The pin
 
-One gonogo commit stands behind all four packages. `vendor/gonogo-ref` names it,
-and one line in `Directory.Build.props`, `GonogoContractVersion`, is the version
-every project references. The version carries the commit
-(`<release>-pin.g<first 12 of the sha>`), because NuGet's machine-wide cache
-would otherwise go on serving the first bytes it saw under a version packed
-twice.
+The Uplinks build against one Gonogo version, and only its official published
+packages: `@ksp-gonogo/sitrep-sdk`, `@ksp-gonogo/ui-kit` and
+`@ksp-gonogo/uplink-tools` from npm, and `KspGonogo.Sitrep.Contract` from
+nuget.org, all four at that version. It need not be the newest: a hotfix may
+target an older release. One line in `Directory.Build.props`,
+`GonogoContractVersion`, is that version, and every project references the
+package through it. `vendor/gonogo-ref` is the gonogo commit the release was
+built from, as the package's nuspec records it.
 
-To move to a newer gonogo, from a gonogo checkout built at that commit:
+To move to another Gonogo version `X.Y.Z`:
 
 ```bash
-scripts/vendor-uplinks-reference-set.sh <this checkout> <sha>   # the nupkg, the version line, vendor/gonogo-ref
-# then pack sitrep-sdk, ui-kit and uplink-tools with scripts/pack-publishable.mjs,
-# add each to vendor/ under its content-addressed name, and point every client's
-# package.json at the new files
+npm pack @ksp-gonogo/sitrep-sdk@X.Y.Z @ksp-gonogo/ui-kit@X.Y.Z @ksp-gonogo/uplink-tools@X.Y.Z
+curl -fsSLo KspGonogo.Sitrep.Contract.X.Y.Z.nupkg \
+  https://api.nuget.org/v3-flatcontainer/kspgonogo.sitrep.contract/X.Y.Z/kspgonogo.sitrep.contract.X.Y.Z.nupkg
 ```
+
+Add each tarball to `vendor/` under its content-addressed name
+(`<name>-X.Y.Z-<first 12 of its sha256>.tgz`) and remove the old ones, put the
+nupkg alone in `vendor/nuget`, set `GonogoContractVersion` to `X.Y.Z`, write the
+commit from the nuspec's `<repository commit>` into `vendor/gonogo-ref`, and
+point every client's package.json at the new tarballs.
 
 Then, in every Uplink: `npm install` in `client/`, `uplink-tools codegen`,
 `uplink-tools page`, typecheck and test. Commit all of it together: the
 generated TypeScript and the manifests are judged against the pin, so a pin that
-moved without them is red in every Uplink at once. `scripts/check-vendor-pins.mjs`
-holds the pieces to each other.
+moved without them is red in every Uplink at once.
 
-The vendoring script packs from the COMMIT (`git archive`), never the working
-tree, and leaves exactly one package in the feed. Once a release of the package
-is on nuget.org, `GonogoContractVersion` becomes that release's version and the
-vendored file goes.
+`scripts/check-vendor-pins.mjs` holds the pieces to each other offline, and
+refuses any version that is not a published release or candidate.
+`node tooling/published-pins.mjs` asks the registries that each vendored file is
+byte for byte the published one: the tarball's sha512 against npm's
+`dist.integrity`, and the nupkg's against nuget.org's `packageHash`. CI runs both.
 
 The client half needs `@ksp-gonogo/sitrep-sdk` and `@ksp-gonogo/ui-kit` from npm,
 and nothing else of the app's.

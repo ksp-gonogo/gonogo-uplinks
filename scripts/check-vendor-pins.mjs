@@ -49,6 +49,11 @@ import { createHash } from "node:crypto";
 import { existsSync, readFileSync, readdirSync } from "node:fs";
 import { basename, dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
+import {
+  NUGET_PACKAGE,
+  readVendoredSet,
+  vendoredSetProblems,
+} from "../tooling/published-pins.mjs";
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), "..");
 const VENDOR = join(ROOT, "vendor");
@@ -140,60 +145,22 @@ for (const file of existsSync(VENDOR) ? readdirSync(VENDOR).sort() : []) {
 }
 
 /*
- * The contract package. One .nupkg in vendor/nuget, at the version
- * Directory.Build.props pins, packed from the commit vendor/gonogo-ref names,
- * and referenced by every C# project through that one property. Each of those
- * can come apart from the others silently: a second package left in the feed
- * still satisfies a project nobody moved, and a project with its own literal
- * version stops following the pin.
+ * The Gonogo set. The three tarballs and the contract package are the official
+ * npm and nuget.org artifacts of the one Gonogo version Directory.Build.props
+ * pins, and every C# project references the package through that one property.
+ * Each of those can come apart from the others silently: a second package left
+ * in the feed still satisfies a project nobody moved, and a project with its own
+ * literal version stops following the pin. Whether each file is byte for byte
+ * the one the registry published is `node tooling/published-pins.mjs`, which
+ * needs the network.
  */
-const PACKAGE = "KspGonogo.Sitrep.Contract";
-const props = readFileSync(join(ROOT, "Directory.Build.props"), "utf8");
-const pinned = /<GonogoContractVersion>([^<]+)<\/GonogoContractVersion>/.exec(props)?.[1];
-const ref = readFileSync(join(VENDOR, "gonogo-ref"), "utf8").trim();
+const PACKAGE = NUGET_PACKAGE;
+const vendoredSet = readVendoredSet(ROOT);
+const pinned = vendoredSet.pinned;
 const feed = join(VENDOR, "nuget");
-const packages = existsSync(feed)
-  ? readdirSync(feed).filter((file) => file.endsWith(".nupkg"))
-  : [];
+const packages = vendoredSet.nupkgs.map((n) => n.file);
 let projects = 0;
-if (!pinned) {
-  problems.push("Directory.Build.props declares no GonogoContractVersion.");
-} else {
-  const expected = `${PACKAGE}.${pinned}.nupkg`;
-  if (packages.length !== 1 || packages[0] !== expected) {
-    problems.push(
-      `vendor/nuget holds [${packages.join(", ") || "nothing"}], expected exactly ${expected}, the ` +
-        "version Directory.Build.props pins. A fresh clone restores no project without it.",
-    );
-  }
-  /*
-   * A package packed from a commit names it in its version (-pin.g<sha>). A
-   * package taken from nuget.org carries its plain release version, and names
-   * the commit it was built from in the nuspec's repository element instead.
-   */
-  const label = /-pin\.g([0-9a-f]{12})$/.exec(pinned)?.[1];
-  if (label) {
-    if (!ref.startsWith(label)) {
-      problems.push(
-        `GonogoContractVersion is ${pinned} and vendor/gonogo-ref is ${ref}. The version names the ` +
-          "gonogo commit the package was packed from, and the two must be the same commit.",
-      );
-    }
-  } else if (packages.length === 1) {
-    const nuspec = execFileSync(
-      "unzip",
-      ["-p", join(feed, packages[0]), `${PACKAGE}.nuspec`],
-      { encoding: "utf8" },
-    );
-    const commit = /<repository\b[^>]*\bcommit="([0-9a-f]{40})"/.exec(nuspec)?.[1];
-    if (commit !== ref) {
-      problems.push(
-        `GonogoContractVersion is ${pinned}, a published version, and its package names gonogo ` +
-          `commit ${commit ?? "(none)"} while vendor/gonogo-ref is ${ref}. The two must be the same commit.`,
-      );
-    }
-  }
-}
+problems.push(...vendoredSetProblems(vendoredSet));
 for (const name of readdirSync(join(ROOT, "uplinks")).sort()) {
   const uplinkDir = join(ROOT, "uplinks", name);
   for (const sub of readdirSync(uplinkDir, { withFileTypes: true })) {
@@ -249,7 +216,7 @@ if (sdkTarballs.length === 1 && nupkgName) {
   } else if (`${sdkMajor}.${sdkMinor}` !== speaks) {
     problems.push(
       `the vendored sitrep-sdk speaks contract ${sdkMajor}.${sdkMinor} and ${nupkgName} speaks ` +
-        `${speaks}. Both must be packed from the commit in vendor/gonogo-ref.`,
+        `${speaks}. Both must be the published packages of one Gonogo version.`,
     );
   }
 } else {
@@ -288,5 +255,5 @@ console.log(
   `✓ ${references} vendored reference(s) across ${uplinks} Uplink(s): every one exists, is ` +
     `content-addressed, matches its own name and matches the sha512 its lockfile records. ` +
     `${projects} C# project(s) reference ${PACKAGE} at the one pinned version, ${pinned}, ` +
-    `whose package is the only one in vendor/nuget and names the commit in vendor/gonogo-ref.`,
+    `the published Gonogo version all four vendored packages carry, and the nupkg names the commit in vendor/gonogo-ref.`,
 );

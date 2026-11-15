@@ -85,6 +85,11 @@ jobs:
       # discovering the same missing tarball at `npm ci`.
       - if: inputs.scope != 'legs'
         run: node scripts/check-vendor-pins.mjs
+      # Is every vendored Gonogo package byte for byte the one npm and nuget.org
+      # published under its version. The registries are asked, so this is its
+      # own step rather than part of the offline check above.
+      - if: inputs.scope != 'legs'
+        run: node tooling/published-pins.mjs
       # Does every Uplink that ships a client give its manifest a ClientSource.
       # A question about the SET, and a null one compiles and loads in game with
       # the client never fetched. Plants a violation and fails as BLIND if unseen.
