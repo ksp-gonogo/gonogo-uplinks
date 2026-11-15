@@ -1,0 +1,19 @@
+{
+  "id": "testflight",
+  "name": "TestFlight",
+  "description": "TestFlight engine reliability on the fleet roster: failed engines, rated burn nearly spent and survival odds, with TestFlight's own repair.",
+  "author": "jpeps",
+  "repo": "https://github.com/ksp-gonogo/gonogo-uplinks",
+  "mod": {
+    "name": "TestFlight",
+    "builtAgainst": "2.12.0.0"
+  },
+  "version": "1.0.0-rc.4",
+  "minAppVersion": "0.0.0",
+  "apiVersion": "6.0.0",
+  "contractMajor": 52,
+  "contractMinor": 2,
+  "bundleUrl": "testflight/testflight.client.js",
+  "integrity": "sha256-9a0a3ffa8e32a26152f8ae87e568db8eece9d563f828a953490dd33b97b8551c",
+  "sdkVersion": "0.0.1"
+}
