@@ -56,7 +56,7 @@ SCANsat coverage of the current body, with your scanning vessels and anomalies.
 | Uplink id | `scansat` |
 | Wraps | SCANsat (ckan) |
 | Version | `0.0.0-development` |
-| Built against | contract 52.2, extension API 6.0.0 |
+| Built against | contract 52.2, extension API 7.0.0 |
 
 </details>
 

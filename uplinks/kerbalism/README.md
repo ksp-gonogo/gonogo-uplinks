@@ -79,7 +79,7 @@ Solar activity, coronal mass ejections and your craft's radiation dose.
 | Uplink id | `kerbalism` |
 | Wraps | Kerbalism (ckan) |
 | Version | `0.0.0-development` |
-| Built against | contract 52.2, extension API 6.0.0 |
+| Built against | contract 52.2, extension API 7.0.0 |
 
 </details>
 

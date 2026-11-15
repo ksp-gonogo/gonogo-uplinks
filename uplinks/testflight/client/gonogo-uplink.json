@@ -10,10 +10,10 @@
   },
   "version": "0.0.0-development",
   "minAppVersion": "0.0.0",
-  "apiVersion": "6.0.0",
+  "apiVersion": "7.0.0",
   "contractMajor": 52,
   "contractMinor": 2,
   "bundleUrl": "testflight/testflight.client.js",
   "integrity": "",
-  "sdkVersion": "0.0.1"
+  "sdkVersion": "1.0.0"
 }

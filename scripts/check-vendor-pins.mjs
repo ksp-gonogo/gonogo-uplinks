@@ -166,12 +166,32 @@ if (!pinned) {
         "version Directory.Build.props pins. A fresh clone restores no project without it.",
     );
   }
+  /*
+   * A package packed from a commit names it in its version (-pin.g<sha>). A
+   * package taken from nuget.org carries its plain release version, and names
+   * the commit it was built from in the nuspec's repository element instead.
+   */
   const label = /-pin\.g([0-9a-f]{12})$/.exec(pinned)?.[1];
-  if (!label || !ref.startsWith(label)) {
-    problems.push(
-      `GonogoContractVersion is ${pinned} and vendor/gonogo-ref is ${ref}. The version names the ` +
-        "gonogo commit the package was packed from, and the two must be the same commit.",
+  if (label) {
+    if (!ref.startsWith(label)) {
+      problems.push(
+        `GonogoContractVersion is ${pinned} and vendor/gonogo-ref is ${ref}. The version names the ` +
+          "gonogo commit the package was packed from, and the two must be the same commit.",
+      );
+    }
+  } else if (packages.length === 1) {
+    const nuspec = execFileSync(
+      "unzip",
+      ["-p", join(feed, packages[0]), `${PACKAGE}.nuspec`],
+      { encoding: "utf8" },
     );
+    const commit = /<repository\b[^>]*\bcommit="([0-9a-f]{40})"/.exec(nuspec)?.[1];
+    if (commit !== ref) {
+      problems.push(
+        `GonogoContractVersion is ${pinned}, a published version, and its package names gonogo ` +
+          `commit ${commit ?? "(none)"} while vendor/gonogo-ref is ${ref}. The two must be the same commit.`,
+      );
+    }
   }
 }
 for (const name of readdirSync(join(ROOT, "uplinks")).sort()) {
