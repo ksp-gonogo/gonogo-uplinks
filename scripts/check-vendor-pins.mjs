@@ -44,6 +44,7 @@
  * Usage: node scripts/check-vendor-pins.mjs
  */
 
+import { execFileSync } from "node:child_process";
 import { createHash } from "node:crypto";
 import { existsSync, readFileSync, readdirSync } from "node:fs";
 import { basename, dirname, join, resolve } from "node:path";
@@ -201,6 +202,40 @@ for (const name of readdirSync(join(ROOT, "uplinks")).sort()) {
       }
     }
   }
+}
+/*
+ * The tarballs carry no commit in their names, so the one fact that ties the
+ * sdk to the package is the wire contract both stamp: a client built on an sdk
+ * older than the plugin's package writes a manifest the plugin does not match.
+ */
+const sdkTarballs = readdirSync(VENDOR).filter((file) => /^ksp-gonogo-sitrep-sdk-.*\.tgz$/.test(file));
+const nupkgName = packages[0];
+if (sdkTarballs.length === 1 && nupkgName) {
+  const bundled = execFileSync(
+    "tar",
+    ["-xzOf", join(VENDOR, sdkTarballs[0]), "package/dist/compat-versions.js"],
+    { encoding: "utf8", maxBuffer: 64 * 1024 * 1024 },
+  );
+  const sdkMajor = /CONTRACT_MAJOR = (\d+)/.exec(bundled)?.[1];
+  const sdkMinor = /CONTRACT_MINOR = (\d+)/.exec(bundled)?.[1];
+  const notes = execFileSync("unzip", ["-p", join(feed, nupkgName), `${PACKAGE}.nuspec`], {
+    encoding: "utf8",
+  });
+  const speaks = /Speaks wire contract (\d+\.\d+)\./.exec(notes)?.[1];
+  if (!sdkMajor || !sdkMinor || !speaks) {
+    problems.push(
+      "could not read the wire contract from the vendored sdk or from the package's release notes.",
+    );
+  } else if (`${sdkMajor}.${sdkMinor}` !== speaks) {
+    problems.push(
+      `the vendored sitrep-sdk speaks contract ${sdkMajor}.${sdkMinor} and ${nupkgName} speaks ` +
+        `${speaks}. Both must be packed from the commit in vendor/gonogo-ref.`,
+    );
+  }
+} else {
+  problems.push(
+    `expected one vendored sitrep-sdk tarball and one nupkg to compare, found ${sdkTarballs.length} and ${packages.length}.`,
+  );
 }
 if (projects < MINIMUM_UPLINKS) {
   problems.push(
