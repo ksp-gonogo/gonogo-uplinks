@@ -116,10 +116,15 @@ test("a bump of rc names each Uplink's own newest tag, so each gets the next can
   });
 });
 
-test("prepare-release runs on staging only", () => {
+test("prepare-release runs on staging only and refuses a full release without the operator's switch", () => {
   const text = workflow("prepare-release.yml");
   assert.match(text, /refs\/heads\/staging/);
+  assert.match(text, /ALLOW_FULL_RELEASE/);
   assert.match(text, /merge-base --is-ancestor/);
+  assert.ok(
+    text.indexOf("ALLOW_FULL_RELEASE") < text.indexOf("release-plan.mjs plan"),
+    "the full-release switch is read before anything is planned",
+  );
 });
 
 test("only the release job pushes, only when the run is not a dry run, and no job makes a release commit", () => {

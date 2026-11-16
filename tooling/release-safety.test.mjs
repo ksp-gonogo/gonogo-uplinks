@@ -3,7 +3,8 @@
  *
  * SpaceDock feeds CKAN, so a step that uploads to SpaceDock puts a mod in front
  * of players. Only a full release may do that. A release candidate is a GitHub
- * prerelease. The workflow is read as text because these rules are its
+ * prerelease, and a full release is refused unless the operator has set
+ * ALLOW_FULL_RELEASE. The workflow is read as text because these rules are its
  * shape: a step that is not there cannot be exercised by running it.
  *
  * The guard check is shown to see before its silence is believed: given the
@@ -124,10 +125,12 @@ test("nothing pushes to CKAN's repositories", () => {
   }
 });
 
-test("release.yml marks a candidate a prerelease", () => {
+test("release.yml marks a candidate a prerelease and refuses a full release without the operator's variable", () => {
   const release = read("release.yml");
   assert.match(release, /--prerelease/, "a candidate's GitHub release is a prerelease");
   assert.match(release, /-rc\\\.\[0-9\]\+\$/, "the candidate suffix is -rc.<n>");
+  assert.match(release, /vars\.ALLOW_FULL_RELEASE/, "a full release needs the operator's variable");
+  assert.match(release, /the operator's to make/, "the refusal says whose a full release is");
 });
 
 test("release.yml's dispatch is a dry run that pushes nothing", () => {

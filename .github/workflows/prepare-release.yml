@@ -7,7 +7,8 @@
 # the tag, and the release's own build stamps it into the checkout it builds from.
 #
 #   1. plan: refuses any ref but staging, refuses when main cannot fast-forward to
-#      it, and works out which Uplinks to release
+#      it, refuses a full release unless the operator has set ALLOW_FULL_RELEASE,
+#      and works out which Uplinks to release
 #   2. prepare: one leg per Uplink runs `uplink-tools release prepare` on the
 #      staging head. The next version comes from that Uplink's own newest tag
 #      (`--from`) and its own commits, is stamped over the placeholder in the
@@ -57,7 +58,8 @@ on:
         default: ""
       full:
         description: >-
-          A full release, not a candidate
+          A full release, not a candidate. Refused unless the operator has set
+          ALLOW_FULL_RELEASE
         type: boolean
         default: false
       dry_run:
@@ -96,6 +98,18 @@ jobs:
         run: |
           if ! git merge-base --is-ancestor origin/main HEAD; then
             echo "::error::main has commits staging does not, so main cannot fast-forward to a release made on staging. Merge main into staging first."
+            exit 1
+          fi
+
+      # The operator's switch, read before anything is planned or built. A
+      # candidate needs none.
+      - name: A full release is the operator's
+        if: inputs.full
+        env:
+          ALLOW_FULL_RELEASE: ${{ vars.ALLOW_FULL_RELEASE }}
+        run: |
+          if [ "$ALLOW_FULL_RELEASE" != true ]; then
+            echo "::error::A full release is the operator's to make, and ALLOW_FULL_RELEASE is not true. Nothing was prepared."
             exit 1
           fi
 

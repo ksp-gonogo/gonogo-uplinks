@@ -17,7 +17,9 @@
 #
 #   - A tag whose version ends in `-rc.<n>` is a candidate: its GitHub release
 #     is marked a prerelease, always
-#   - Any other tag is a full release
+#   - Any other tag is a full release, which is the operator's to make. It is
+#     refused unless the repository variable ALLOW_FULL_RELEASE is "true", and
+#     only the operator sets that
 #   - A full release goes on to SpaceDock, which forwards it to CKAN, and it
 #     fails before anything is published if it cannot (no listing id, no
 #     login). A candidate never goes: the SpaceDock steps are skipped for any tag with a
@@ -91,11 +93,14 @@ jobs:
             exit 1
           fi
 
-      # `-rc.<n>` marks a candidate. Anything else is a full release.
+      # `-rc.<n>` marks a candidate. Anything else is a full release, which the
+      # operator alone allows by setting ALLOW_FULL_RELEASE. A dry run never
+      # publishes, so it may rehearse either.
       - name: Candidate or full release
         id: which
         env:
           TAG: ${{ inputs.tag || github.ref_name }}
+          ALLOW_FULL_RELEASE: ${{ vars.ALLOW_FULL_RELEASE }}
         run: |
           echo "tag=$TAG" >> "$GITHUB_OUTPUT"
           if [ "$GITHUB_EVENT_NAME" = workflow_dispatch ] && [[ "$GITHUB_REF" != refs/tags/* ]]; then dry=true; else dry=false; fi
@@ -105,6 +110,10 @@ jobs:
             echo "$TAG is a release candidate: its GitHub release will be a prerelease."
           else
             echo "prerelease=false" >> "$GITHUB_OUTPUT"
+            if [ "$dry" = false ] && [ "$ALLOW_FULL_RELEASE" != true ]; then
+              echo "::error::$TAG is a full release, and a full release is the operator's to make. Nothing was published. A candidate is <uplink id>-v<version>-rc.<n>, such as ${TAG%%-v*}-v0.1.0-rc.1."
+              exit 1
+            fi
           fi
 
       - uses: actions/setup-node@v4
