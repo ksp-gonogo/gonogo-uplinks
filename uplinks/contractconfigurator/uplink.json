@@ -6,6 +6,7 @@
   "gamedata": "GonogoContractConfiguratorUplink",
   "dll": "GonogoContractConfiguratorUplink.dll",
   "minAppVersion": "0.0.0",
+  "spacedock": { "modId": 4832 },
   "mod": {
     "name": "Contract Configurator",
     "tier": "ckan",

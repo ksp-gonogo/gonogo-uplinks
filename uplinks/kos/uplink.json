@@ -6,6 +6,7 @@
   "gamedata": "GonogoKosUplink",
   "dll": "GonogoKosUplink.dll",
   "minAppVersion": "0.0.0",
+  "spacedock": { "modId": 4836 },
   "mod": {
     "name": "kOS",
     "tier": "ckan",

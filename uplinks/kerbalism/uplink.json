@@ -6,6 +6,7 @@
   "gamedata": "GonogoKerbalismUplink",
   "dll": "GonogoKerbalismUplink.dll",
   "minAppVersion": "0.0.0",
+  "spacedock": { "modId": 4834 },
   "mod": {
     "name": "Kerbalism",
     "tier": "ckan",

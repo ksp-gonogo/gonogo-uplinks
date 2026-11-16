@@ -6,6 +6,7 @@
   "gamedata": "GonogoRealFuelsUplink",
   "dll": "GonogoRealFuelsUplink.dll",
   "minAppVersion": "0.0.0",
+  "spacedock": { "modId": 4840 },
   "mod": {
     "name": "RealFuels",
     "tier": "ckan",

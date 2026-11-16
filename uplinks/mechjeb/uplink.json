@@ -6,6 +6,7 @@
   "gamedata": "GonogoMechJebUplink",
   "dll": "GonogoMechJebUplink.dll",
   "minAppVersion": "0.0.0",
+  "spacedock": { "modId": 4837 },
   "mod": {
     "name": "MechJeb2",
     "tier": "ckan",

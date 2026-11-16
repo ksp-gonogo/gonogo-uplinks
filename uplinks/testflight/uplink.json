@@ -6,6 +6,7 @@
   "gamedata": "GonogoTestFlightUplink",
   "dll": "GonogoTestFlightUplink.dll",
   "minAppVersion": "0.0.0",
+  "spacedock": { "modId": 4843 },
   "mod": {
     "name": "TestFlight",
     "tier": "ckan",

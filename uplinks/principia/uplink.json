@@ -6,6 +6,7 @@
   "gamedata": "GonogoPrincipiaUplink",
   "dll": "GonogoPrincipiaUplink.dll",
   "minAppVersion": "0.0.0",
+  "spacedock": { "modId": 4838 },
   "mod": {
     "name": "Principia",
     "tier": "manual",

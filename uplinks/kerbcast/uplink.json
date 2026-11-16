@@ -6,6 +6,7 @@
   "gamedata": "GonogoKerbcastUplink",
   "dll": "GonogoKerbcastUplink.dll",
   "minAppVersion": "0.0.0",
+  "spacedock": { "modId": 4835 },
   "mod": {
     "name": "kerbcast",
     "tier": "ckan",

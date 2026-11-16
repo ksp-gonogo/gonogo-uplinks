@@ -6,6 +6,7 @@
   "gamedata": "GonogoScansatUplink",
   "dll": "GonogoScansatUplink.dll",
   "minAppVersion": "0.0.0",
+  "spacedock": { "modId": 4842 },
   "mod": {
     "name": "SCANsat",
     "tier": "ckan",

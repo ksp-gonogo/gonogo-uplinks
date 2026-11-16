@@ -6,6 +6,7 @@
   "gamedata": "GonogoRp1Uplink",
   "dll": "GonogoRp1Uplink.dll",
   "minAppVersion": "0.0.0",
+  "spacedock": { "modId": 4841 },
   "mod": {
     "name": "RP-1",
     "tier": "ckan",

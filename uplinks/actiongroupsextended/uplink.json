@@ -6,6 +6,7 @@
   "gamedata": "GonogoActionGroupsExtendedUplink",
   "dll": "GonogoActionGroupsExtendedUplink.dll",
   "minAppVersion": "0.0.0",
+  "spacedock": { "modId": 4831 },
   "mod": {
     "name": "Action Groups Extended",
     "tier": "ckan",

@@ -6,6 +6,7 @@
   "gamedata": "GonogoFerramAerospaceResearchUplink",
   "dll": "GonogoFerramAerospaceResearchUplink.dll",
   "minAppVersion": "0.0.0",
+  "spacedock": { "modId": 4833 },
   "mod": {
     "name": "Ferram Aerospace Research",
     "tier": "ckan",

@@ -6,6 +6,7 @@
   "gamedata": "GonogoRealAntennasUplink",
   "dll": "GonogoRealAntennasUplink.dll",
   "minAppVersion": "0.0.0",
+  "spacedock": { "modId": 4839 },
   "mod": {
     "name": "RealAntennas",
     "tier": "ckan",
