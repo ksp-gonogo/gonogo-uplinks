@@ -1755,6 +1755,73 @@ describe("CameraFeed: CommNet degrade", () => {
     expect(degradeMsg?.content.level).toBeCloseTo(0.7);
   });
 
+  it("sends a ground camera's degrade once while its link keeps rendering at 4 Hz", async () => {
+    const { sidecar } = await buildConnectedSource([
+      makeCamera({
+        flightId: 90,
+        kind: "command",
+        cameraName: "Launchpad camera",
+        vesselName: "Kerbal X",
+      }),
+    ]);
+    await act(async () => {
+      sidecar.updateCamera(90, {
+        commandCentre: {
+          stationId: "ground:LaunchPad",
+          nodeName: "LaunchPad",
+          displayName: "Launchpad",
+          body: "Kerbin",
+          latitude: -0.0972,
+          longitude: -74.5577,
+          altitude: 75,
+          targetPersistentId: 0,
+        },
+      } as never);
+    });
+
+    const stream = setupStreamFixture();
+    renderFeedWithComms({ flightId: 90 }, stream);
+    await act(async () => {
+      vi.advanceTimersByTime(20);
+    });
+    await act(async () => {
+      stream.emit("commandCentre.roster", [
+        { id: "stub", isHome: true },
+        { id: "ground:LaunchPad", isHome: false },
+      ]);
+      stream.emit("commandCentre.separation", {
+        pairs: [
+          { from: "stub", to: "ground:LaunchPad", oneWaySeconds: 0.01 },
+        ],
+      });
+    });
+    await act(async () => {
+      vi.advanceTimersByTime(20);
+    });
+
+    for (let i = 0; i < 12; i++) {
+      await act(async () => {
+        stream.emit("comms.delay", { oneWaySeconds: 1 + i });
+      });
+      await act(async () => {
+        vi.advanceTimersByTime(250);
+      });
+    }
+
+    const duringStream = sidecar.commands.filter(
+      (c) => c.type === "set-degrade",
+    );
+    expect(duringStream).toHaveLength(1);
+    expect(duringStream[0].content.level).toBe(0);
+
+    await act(async () => {
+      vi.advanceTimersByTime(501);
+    });
+    expect(sidecar.commands.filter((c) => c.type === "set-degrade")).toHaveLength(
+      1,
+    );
+  });
+
   it("comm disconnected applies maximum degrade (level 1.0)", async () => {
     const { sidecar } = await buildConnectedSource();
 

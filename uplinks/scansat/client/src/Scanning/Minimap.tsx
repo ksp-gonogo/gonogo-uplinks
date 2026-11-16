@@ -84,10 +84,43 @@ export function Minimap({
   const anomalies = useScanAnomalies(body.name);
   const scanningVessels = useScanningVessels();
 
-  // Repaint on body change, vessel-move, resize, or upstream biome/coverage
-  // change (coverageGate is a fresh object on every recompute; see
-  // useScanCoverageGate's own setGate calls: so no separate version field
-  // is needed here the way the old canvas-ref hooks needed one).
+  /*
+   * The coverage-gated biome colourmap (a covered tile paints its biome colour
+   * up to full opacity, an uncovered one paints nothing, and no separate dark
+   * fog-overlay canvas is composited on top). It depends only on the grid, the
+   * coverage and the body, so it is painted here and the effect below, which
+   * runs on every position sample, only crops it. `coverageGate` is a fresh
+   * object on every recompute (see useScanCoverageGate's own setGate calls), so
+   * no separate version field is needed.
+   */
+  useEffect(() => {
+    if (!biomeGrid || typeof document === "undefined") return;
+    if (!paintCanvasRef.current) {
+      const c = document.createElement("canvas");
+      c.width = BASE_LAYER_CANVAS_W;
+      c.height = BASE_LAYER_CANVAS_H;
+      paintCanvasRef.current = c;
+    }
+    const paintCtx = paintCanvasRef.current.getContext("2d");
+    if (!paintCtx) return;
+    paintTile(
+      paintCtx,
+      biomeGrid.width,
+      biomeGrid.height,
+      body,
+      coverageGate,
+      (iLon, iLat) => {
+        const idx = iLon * biomeGrid.height + iLat;
+        const biomeIdx = biomeGrid.indices[idx];
+        if (biomeIdx === 0xff) return null;
+        const entry = biomeGrid.biomes[biomeIdx];
+        if (!entry) return null;
+        return packedColourToComponents(entry.colour);
+      },
+    );
+  }, [body, biomeGrid, coverageGate]);
+
+  // Declared after the surface effect, so a commit that changes the grid or coverage crops the repainted surface.
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
@@ -116,38 +149,8 @@ export function Minimap({
     const sw = 2 * halfWpx;
     const sh = 2 * halfHpx;
 
-    // Coverage-gated biome colourmap: a covered tile paints its biome
-    // colour (up to full opacity), an uncovered tile paints nothing at
-    // all, letting the "#0a0a0a" background fill above show through. No
-    // separate dark fog-overlay canvas is composited on top; this single
-    // paintTile pass is the whole surface (settled "no fog layer" model).
-    if (biomeGrid && typeof document !== "undefined") {
-      if (!paintCanvasRef.current) {
-        const c = document.createElement("canvas");
-        c.width = BASE_LAYER_CANVAS_W;
-        c.height = BASE_LAYER_CANVAS_H;
-        paintCanvasRef.current = c;
-      }
-      const paintCanvas = paintCanvasRef.current;
-      const paintCtx = paintCanvas.getContext("2d");
-      if (paintCtx) {
-        paintTile(
-          paintCtx,
-          biomeGrid.width,
-          biomeGrid.height,
-          body,
-          coverageGate,
-          (iLon, iLat) => {
-            const idx = iLon * biomeGrid.height + iLat;
-            const biomeIdx = biomeGrid.indices[idx];
-            if (biomeIdx === 0xff) return null;
-            const entry = biomeGrid.biomes[biomeIdx];
-            if (!entry) return null;
-            return packedColourToComponents(entry.colour);
-          },
-        );
-        drawWindowed(ctx, paintCanvas, sx, sy, sw, sh, minimapPx);
-      }
+    if (biomeGrid && paintCanvasRef.current) {
+      drawWindowed(ctx, paintCanvasRef.current, sx, sy, sw, sh, minimapPx);
     }
 
     // Scanner footprints: drawn with SCANsat's own getFOV +

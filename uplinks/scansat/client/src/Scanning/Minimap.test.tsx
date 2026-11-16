@@ -248,6 +248,38 @@ describe("Minimap: coverage-gated scan surface (own mod-local paint gate, no com
     });
   });
 
+  it("repaints the biome surface only when the grid or coverage changes, not on each position sample", async () => {
+    const tree = (lat: number) => (
+      <TelemetryProvider client={client}>
+        <CoverageMaskCacheProvider>
+          <Minimap body={BODY} vesselLat={lat} vesselLon={lat} />
+        </CoverageMaskCacheProvider>
+      </TelemetryProvider>
+    );
+    const { rerender } = render(tree(0));
+    act(() => {
+      transport.emit("scansat.biome.Kerbin", biomeGridFixture());
+    });
+    await waitFor(() => {
+      expect(visibleDrawImageCalls().length).toBeGreaterThan(0);
+    });
+    await act(async () => {});
+
+    const paintsBefore = offscreenCalls().filter(
+      (c) => c.kind === "clearRect",
+    ).length;
+    const windowsBefore = visibleDrawImageCalls().length;
+    for (let i = 1; i <= 12; i++) {
+      rerender(tree(i * 0.1));
+    }
+
+    expect(
+      offscreenCalls().filter((c) => c.kind === "clearRect").length -
+        paintsBefore,
+    ).toBe(0);
+    expect(visibleDrawImageCalls().length - windowsBefore).toBe(12);
+  });
+
   // Anomaly markers are the only `fill()` the visible canvas takes (the
   // crosshair strokes, the colormap arrives as one drawImage), so counting
   // them counts markers. A known anomaly whose fix did not decode used to

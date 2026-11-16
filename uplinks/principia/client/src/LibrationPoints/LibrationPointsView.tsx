@@ -45,7 +45,12 @@ import {
 } from "./config.js";
 import { LibrationDiagram } from "./LibrationDiagram.js";
 import { LibrationReadouts } from "./LibrationReadouts.js";
-import { autoPair, resolveFor, vesselInertialAt } from "./pairResolution.js";
+import {
+  answersAt,
+  autoPair,
+  resolveFor,
+  vesselInertialAt,
+} from "./pairResolution.js";
 
 /** Bucket the view instant so the points recompute about once a second, not once a render. */
 const UT_BUCKET_SECONDS = 1;
@@ -155,6 +160,12 @@ export function LibrationPointsComponent({
     [elements, orbit?.referenceBodyIndex, system],
   );
 
+  // The points move with the bucketed instant alone, so the craft's orbit changing every frame does not re-solve them.
+  const answerOf = useMemo(
+    () => answersAt(facts, ut, system),
+    [facts, ut, system],
+  );
+
   const secondaryIndex = useMemo(() => {
     if (chosen !== AUTO_PAIR) return chosenIndex;
     if (ut == null) return null;
@@ -166,6 +177,7 @@ export function LibrationPointsComponent({
       vesselState,
       identity?.parentBodyIndex,
       controlFrame,
+      answerOf,
     );
   }, [
     chosen,
@@ -177,6 +189,7 @@ export function LibrationPointsComponent({
     vesselState,
     identity?.parentBodyIndex,
     controlFrame,
+    answerOf,
   ]);
 
   const { answer, offset } = useMemo(
@@ -187,8 +200,9 @@ export function LibrationPointsComponent({
         ut ?? Number.NaN,
         system,
         vesselState,
+        answerOf,
       ),
-    [facts, secondaryIndex, ut, system, vesselState],
+    [facts, secondaryIndex, ut, system, vesselState, answerOf],
   );
 
   const drawn = answer.refusal === LIBRATION_REFUSALS.NotRefused;

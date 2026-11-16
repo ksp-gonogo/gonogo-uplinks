@@ -502,13 +502,17 @@ function CameraFeedBody({
     },
   });
 
+  // Primitives, so the debounce below is keyed on the link's value: a reading whose figure is unchanged arrives as a new object and must not restart it.
+  const hasSignalStrength = signalStrength !== undefined;
+  const strength = signalStrength?.magnitude;
+
   useEffect(() => {
     if (effectiveFlightId === null || !client) return;
     // The strength and the link are the craft being flown's: they say nothing
     // of a camera standing elsewhere.
     if (site.kind === "elsewhere") return;
     // If both values are undefined, CommNet data isn't available -- skip.
-    if (signalStrength === undefined && commConnected === undefined) return;
+    if (!hasSignalStrength && commConnected === undefined) return;
 
     // Both signals fold into ONE always-defined level so a blackout's
     // degrade=1.0 always has a matching reset. Branch them separately and the
@@ -523,7 +527,6 @@ function CameraFeedBody({
     // `.magnitude`: strength is a declared ratio and arrives wrapped, so the
     // old `typeof === "number"` test failed for every reading and every weak
     // link resolved to a level of 0, i.e. no degrade at all.
-    const strength = signalStrength?.magnitude;
     const level =
       commConnected === false
         ? 1.0 // blackout
@@ -540,7 +543,14 @@ function CameraFeedBody({
       if (degradeTimerRef.current !== null)
         clearTimeout(degradeTimerRef.current);
     };
-  }, [effectiveFlightId, signalStrength, commConnected, client, site.kind]);
+  }, [
+    effectiveFlightId,
+    hasSignalStrength,
+    strength,
+    commConnected,
+    client,
+    site.kind,
+  ]);
 
   // Cross-browser kerbcast video-delay design (2026-07-16), decision 5:
   // "can't delay -> no video". `useDelayedKerbcastStream` (passed to the SDK

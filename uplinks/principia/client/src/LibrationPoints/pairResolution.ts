@@ -172,19 +172,39 @@ export function librationStationOf(
   return { keeping, excursionMetres, regionMetres, relativeSpeed };
 }
 
+/** The libration answer for one candidate secondary at the instant a {@link answersAt} was made for. */
+export type AnswerOf = (secondaryIndex: number | null) => LibrationAnswer;
+
+/**
+ * Answers for the pairs of one catalogue at one instant, each solved on first
+ * ask and kept. The points depend on nothing the craft does, so a caller makes
+ * one per bucketed instant and reuses it however often the craft moves.
+ */
+export function answersAt(
+  facts: CelestialFacts | undefined,
+  ut: number,
+  system: SystemInstant | null,
+): AnswerOf {
+  const solved = new Map<number | null, LibrationAnswer>();
+  return (secondaryIndex) => {
+    let answer = solved.get(secondaryIndex);
+    if (answer === undefined) {
+      answer = lagrangePointsAt(facts, secondaryIndex, ut, system ?? undefined);
+      solved.set(secondaryIndex, answer);
+    }
+    return answer;
+  };
+}
+
 export function resolveFor(
   facts: CelestialFacts | undefined,
   secondaryIndex: number | null,
   ut: number,
   system: SystemInstant | null,
   vessel: VesselInertialState | null,
+  answerOf: AnswerOf = answersAt(facts, ut, system),
 ): Resolved {
-  const answer = lagrangePointsAt(
-    facts,
-    secondaryIndex,
-    ut,
-    system ?? undefined,
-  );
+  const answer = answerOf(secondaryIndex);
   const offset = librationOffsetOf(answer, vessel?.position);
   if (offset === null || vessel === null) {
     return { answer, offset: null, station: null };
@@ -243,6 +263,7 @@ export function autoPair(
   vessel: VesselInertialState | null,
   vesselBodyIndex: number | null | undefined,
   controlFrame?: ControlFrame | null,
+  answerOf: AnswerOf = answersAt(facts, ut, system),
 ): number | null {
   if (candidates.length === 0) return null;
   const followed = controlFramePair(controlFrame, candidates);
@@ -268,6 +289,7 @@ export function autoPair(
         ut,
         system,
         vessel,
+        answerOf,
       );
       if (offset === null) continue;
       if (best === null || offset.distanceUnits < best.units) {
