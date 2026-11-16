@@ -1,0 +1,19 @@
+{
+  "id": "kerbalism",
+  "name": "Kerbalism",
+  "description": "Adds life support meters for crew status, and new widgets for tracking life support systems and CMEs.",
+  "author": "jpeps",
+  "repo": "https://github.com/ksp-gonogo/gonogo-uplinks",
+  "mod": {
+    "name": "Kerbalism",
+    "builtAgainst": "3.32"
+  },
+  "version": "1.0.1",
+  "minAppVersion": "0.0.0",
+  "apiVersion": "7.0.0",
+  "contractMajor": 52,
+  "contractMinor": 2,
+  "bundleUrl": "kerbalism/kerbalism.client.js",
+  "integrity": "sha256-5f0244c0d22182b49c1870fc6c3be71c456335024e9d532dfbe04c56c1f3b101",
+  "sdkVersion": "1.0.0"
+}
