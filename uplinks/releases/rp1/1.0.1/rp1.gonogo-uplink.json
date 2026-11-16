@@ -1,0 +1,19 @@
+{
+  "id": "rp1",
+  "name": "RP-1",
+  "description": "Adds the RP-1 career to the dashboard: Programs, build queues, research.",
+  "author": "jpeps",
+  "repo": "https://github.com/ksp-gonogo/gonogo-uplinks",
+  "mod": {
+    "name": "RP-1",
+    "builtAgainst": "4.7.0.0"
+  },
+  "version": "1.0.1",
+  "minAppVersion": "0.0.0",
+  "apiVersion": "7.0.0",
+  "contractMajor": 52,
+  "contractMinor": 2,
+  "bundleUrl": "rp1/rp1.client.js",
+  "integrity": "sha256-c4978ac3d435914cdef4a91ff637a3f8467c4ff7f6c6599dcce9bce010253529",
+  "sdkVersion": "1.0.0"
+}
