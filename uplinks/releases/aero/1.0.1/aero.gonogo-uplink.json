@@ -1,0 +1,19 @@
+{
+  "id": "aero",
+  "name": "Ferram Aerospace Research",
+  "description": "Adds Ferram Aerospace Research's own aerodynamics data to the dashboard, including through its own Aerodynamics widget.",
+  "author": "jpeps",
+  "repo": "https://github.com/ksp-gonogo/gonogo-uplinks",
+  "mod": {
+    "name": "Ferram Aerospace Research",
+    "builtAgainst": "0.16.1.2"
+  },
+  "version": "1.0.1",
+  "minAppVersion": "0.0.0",
+  "apiVersion": "7.0.0",
+  "contractMajor": 52,
+  "contractMinor": 2,
+  "bundleUrl": "aero/aero.client.js",
+  "integrity": "sha256-3567e6606da440e1b9790b5dc38d2441efcac2ea3f3922b8c2b9f9e678d1e76a",
+  "sdkVersion": "1.0.0"
+}
