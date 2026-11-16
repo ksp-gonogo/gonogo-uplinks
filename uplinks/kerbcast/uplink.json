@@ -12,6 +12,7 @@
     "tier": "ckan",
     "ckan": "Kerbcast",
     "builtAgainst": "1.13.0",
+    "ckanVersion": "1.13.0",
     "channels": [{ "ckan": "Kerbcast" }, { "github": "ksp-gonogo/kerbcast" }, { "spacedock": 4366 }],
     "packages": ["@ksp-gonogo/kerbcast", "@ksp-gonogo/kerbcast-react"]
   },

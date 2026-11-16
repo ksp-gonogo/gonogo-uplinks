@@ -1,0 +1,53 @@
+# Is every CKAN-listed Uplink's mod.ckanVersion exactly the spelling CKAN lists
+# for the release it builds against? Needs the network: CKAN-meta is asked for
+# each Uplink, so this is its own job and not part of the offline tooling tests.
+# Weekly, and on a push to staging or ci-dev that touches an uplink.json, this
+# file or the checker.
+#
+# A scheduled run uses the copy of this file on `main` and only dispatches this
+# workflow on staging, so the weekly run starts once this file reaches main.
+#
+#   gh workflow run ckan-pins.yml --ref staging
+name: ckan-pins
+
+on:
+  schedule:
+    - cron: "0 6 * * 1"
+  push:
+    branches: [staging, ci-dev]
+    paths:
+      - "uplinks/*/uplink.json"
+      - "tooling/check-ckan-pins.mjs"
+      - ".github/workflows/ckan-pins.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ckan-pins-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  trampoline:
+    if: github.event_name == 'schedule'
+    runs-on: ubuntu-latest
+    permissions:
+      actions: write
+    steps:
+      - name: Dispatch this workflow on staging
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh workflow run ckan-pins.yml --repo "$GITHUB_REPOSITORY" --ref staging
+
+  check:
+    if: github.event_name != 'schedule'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: "24" }
+      - name: CKAN lists each pin under the spelling uplink.json declares
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        run: node tooling/check-ckan-pins.mjs
