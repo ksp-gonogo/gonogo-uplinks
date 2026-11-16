@@ -1,0 +1,19 @@
+{
+  "id": "principia",
+  "name": "Principia",
+  "description": "Makes Gonogo compatible with Principia's n-body physics. All planning widgets work with the integrated model where it's useful.",
+  "author": "jpeps",
+  "repo": "https://github.com/ksp-gonogo/gonogo-uplinks",
+  "mod": {
+    "name": "Principia",
+    "builtAgainst": "2026110907-Lie"
+  },
+  "version": "1.0.1",
+  "minAppVersion": "0.0.0",
+  "apiVersion": "7.0.0",
+  "contractMajor": 52,
+  "contractMinor": 2,
+  "bundleUrl": "principia/principia.client.js",
+  "integrity": "sha256-00c4a78490fea7503f319b5c33a8eb85329a7d818d546fc822c872a5d4669a8f",
+  "sdkVersion": "1.0.0"
+}
