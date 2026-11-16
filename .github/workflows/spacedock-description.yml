@@ -1,0 +1,71 @@
+name: SpaceDock description
+
+# Replaces each listed Uplink's SpaceDock description with the README its
+# release tag carries, without publishing anything else. release.yml does the
+# same at the end of a release; this runs that one step for tags already
+# released, which release.yml cannot re-run because the GitHub release exists.
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: The released version whose tags to sync, for example 1.0.1
+        required: true
+      uplinks:
+        description: Uplink ids, comma separated, or all
+        default: all
+      dry_run:
+        description: Show what each listing would get and send nothing
+        type: boolean
+        default: true
+
+permissions:
+  contents: read
+
+jobs:
+  sync:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+        with: { fetch-depth: 0 }
+      - uses: actions/setup-node@v4
+        with: { node-version: "24" }
+      - name: Sync the descriptions
+        env:
+          SPACEDOCK_USERNAME: ${{ secrets.SPACEDOCK_USERNAME }}
+          SPACEDOCK_PASSWORD: ${{ secrets.SPACEDOCK_PASSWORD }}
+          VERSION: ${{ inputs.version }}
+          WANTED: ${{ inputs.uplinks }}
+          DRY: ${{ inputs.dry_run }}
+        run: |
+          set -euo pipefail
+          failed=0
+          for json in uplinks/*/uplink.json; do
+            NAME="$(basename "$(dirname "$json")")"
+            ID="$(node -e 'console.log(JSON.parse(require("fs").readFileSync(process.argv[1],"utf8")).id)' "$json")"
+            if [ "$WANTED" != all ] && [[ ",$WANTED," != *",$ID,"* ]]; then continue; fi
+            TAG="$ID-v$VERSION"
+            if ! git rev-parse -q --verify "refs/tags/$TAG" >/dev/null; then
+              echo "::notice::$TAG does not exist; $ID skipped"
+              continue
+            fi
+            # The tag's own files, so the description matches what was released.
+            rm -rf "tagtree" && mkdir -p "tagtree" && git archive "$TAG" "uplinks/$NAME" tooling | tar -x -C tagtree
+            MOD_ID="$(node tagtree/tooling/spacedock-release.mjs mod-id "tagtree/uplinks/$NAME/uplink.json")"
+            if [ -z "$MOD_ID" ] || [ ! -f "tagtree/uplinks/$NAME/README.md" ]; then
+              echo "::notice::No SpaceDock listing id or no README for $ID; skipped"
+              continue
+            fi
+            args=(sync "tagtree/uplinks/$NAME/README.md" --repo "$GITHUB_REPOSITORY" --ref "$TAG" --dir "uplinks/$NAME" --mod-id "$MOD_ID" --version "$VERSION")
+            if [ "$DRY" = true ]; then args+=(--dry-run); fi
+            echo "::group::$ID (SpaceDock mod $MOD_ID, $TAG)"
+            if node tooling/spacedock-description.mjs "${args[@]}"; then
+              echo "### $ID: $([ "$DRY" = true ] && echo 'would replace' || echo 'replaced') the description of SpaceDock mod $MOD_ID from $TAG" >> "$GITHUB_STEP_SUMMARY"
+            else
+              failed=1
+              echo "::warning::The SpaceDock description of $ID was not replaced"
+              echo "### $ID: description NOT replaced (SpaceDock mod $MOD_ID)" >> "$GITHUB_STEP_SUMMARY"
+            fi
+            echo "::endgroup::"
+          done
+          exit "$failed"
