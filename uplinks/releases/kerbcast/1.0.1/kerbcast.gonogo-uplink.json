@@ -1,0 +1,19 @@
+{
+  "id": "kerbcast",
+  "name": "Kerbcast",
+  "description": "Integrates Kerbcast's camera feeds into a Camera Feed widget, as well as EVA feeds for Crew Status and a docking camera in Rendezvous.",
+  "author": "jpeps",
+  "repo": "https://github.com/ksp-gonogo/gonogo-uplinks",
+  "mod": {
+    "name": "kerbcast",
+    "builtAgainst": "1.13.0"
+  },
+  "version": "1.0.1",
+  "minAppVersion": "0.0.0",
+  "apiVersion": "7.0.0",
+  "contractMajor": 52,
+  "contractMinor": 2,
+  "bundleUrl": "kerbcast/kerbcast.client.js",
+  "integrity": "sha256-2537c83918f68556591f37abf26372cfaf0c241168166095ac64601e878e93df",
+  "sdkVersion": "1.0.0"
+}
