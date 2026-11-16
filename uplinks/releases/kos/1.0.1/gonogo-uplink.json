@@ -1,0 +1,19 @@
+{
+  "id": "kos",
+  "name": "kOS",
+  "description": "Integrates kOS terminals into the dashboard.",
+  "author": "jpeps",
+  "repo": "https://github.com/ksp-gonogo/gonogo-uplinks",
+  "mod": {
+    "name": "kOS",
+    "builtAgainst": "1.6.0.1"
+  },
+  "version": "1.0.1",
+  "minAppVersion": "0.0.0",
+  "apiVersion": "7.0.0",
+  "contractMajor": 52,
+  "contractMinor": 2,
+  "bundleUrl": "kos/kos.client.js",
+  "integrity": "sha256-c010ee44f2ac8c1f368f7f2c7a14e243735eec6c269c0de75c31dc50b8b09eff",
+  "sdkVersion": "1.0.0"
+}
