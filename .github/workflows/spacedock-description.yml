@@ -6,6 +6,11 @@ name: SpaceDock description
 # released, which release.yml cannot re-run because the GitHub release exists.
 
 on:
+  # A push to staging that changes the request file runs it with the request's
+  # values, since a dispatch only reaches workflows already on main.
+  push:
+    branches: [staging]
+    paths: [.github/spacedock-description-request.json]
   workflow_dispatch:
     inputs:
       version:
@@ -39,6 +44,13 @@ jobs:
           DRY: ${{ inputs.dry_run }}
         run: |
           set -euo pipefail
+          if [ "$GITHUB_EVENT_NAME" = push ]; then
+            req=.github/spacedock-description-request.json
+            VERSION="$(node -e 'console.log(JSON.parse(require("fs").readFileSync(process.argv[1],"utf8")).version)' "$req")"
+            WANTED="$(node -e 'console.log(JSON.parse(require("fs").readFileSync(process.argv[1],"utf8")).uplinks ?? "all")' "$req")"
+            DRY="$(node -e 'console.log(JSON.parse(require("fs").readFileSync(process.argv[1],"utf8")).dryRun !== false)' "$req")"
+          fi
+          echo "version=$VERSION uplinks=$WANTED dry_run=$DRY"
           failed=0
           for json in uplinks/*/uplink.json; do
             NAME="$(basename "$(dirname "$json")")"
