@@ -12,12 +12,11 @@
     of the nine are inbound-only command args, more than every earlier slice
     put together.
 
-    Nine, recounted from KosRtConfig's wireTypes rather than trusted:
-    KosProcessorInfo, KosComputeStatus, KosTerminalFrame, KosTerminalOpenArgs,
-    KosKeystrokeArgs, KosTerminalResizeArgs, KosTerminalCloseArgs, KosRunArgs,
-    KosRunResult. Eleven when the slice was carved: KosExecArgs and
-    KosReEnableArgs went with the dead kOS dispatch commands. No enum of any
-    kind, so this slice needs no enum codegen leg.
+    The wire types, as KosRtConfig's wireTypes lists them: KosProcessorInfo,
+    KosTerminalFrame, KosTerminalOpenArgs, KosKeystrokeArgs,
+    KosTerminalResizeArgs, KosTerminalCloseArgs, KosRunArgs, KosRunResult,
+    KosCancelArgs and KosFilesListArgs. No enum of any kind, so this slice
+    needs no enum codegen leg.
 
     Deliberately its own small project rather than folding into
     GonogoKosUplink.csproj, and the reason is sharpest of all six here.

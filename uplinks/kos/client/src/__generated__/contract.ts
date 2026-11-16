@@ -51,38 +51,6 @@ export interface KosProcessorInfo
 	partName?: string | null;
 }
 /**
-* Out-of-band status for one centralised compute topic
-* (`kos.compute.<id>.status`): the bits that don't fit the value channel
-* (`kos-migration-spec.md` §4.4). Mirrors the app-side `useKosScriptStatus`
-* shape: `KosComputeStatus.running` / `KosComputeStatus.lastGoodAt` /
-* `KosComputeStatus.scriptError` / `KosComputeStatus.parseError` /
-* `KosComputeStatus.paused`.
-*
-* R7 typed-absence: `KosComputeStatus.lastGoodAt` is a nullable UT (`null` =
-* never produced a good parse yet, never `0`/`-1`);
-* `KosComputeStatus.scriptError`/`KosComputeStatus.parseError` are null when
-* there is no error, never an empty string.
-*/
-export interface KosComputeStatus
-{
-	/** The per-topic loop is currently dispatching this script on its CPU. */
-	running: boolean;
-	/**
-	* UT of the last successful `[KOSDATA]` parse, null until the first good
-	* parse.
-	*/
-	lastGoodAt?: Value<"ut"> | null;
-	/** Last script-author fault (runtime exception / `[KOSERROR]`), null when none. */
-	scriptError?: string | null;
-	/** Last `[KOSDATA]` parse failure: null when none. */
-	parseError?: string | null;
-	/**
-	* The per-topic breaker has tripped (three consecutive script faults) and
-	* dispatch is paused. No command clears it: the re-arm half was never built.
-	*/
-	paused: boolean;
-}
-/**
 * Args for the `kos.files.list` command: asks for the files on one of a CPU's
 * volumes, read straight from the CPU's own volumes without typing anything
 * into its terminal. The answer arrives on the `kos.run.<coreId>` channel as a
@@ -102,23 +70,17 @@ export interface KosFilesListArgs
 	volume: string;
 }
 /**
-* Args for the `kos.run` command, the general-purpose in-process replacement
-* for the standalone telnet proxy's ad-hoc RUNPATH path
-* (`kos-uplink-full-migration.md`). It carries the whole literal command text
-* to type into the CPU's REPL, exactly what the app already builds client-side
-* for the telnet path (a bare `RUNPATH("path", args...).` line, or the
-* multi-line managed- sync wrapper from
-* `packages/app/src/dataSources/kosWrapper.ts`). The mod does not parse or
-* interpret `KosRunArgs.command` at all, it types it into the interpreter
-* exactly like `kos.keystroke` types terminal input, via the same
-* `TermWindow.ProcessOneInputChar` seam.
+* Args for the `kos.run` command: runs the script at `KosRunArgs.path` on one
+* CPU with `KosRunArgs.args` as its parameters, the way `RUNPATH(path,
+* args...)` typed at that CPU's terminal would. The mod starts the program
+* itself; nothing in these args is ever compiled as kerboscript, so a path or
+* argument cannot inject code.
 *
-* Delivered delayed, single-in-flight-per-CPU (spec §3.0): reachability + the
-* `HasBooted`/`IsWaitingForCommand()` idle- prompt guard are re-checked at
-* delivery on the KSP main thread. A second `kos.run` for a CPU that already
-* has one in flight is rejected with `CommandErrorCode.ModeUnavailable`, the
-* caller (mirroring `KosComputeSession`'s existing per-CPU FIFO queue) is
-* expected to serialize calls to the same CPU client-side.
+* Delivered delayed, single-in-flight-per-CPU: reachability and the
+* idle-prompt guard are re-checked at delivery on the KSP main thread, and a
+* second `kos.run` for a CPU that already has one in flight is refused with
+* `kos.cpuBusy`. A path with no script behind it is refused with
+* `kos.scriptNotFound`, before anything runs.
 */
 export interface KosRunArgs
 {
@@ -133,31 +95,36 @@ export interface KosRunArgs
 	*/
 	requestId: string;
 	/**
-	* The literal text to type into the CPU's REPL, terminated the same way a
-	* human would press Enter (a trailing `\n` or `.\n`). Never parsed or
-	* rewritten by the mod.
+	* The script to run, as kOS reads a path: `0:/launch.ks` on the Archive,
+	* `1:/launch.ks` on the CPU's own drive, or a path relative to the CPU's
+	* current volume.
 	*/
-	command: string;
+	path: string;
+	/**
+	* The script's parameters, in order: each a number, a string or a boolean,
+	* reaching the script as the matching kOS value. At most 32.
+	*/
+	args: any[];
+	/**
+	* Copy the script onto the CPU's own drive (`1:`) under its file name first,
+	* then run that copy. Refused with `kos.noRoom` when the drive cannot hold it,
+	* and with `noConnection` when the script is on the Archive and the craft has
+	* no link home.
+	*/
+	copyToLocal: boolean;
 }
 /**
 * Result of one `kos.run` dispatch, delivered on the `kos.run.<coreId>`
 * dynamic channel (`Delivery.ReliableOrdered`, `DelayRole.Delayed`: same
 * posture as `KosTerminalFrame`: this is vessel telemetry riding gonogo's
-* reveal clock). Published exactly once per armed request, the moment the
-* mod's `[KOSDATA]`/`[KOSERROR]` block-capture pipeline
-* (`KosComputeAccumulator`/`KosDataParser`: the same one that feeds
-* `kos.compute.*`) completes a block for that CPU while the request is still
-* armed, the moment kOS stops the script on an error, or, when the CPU returns
-* to its prompt first, the moment that happens (`KosRunResult.ended`).
+* reveal clock). Published exactly once per armed request: when the script
+* hands back a lexicon with `ADDONS:GONOGO:RETURN(lexicon)`, when kOS stops
+* the script on an error, or when the program ends having handed nothing back
+* (`KosRunResult.ended`).
 *
-* R7 typed-absence: exactly one of `KosRunResult.fields` /
-* `KosRunResult.error` is non-null, a successful `[KOSDATA]` parse carries
-* `KosRunResult.fields` with `KosRunResult.error` null; a kOS error or an
-* explicit script-author `[KOSERROR]` carries `KosRunResult.error` with
-* `KosRunResult.fields` null; a run that printed neither has both null and
-* `KosRunResult.ended` true. Field values keep the exact
-* `KosDataParser.Coerce` shape (bool / double / string) the telnet path
-* already produces: no re-typing on the wire.
+* Exactly one of `KosRunResult.fields` / `KosRunResult.error` is non-null, or
+* neither with `KosRunResult.ended` true. Field values are a number, a boolean
+* or a string; any other kOS value arrives as its kOS text.
 */
 export interface KosRunResult
 {
@@ -165,19 +132,21 @@ export interface KosRunResult
 	coreId: number;
 	/** Echoes the triggering `KosRunArgs.requestId`. */
 	requestId: string;
-	/** Parsed `[KOSDATA]` field map: null on an error result. */
+	/**
+	* The lexicon the script passed to `ADDONS:GONOGO:RETURN`, keyed by its keys'
+	* text: null on an error or ended result.
+	*/
 	fields?: { [key: string]: any } | null;
 	/**
-	* Why the run failed: the message of an error kOS stopped the script on,
-	* followed by the script and line when kOS can say, or the text of an explicit
-	* `[KOSERROR]` block. Null on a data result.
+	* Why the run failed: the message of the error kOS stopped the script on,
+	* followed by the script and line when kOS can say. Null on a data or ended
+	* result.
 	*/
 	error?: string | null;
 	/**
-	* True when the CPU went back to waiting for a command without printing a
-	* `[KOSDATA]` or `[KOSERROR]` block, so the run finished with nothing to
-	* report: `KosRunResult.fields` and `KosRunResult.error` are both null. False
-	* on every result that carries one of them.
+	* True when the program finished without handing anything back, so the run has
+	* nothing to report: `KosRunResult.fields` and `KosRunResult.error` are both
+	* null. False on every result that carries one of them.
 	*/
 	ended: boolean;
 }

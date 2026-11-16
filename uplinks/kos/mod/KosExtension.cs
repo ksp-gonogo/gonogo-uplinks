@@ -11,34 +11,22 @@ using Sitrep.Contract;
 namespace Gonogo.KosUplink
 {
     /// <summary>
-    /// The kOS bridge Uplink. P0 stood up the main-thread dispatch spine
-    /// (<see cref="MainThreadDispatcher"/>, spec §2). <b>P1 adds the compute
-    /// feed:</b> the <c>kos.processors</c> CPU listing
-    /// (<c>kOSProcessor.AllInstances()</c>, spec §5), the
-    /// <c>kos.compute.&lt;id&gt;.&lt;field&gt;</c> dynamic feed captured at
-    /// source via the observe-only <c>ScreenBuffer.Print</c> Harmony postfix
-    /// (<see cref="KosComputeHarmony"/>, spec §4(b)) and the version guard
-    /// (<see cref="KosVersionGuard"/>, spec §7). P2-P4 (files / terminal /
-    /// widgets) are not started.
+    /// The kOS bridge Uplink: the <c>kos.processors</c> CPU listing, each
+    /// CPU's live terminal, and scripts run on a CPU by path with
+    /// <c>kos.run</c>, whose result a script hands back with
+    /// <c>ADDONS:GONOGO:RETURN</c> (<c>KosGonogoAddon</c>).
     ///
-    /// <para><b>Every kOS call runs on the KSP main thread</b> (spec §2): CPU
-    /// enumeration and the <c>kos.run</c> injection route through
-    /// <see cref="Dispatcher"/>; the compute postfix is already on the main
-    /// thread inside kOS's <c>PRINT</c>. The engine's own capture-on-main /
-    /// handle-on-Courier seam (<see cref="IUplinkHost.AddSampledSource"/>)
-    /// carries the processor listing across to the Courier thread.</para>
-    ///
-    /// <para><b>Live-KSP validation pending.</b> The kOS-touching paths
-    /// (AllInstances reads, the Print postfix round-trip, the RUNPATH inject)
-    /// compile against the linked kOS assemblies but cannot be exercised
-    /// without a running KSP+kOS; the pure logic (parse / accumulate / version
-    /// guard) is fully headlessly tested; see <c>GonogoKosUplink.Tests</c>.</para>
+    /// <para><b>Every kOS call runs on the KSP main thread</b>: CPU
+    /// enumeration and every command route through <see cref="Dispatcher"/>.
+    /// The engine's own capture-on-main / handle-on-Courier seam
+    /// (<see cref="IUplinkHost.AddSampledSource"/>) carries the processor
+    /// listing across to the Courier thread.</para>
     ///
     /// <para><b>File split:</b> this file is the KSP/Unity/kOS-FREE half,
     /// everything <c>GonogoKosUplink.Tests</c> Compile-Includes directly (mirrors
     /// <c>GonogoScansatUplink</c>/<c>GonogoScansatUplink.Tests</c>'s pure-logic
     /// split). The kOS/Unity-touching half (<c>Register</c>, the
-    /// <c>kOSProcessor</c>/<c>ScreenBuffer</c> reads, the real Harmony/GameObject
+    /// <c>kOSProcessor</c> reads, the real GameObject
     /// wiring) lives in the other half of this <c>partial class</c>,
     /// <see cref="KosExtension"/> in <c>KosExtension.Ksp.cs</c>, which the test
     /// project deliberately does not compile, a headless build has no
@@ -59,9 +47,6 @@ namespace Gonogo.KosUplink
         // field initialisers/params have run, from the same class's
         // KSP-touching half.
         private Action<MainThreadDispatcher> _bindDispatcherAddon;
-
-        private readonly KosComputeAccumulator _accumulator = new KosComputeAccumulator();
-        private IDynamicChannelSource? _computeSource;
 
         // Assigned only in RegisterKspBindings (KosExtension.Ksp.cs): the
         // headless test build never calls Register, so the compiler can't see
@@ -92,15 +77,13 @@ namespace Gonogo.KosUplink
         private KosTerminalManager? _terminalManager;
 #pragma warning restore CS0649
 
-        // kos.run, general-purpose "type this command line, correlate the
-        // resulting [KOSDATA]/[KOSERROR] block back" RPC that replaces the
-        // standalone telnet proxy's ad-hoc executeScript path (see
-        // kos-uplink-full-migration.md). _runManager is pure bookkeeping,
-        // constructed unconditionally (mirrors _accumulator) so headless
-        // tests can wire a recording publisher via WireRunForTests without
-        // needing KosExtension.Register at all. _runSource (the actual wire
-        // publisher) is assigned only in RegisterKspBindings, same
-        // "assigned in the other half" story as _terminalSource above.
+        // kos.run: start a script by path and answer on kos.run.<coreId> when
+        // it returns, fails or ends. _runManager is pure bookkeeping,
+        // constructed unconditionally so headless tests can wire a recording
+        // publisher via WireRunForTests without needing KosExtension.Register
+        // at all. _runSource (the actual wire publisher) is assigned only in
+        // RegisterKspBindings, same "assigned in the other half" story as
+        // _terminalSource above.
         private readonly KosRunManager _runManager = new KosRunManager();
 
         /// <summary>
@@ -128,35 +111,6 @@ namespace Gonogo.KosUplink
 #pragma warning disable CS0169 // field is never read in this compilation unit (RegisterKspBindings is the only reader)
         private IDynamicChannelSource? _runSource;
 #pragma warning restore CS0169
-
-        // Subscription short-circuit for OnPrint (adversarial-review I1): true
-        // iff at least one kos.compute.* topic currently has a subscriber. Wired
-        // to the host's subscription mirror in Register; null (→ treated as "no
-        // gate") only in headless tests that don't call Register.
-        private Func<bool>? _computeSubscribed;
-
-        /// <summary>
-        /// The game clock every compute publish is stamped with, wired to
-        /// <c>IUplinkHost.NowUt</c> in Register, exactly as the terminal
-        /// downlink's <see cref="KosTerminalManager"/> is.
-        ///
-        /// <para>Null means this instance has no clock seam at all (a headless
-        /// test that wired compute without one), and a compute publish is then
-        /// skipped rather than stamped. kos.compute.* is Delayed, so its stamp
-        /// is the UT the reveal gate and the keyframe cadence both index on: a
-        /// fabricated one froze the emitter's keyframe clock and made the
-        /// channel reveal as if it were TrueNow, which is why the processor
-        /// capture beside it returns null rather than substitute a 0.0.</para>
-        /// </summary>
-        private Func<double>? _nowUt;
-
-        // Reverse-map from a ScreenBuffer to the owning CPU's KOSCoreId,
-        // resolved ONLY when a [KOSDATA] block completes (never per fragment).
-        // Injectable so headless tests can count invocations and avoid the live
-        // kOSProcessor.AllInstances() call. Defaults to a KSP-free placeholder;
-        // InstallProductionDefaults() swaps in the real reverse-map for a
-        // production instance (see KosExtension.Ksp.cs).
-        internal Func<object, int> CoreIdResolver { get; set; } = _ => -1;
 
         // Error sink for the command main-thread path. Kept as a delegate (not
         // a direct UnityEngine.Debug call) so the KSP-free half of this class
@@ -193,9 +147,8 @@ namespace Gonogo.KosUplink
 
         /// <summary>
         /// KSP-touching production wiring seam. Implemented in
-        /// <c>KosExtension.Ksp.cs</c> (installs the real Debug.LogError sink,
-        /// the real GameObject/addon binder, and the real
-        /// <c>kOSProcessor</c>-reverse-map <see cref="CoreIdResolver"/>):
+        /// <c>KosExtension.Ksp.cs</c> (installs the real Debug.LogError sink
+        /// and the real GameObject/addon binder):
         /// that file is excluded from the headless test build, so there this
         /// partial method has no implementing declaration and every call
         /// below compiles away to nothing (standard C# optional-partial-method
@@ -308,7 +261,6 @@ namespace Gonogo.KosUplink
             ErrorCodes = ErrorCodeCatalog.Of(typeof(KosErrorCodes)),
             Namespaces = new[]
             {
-                new NamespaceDeclaration { Prefix = KosChannels.ComputePrefix, Template = ComputeNamespace() },
                 new NamespaceDeclaration { Prefix = KosChannels.TerminalPrefix, Template = TerminalNamespace() },
                 new NamespaceDeclaration { Prefix = KosChannels.RunPrefix, Template = RunNamespace() },
             },
@@ -339,23 +291,11 @@ namespace Gonogo.KosUplink
         internal string? VesselIdForCore(string coreId) =>
             Volatile.Read(ref _coreVessels).TryGetValue(coreId, out var vesselId) ? vesselId : null;
 
-        // The three per-CPU namespaces. Declared here, in the half that needs no
+        // The two per-CPU namespaces. Declared here, in the half that needs no
         // game, so the manifest lists them and the engine registers them before
         // Register runs. Each is keyed by coreId, not by craft, so routing needs
         // the map CaptureProcessors maintains: without the resolver the coreId
         // would be read as a vessel id and address a node nothing writes a delay for.
-
-        /// <summary>kos.compute.&lt;id&gt;.&lt;field&gt;, fed by the Print postfix; delayed like any vessel telemetry.</summary>
-        private ChannelDeclaration ComputeNamespace() => new ChannelDeclaration
-        {
-            Kind = SampleKind.Event,
-            Delivery = Delivery.LossyLatest,
-            Emission = new EmissionPolicy(keyframeIntervalUt: 30, quantum: EmissionQuantum.Absolute(0)),
-            Delay = DelayRole.Delayed,
-            PerVesselNode = true,
-            VesselIdForKey = VesselIdForCore,
-            Requires = NeedsProcessor,
-        };
 
         /// <summary>
         /// kos.terminal.&lt;coreId&gt;. Reliable-ordered because the screen is a diff
@@ -439,41 +379,26 @@ namespace Gonogo.KosUplink
         }
 
         /// <summary>
-        /// Test-only: wire the compute publish target and the subscription gate
-        /// directly, bypassing <see cref="KosExtension.Register"/> (which needs a
-        /// live kOS/Unity process for the version guard + Harmony install). Pair
-        /// with <see cref="CoreIdResolver"/> to exercise <see cref="OnPrint"/>
-        /// headlessly.
-        ///
-        /// <para><paramref name="nowUt"/> is the clock the publishes are
-        /// stamped with, and is required rather than defaulted: passing null
-        /// exercises the no-clock case, where a compute publish is skipped
-        /// rather than dated from a substitute, and a defaulted parameter made
-        /// a re-wire (this is called twice in one test, to flip the
-        /// subscription gate) silently drop the clock the first call set.</para>
-        /// </summary>
-        internal void WireComputeForTests(
-            IDynamicChannelSource computeSource,
-            Func<bool>? computeSubscribed,
-            Func<double>? nowUt)
-        {
-            _computeSource = computeSource;
-            _computeSubscribed = computeSubscribed;
-            _nowUt = nowUt;
-        }
-
-        /// <summary>
         /// Test-only: arm a <c>kos.run</c> request and/or wire a recording
         /// publisher directly against <see cref="_runManager"/>, bypassing the
         /// KSP-touching <c>Run</c> command handler (<c>KosExtension.Ksp.cs</c>)
         /// entirely, that handler's own guard (idle-prompt check, kOS type
-        /// access) can't run headlessly. Pair with <see cref="OnPrint"/> to
-        /// exercise the block-routing / gate-widening behaviour end to end.
+        /// access) can't run headlessly. Pair with <see cref="OnScriptReturn"/>
+        /// to exercise a script handing its result back.
         /// </summary>
         internal void WireRunForTests(Action<int, KosRunResult> publish)
         {
             _runManager.SetPublisher(publish);
         }
+
+        /// <summary>
+        /// A script on <paramref name="coreId"/> called
+        /// <c>ADDONS:GONOGO:RETURN</c> with <paramref name="fields"/>: the run
+        /// armed on that CPU ends with them. Returns false when no run was
+        /// armed there, so the value had nowhere to go.
+        /// </summary>
+        internal bool OnScriptReturn(int coreId, Dictionary<string, object?> fields) =>
+            _runManager.Complete(coreId, fields);
 
         /// <summary>Test-only: arm a run directly, bypassing the KSP-touching Run command handler.</summary>
         internal bool ArmRunForTests(int coreId, string requestId) => _runManager.TryArm(coreId, requestId);
@@ -539,100 +464,6 @@ namespace Gonogo.KosUplink
         }
 
         // ----------------------------------------------------------------
-        // kos.compute: the Print-postfix capture path (main thread)
-        // ----------------------------------------------------------------
-
-        /// <summary>
-        /// The <see cref="KosComputeHarmony.Sink"/>: runs on the KSP main
-        /// thread synchronously inside kOS's <c>PRINT</c>, on every kerboscript
-        /// <c>PRINT</c> fragment, so it must be as close to free as possible on
-        /// the common path. It:
-        /// <list type="number">
-        /// <item>short-circuits immediately when no <c>kos.compute.*</c>
-        /// subscriber exists (adversarial-review I1), no accumulation, no CPU
-        /// reverse-map, no allocation;</item>
-        /// <item>otherwise accumulates the fragment keyed by the
-        /// <c>ScreenBuffer</c> reference already in hand (not by a resolved CPU
-        /// id: so <c>kOSProcessor.AllInstances()</c> is never walked per
-        /// fragment);</item>
-        /// <item>resolves the owning CPU's <c>KOSCoreId</c> exactly once, only
-        /// when at least one <c>[KOSDATA]</c>/<c>[KOSERROR]</c> block has
-        /// completed and is about to publish (spec §4.2), stamps it onto the
-        /// completed blocks, and (for each block) either hands it to
-        /// <see cref="_runManager"/> (a <c>kos.run</c> is armed for that CPU:
-        /// the block is that call's correlated result, not a compute sample)
-        /// or publishes each field to
-        /// <c>kos.compute.&lt;topic&gt;.&lt;field&gt;</c> (the centralised-feed
-        /// path, which nothing subscribes to any more).</item>
-        /// </list>
-        /// Must be cheap and non-blocking (it is inside print). Entirely
-        /// KSP-free: <paramref name="screen"/> is an opaque <see cref="object"/>
-        /// handle, never touched as a real kOS type here.
-        /// </summary>
-        internal void OnPrint(object screen, string text)
-        {
-            if (_computeSource == null || screen == null || string.IsNullOrEmpty(text))
-            {
-                return;
-            }
-
-            // I1: burn nothing while no client is looking, WIDENED to also stay
-            // open while any kos.run is in flight (on ANY CPU): a kos.run caller
-            // never subscribes to kos.compute.*, so without this a run armed on
-            // a CPU with no compute subscriber would starve here and its
-            // promise would hang forever (see kos-uplink-full-migration.md's
-            // "Subscription-gate fix"). Overhead is bounded to a run's
-            // lifetime: typically well under a second.
-            if (_computeSubscribed != null && !_computeSubscribed() && !_runManager.HasAnyArmed())
-            {
-                return;
-            }
-
-            var blocks = _accumulator.Append(screen, text);
-            if (blocks.Count == 0)
-            {
-                // Common case for a fragment that only extends an open block (or
-                // ordinary terminal output): no CPU lookup, no publish.
-                return;
-            }
-
-            // A block completed: NOW resolve the emitting CPU once (spec §4.2).
-            int coreId = CoreIdResolver(screen);
-            // One clock read per completed batch, not per field: every field of
-            // a block was printed at the same instant, and a block closing is
-            // rare (never per PRINT fragment), so this is off the hot path.
-            double? nowUt = _nowUt?.Invoke();
-            foreach (var block in blocks)
-            {
-                block.CoreId = coreId;
-                if (_runManager.IsArmed(coreId))
-                {
-                    // This CPU has an in-flight kos.run, the completed block
-                    // (data OR explicit error) IS that call's result, consumed
-                    // here rather than fanned to kos.compute.*. A CPU's
-                    // interpreter runs one command at a time, so there is no
-                    // ambiguity about which in-flight call produced this block.
-                    _runManager.Complete(coreId, block);
-                    continue;
-                }
-                if (nowUt == null)
-                {
-                    // No clock seam, so nothing honest to date this sample
-                    // from: drop it rather than publish it at a made-up
-                    // instant. The armed-run branch above is deliberately
-                    // unaffected, a kos.run result is correlated by request id
-                    // and carries no UT of its own.
-                    continue;
-                }
-                foreach (var kv in block.Fields)
-                {
-                    var sub = KosChannels.ComputeFieldSubTopic(block.Topic, kv.Key);
-                    _computeSource.Publisher(sub).Publish(kv.Value, nowUt.Value);
-                }
-            }
-        }
-
-        // ----------------------------------------------------------------
         // Commands: dispatched on the Courier thread, marshalled to main
         // ----------------------------------------------------------------
 
@@ -673,7 +504,7 @@ namespace Gonogo.KosUplink
             // Done.Wait, where it can never reach the Drain that would run
             // `work`. The whole main thread wedges; the engine's own 4s backstop
             // fires first and the client sees a timeout while the
-            // kOS side effect (TypeCommand/RUNPATH) is abandoned and never runs,
+            // kOS side effect (starting a script) is abandoned and never runs,
             // exactly the live kos.run failure. When already on the drain thread,
             // run inline: no second hop, no block, no deadlock. The Courier-thread
             // / headless path (Dispatch + bounded wait below) is unchanged.

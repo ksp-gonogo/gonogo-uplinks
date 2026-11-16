@@ -9,6 +9,7 @@ export default {
   optionalChannelFamilies: ["kos.terminal.<coreId>"],
   commands: [
     "kos.keystroke",
+    "kos.run",
     "kos.terminal.close",
     "kos.terminal.open",
     "kos.terminal.resize",

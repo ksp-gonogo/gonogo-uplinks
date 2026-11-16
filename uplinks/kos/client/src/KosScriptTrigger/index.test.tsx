@@ -43,7 +43,7 @@ describe("KosScriptTrigger", () => {
     fake.setCpus([{ number: 7, tagname: "lander" }]);
     fake.registerScript(
       "0:/deltav.ks",
-      (inv) => `[KOSDATA] dv=${inv.args[0]};ok=true [/KOSDATA]`,
+      (inv) => ({ fields: { dv: inv.args[0] as number, ok: true } }),
     );
 
     // The sole CPU auto-selects: its tagname shows up as the target.
@@ -58,7 +58,7 @@ describe("KosScriptTrigger", () => {
     fireEvent.click(screen.getByRole("button", { name: "Run" }));
 
     await waitFor(() => expect(screen.getByText("OK")).toBeInTheDocument());
-    // The parsed [KOSDATA] fields are surfaced inline.
+    // The returned fields are surfaced inline.
     expect(screen.getByText("dv")).toBeInTheDocument();
     expect(screen.getByText("42")).toBeInTheDocument();
     expect(screen.getByText("ok")).toBeInTheDocument();
@@ -66,13 +66,13 @@ describe("KosScriptTrigger", () => {
     // The number arg reached the script as a bare number, not a quoted string.
     const [invocation] = fake.invocations();
     expect(invocation.script).toBe("0:/deltav.ks");
-    expect(invocation.args).toEqual(["42"]);
+    expect(invocation.args).toEqual([42]);
   });
 
   it("runs the script once when Run is pressed twice before the screen redraws", async () => {
     const { fake } = renderWidget();
     fake.setCpus([{ number: 7, tagname: "lander" }]);
-    fake.registerScript("0:/deltav.ks", () => "[KOSDATA] ok=true [/KOSDATA]");
+    fake.registerScript("0:/deltav.ks", () => ({ fields: { ok: true } }));
     await waitFor(() => expect(screen.getByText("lander")).toBeInTheDocument());
     fireEvent.change(screen.getByLabelText("Script path"), {
       target: { value: "0:/deltav.ks" },
@@ -93,7 +93,7 @@ describe("KosScriptTrigger", () => {
     fake.setCpus([{ number: 7, tagname: "lander" }]);
     fake.registerScript(
       "0:/bad.ks",
-      () => "[KOSERROR]undefined variable FOO[/KOSERROR]",
+      () => ({ error: "undefined variable FOO" }),
     );
 
     await waitFor(() => expect(screen.getByText("lander")).toBeInTheDocument());
@@ -115,7 +115,7 @@ describe("KosScriptTrigger", () => {
       { number: 7, tagname: "lander" },
       { number: 9, tagname: "probe" },
     ]);
-    fake.registerScript("0:/ping.ks", () => "[KOSDATA] pong=1 [/KOSDATA]");
+    fake.registerScript("0:/ping.ks", () => ({ fields: { pong: 1 } }));
 
     const select = await screen.findByLabelText("CPU");
     fireEvent.change(select, { target: { value: "probe" } });
