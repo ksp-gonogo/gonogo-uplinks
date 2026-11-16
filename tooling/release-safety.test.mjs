@@ -179,12 +179,10 @@ test("no job in a release waits on a group shared between releases", () => {
   );
 });
 
-test("a rejected push to releases is rebased and retried a bounded number of times", () => {
+test("the client is published through the retrying script, which pushes and purges", () => {
   const step = steps(read("release.yml")).find((s) => s.includes("- name: Publish the client"));
-  assert.match(step, /node tooling\/uplink-tools\.mjs "\$NAME" publish/);
-  assert.match(step, /--push --purge --tag "\$TAG"/);
-  assert.match(step, /for attempt in 1 2 3 4 5/);
-  assert.match(step, /rebase origin\/releases/);
-  assert.match(step, /rebase --abort/);
-  assert.match(step, /rev-list --count origin\/releases\.\.HEAD/);
+  assert.match(step, /node tooling\/publish-with-retry\.mjs "\$NAME" "\$TAG"/);
+  const script = readFileSync(join(ROOT, "tooling", "publish-with-retry.mjs"), "utf8");
+  assert.match(script, /"--push", "--purge", "--tag", tag/);
+  assert.match(script, /"uplinks", name, "\.releases"/);
 });
