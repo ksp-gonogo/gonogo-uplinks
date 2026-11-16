@@ -80,5 +80,38 @@ namespace GonogoKerbalismUplink.Tests
         {
             Assert.Equal(UplinkHealthState.Healthy, KerbalismHealth.For(loaded: true, available: true).State);
         }
+
+        [Fact]
+        public void IsUnavailableWhenSetupOutlastsTheLimit()
+        {
+            var health = KerbalismHealth.For(loaded: true, available: false, stalled: true);
+
+            Assert.Equal(UplinkHealthState.Unavailable, health.State);
+            Assert.Equal("Kerbalism did not finish setting up. Check KSP.log for Kerbalism errors.", health.Detail);
+        }
+
+        [Fact]
+        public void IsHealthyAgainWhenSetupCompletesAfterTheLimit()
+        {
+            Assert.Equal(
+                UplinkHealthState.Healthy,
+                KerbalismHealth.For(loaded: true, available: true, stalled: true).State);
+        }
+
+        [Fact]
+        public void AGameThatDoesNotRunKerbalismIsSaidBeforeAStall()
+        {
+            Assert.Equal(
+                KerbalismHealth.MissingFromGame,
+                KerbalismHealth.For(loaded: true, available: false, missingFromGame: true, stalled: true).Detail);
+        }
+
+        [Fact]
+        public void ASettingGivesTheStallReasonTheHealthGives()
+        {
+            Assert.Equal(
+                KerbalismHealth.For(true, false, false, true).Detail,
+                KerbalismHealth.SettingsUnavailableReason(true, false, false, true));
+        }
     }
 }

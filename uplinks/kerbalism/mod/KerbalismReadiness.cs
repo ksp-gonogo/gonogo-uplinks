@@ -1,5 +1,6 @@
 using System;
 using System.Collections;
+using System.Diagnostics;
 using System.Reflection;
 
 namespace Gonogo.KerbalismUplink
@@ -36,19 +37,72 @@ namespace Gonogo.KerbalismUplink
         private readonly FieldInfo? _suns;
         private readonly Func<bool> _sceneStands;
         private readonly Func<bool> _scenarioMissing;
+        private readonly Func<bool> _sceneRunsKerbalism;
+        private readonly Func<double> _seconds;
+        private readonly object _stallLock = new();
+        private double? _standingSince;
         private volatile bool _sunsListed;
+
+        /// <summary>How many seconds a scene Kerbalism runs in may stand before Kerbalism is called stalled.</summary>
+        public const double StallLimitSeconds = 30;
+
+        private static readonly Stopwatch Clock = Stopwatch.StartNew();
 
         /// <param name="kerbalism">Kerbalism's scenario type, <c>KERBALISM.Kerbalism</c>, or null when the build has none.</param>
         /// <param name="sim">Kerbalism's <c>KERBALISM.Sim</c> type, or null when the build has none.</param>
         /// <param name="sceneStands">Whether the scene has finished loading.</param>
         /// <param name="scenarioMissing">Whether a game is loaded, in a scene Kerbalism runs in, that does not hold Kerbalism's scenario. Null when that cannot be told, which reads as never missing.</param>
-        public KerbalismReadiness(Type? kerbalism, Type? sim, Func<bool> sceneStands, Func<bool>? scenarioMissing = null)
+        /// <param name="sceneRunsKerbalism">Whether the current scene is one Kerbalism's scenario runs in (flight, space centre, tracking station, editor). Null reads as always.</param>
+        /// <param name="seconds">A monotonic clock in seconds. Null uses the process clock.</param>
+        public KerbalismReadiness(
+            Type? kerbalism,
+            Type? sim,
+            Func<bool> sceneStands,
+            Func<bool>? scenarioMissing = null,
+            Func<bool>? sceneRunsKerbalism = null,
+            Func<double>? seconds = null)
         {
             _coreInitDone = StaticBool(kerbalism, "IsCoreGameInitDone");
             _saveInitDone = StaticBool(kerbalism, "IsSaveGameInitDone");
             _suns = sim?.GetField("suns", AnyStatic);
             _sceneStands = sceneStands;
             _scenarioMissing = scenarioMissing ?? (() => false);
+            _sceneRunsKerbalism = sceneRunsKerbalism ?? (() => true);
+            _seconds = seconds ?? (() => Clock.Elapsed.TotalSeconds);
+        }
+
+        /// <summary>
+        /// True once a scene Kerbalism runs in has stood for
+        /// <see cref="StallLimitSeconds"/> without Kerbalism setting itself up, in
+        /// a game that holds its scenario. The count starts the first time this is
+        /// asked while the scene stands and restarts if the scene stops standing
+        /// or Kerbalism becomes ready, so a Kerbalism that finishes late reads as
+        /// not stalled again. Never throws.
+        /// </summary>
+        public bool IsStalled
+        {
+            get
+            {
+                try
+                {
+                    var counting = _sceneStands() && _sceneRunsKerbalism() && !_scenarioMissing() && !IsReady;
+                    lock (_stallLock)
+                    {
+                        if (!counting)
+                        {
+                            _standingSince = null;
+                            return false;
+                        }
+                        var now = _seconds();
+                        _standingSince ??= now;
+                        return now - _standingSince.Value >= StallLimitSeconds;
+                    }
+                }
+                catch
+                {
+                    return false;
+                }
+            }
         }
 
         /// <summary>

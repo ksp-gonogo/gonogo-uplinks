@@ -84,7 +84,8 @@ namespace Gonogo.KerbalismUplink
                 var scenario = FindType("KERBALISM.Kerbalism");
                 _readiness = new KerbalismReadiness(
                     scenario, FindType("KERBALISM.Sim"), SceneStands,
-                    scenario == null ? null : () => ScenarioMissingFromGame(scenario.Name));
+                    scenario == null ? null : () => ScenarioMissingFromGame(scenario.Name),
+                    SceneRunsKerbalism);
 
                 _apiType = FindType("KERBALISM.API") ?? FindType("Kerbalism.API") ?? FindType("Kerbalism.System.API");
                 _featuresType = FindType("KERBALISM.Features") ?? FindType("Kerbalism.Features") ?? FindType("Kerbalism.System.Features");
@@ -215,6 +216,21 @@ namespace Gonogo.KerbalismUplink
         /// <summary>Whether the scene has finished loading: always outside flight, and in flight once the active vessel is in.</summary>
         private static bool SceneStands() => !HighLogic.LoadedSceneIsFlight || FlightGlobals.ready;
 
+        /// <summary>Whether the loaded scene is one Kerbalism's scenario runs in.</summary>
+        private static bool SceneRunsKerbalism()
+        {
+            switch (HighLogic.LoadedScene)
+            {
+                case GameScenes.SPACECENTER:
+                case GameScenes.TRACKSTATION:
+                case GameScenes.FLIGHT:
+                case GameScenes.EDITOR:
+                    return true;
+                default:
+                    return false;
+            }
+        }
+
         /// <summary>
         /// Whether a game is loaded, in a scene Kerbalism's scenario runs in, whose
         /// scenario list has no entry for it. The game writes that list when it
@@ -227,15 +243,9 @@ namespace Gonogo.KerbalismUplink
             {
                 return false;
             }
-            switch (HighLogic.LoadedScene)
+            if (!SceneRunsKerbalism())
             {
-                case GameScenes.SPACECENTER:
-                case GameScenes.TRACKSTATION:
-                case GameScenes.FLIGHT:
-                case GameScenes.EDITOR:
-                    break;
-                default:
-                    return false;
+                return false;
             }
             /* By index, since the Courier thread asks too and the list may be written under it: a failed read is caught by the caller and reads as not missing. */
             for (var i = 0; i < scenarios.Count; i++)
@@ -271,6 +281,12 @@ namespace Gonogo.KerbalismUplink
         /// loaded (see <see cref="KerbalismReadiness.IsMissingFromGame"/>).
         /// </summary>
         public bool IsMissingFromGame => _gate.Resolve()?._readiness?.IsMissingFromGame ?? false;
+
+        /// <summary>
+        /// True while a scene Kerbalism runs in has stood past the time limit
+        /// without Kerbalism setting itself up (see <see cref="KerbalismReadiness.IsStalled"/>).
+        /// </summary>
+        public bool IsStalled => _gate.Resolve()?._readiness?.IsStalled ?? false;
 
         /// <summary>
         /// True once Kerbalism's assembly is loaded, its API type resolved, and

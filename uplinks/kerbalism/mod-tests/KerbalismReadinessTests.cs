@@ -176,5 +176,108 @@ namespace GonogoKerbalismUplink.Tests
             Assert.Same(none, KerbalismReadiness.Usable(bound, Readiness(), none));
             Assert.Same(none, KerbalismReadiness.Usable<object>(null, Readiness(), none));
         }
+
+        private sealed class Clock
+        {
+            public double Now { get; set; }
+        }
+
+        private static KerbalismReadiness Timed(Clock clock, bool sceneStands = true, bool sceneRuns = true, bool scenarioMissing = false) =>
+            new(typeof(Scenario), typeof(Sim), () => sceneStands, () => scenarioMissing, () => sceneRuns, () => clock.Now);
+
+        [Fact]
+        public void NotStalledBeforeTheLimit()
+        {
+            Set(core: false, save: false, suns: 0);
+            var clock = new Clock();
+            var readiness = Timed(clock);
+
+            Assert.False(readiness.IsStalled);
+            clock.Now = KerbalismReadiness.StallLimitSeconds - 1;
+
+            Assert.False(readiness.IsStalled);
+        }
+
+        [Fact]
+        public void StalledOnceTheSceneHasStoodForTheLimitWithoutSetup()
+        {
+            Set(core: false, save: false, suns: 0);
+            var clock = new Clock();
+            var readiness = Timed(clock);
+
+            Assert.False(readiness.IsStalled);
+            clock.Now = KerbalismReadiness.StallLimitSeconds;
+
+            Assert.True(readiness.IsStalled);
+        }
+
+        [Fact]
+        public void RecoversWhenKerbalismFinishesLate()
+        {
+            Set(core: false, save: false, suns: 0);
+            var clock = new Clock();
+            var readiness = Timed(clock);
+            Assert.False(readiness.IsStalled);
+            clock.Now = 120;
+            Assert.True(readiness.IsStalled);
+
+            Set(core: true, save: true, suns: 1);
+
+            Assert.False(readiness.IsStalled);
+            Assert.True(readiness.IsReady);
+        }
+
+        [Fact]
+        public void TheCountDoesNotStartUntilTheSceneStands()
+        {
+            Set(core: false, save: false, suns: 0);
+            var clock = new Clock();
+            var stands = false;
+            var readiness = new KerbalismReadiness(
+                typeof(Scenario), typeof(Sim), () => stands, null, () => true, () => clock.Now);
+
+            Assert.False(readiness.IsStalled);
+            clock.Now = 100;
+            Assert.False(readiness.IsStalled);
+            stands = true;
+            Assert.False(readiness.IsStalled);
+            clock.Now = 100 + KerbalismReadiness.StallLimitSeconds;
+
+            Assert.True(readiness.IsStalled);
+        }
+
+        [Fact]
+        public void LeavingForASceneKerbalismDoesNotRunInRestartsTheCount()
+        {
+            Set(core: false, save: false, suns: 0);
+            var clock = new Clock();
+            var runs = true;
+            var readiness = new KerbalismReadiness(
+                typeof(Scenario), typeof(Sim), () => true, null, () => runs, () => clock.Now);
+
+            Assert.False(readiness.IsStalled);
+            clock.Now = 25;
+            runs = false;
+            Assert.False(readiness.IsStalled);
+            runs = true;
+            clock.Now = 40;
+            Assert.False(readiness.IsStalled);
+            clock.Now = 40 + KerbalismReadiness.StallLimitSeconds;
+
+            Assert.True(readiness.IsStalled);
+        }
+
+        [Fact]
+        public void NeverStalledInAGameThatDoesNotRunKerbalism()
+        {
+            Set(core: false, save: false, suns: 0);
+            var clock = new Clock();
+            var readiness = Timed(clock, scenarioMissing: true);
+
+            Assert.False(readiness.IsStalled);
+            clock.Now = 1000;
+
+            Assert.False(readiness.IsStalled);
+        }
     }
 }
