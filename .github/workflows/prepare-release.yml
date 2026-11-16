@@ -78,7 +78,7 @@ concurrency:
 
 jobs:
   plan:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     outputs:
       matrix: ${{ steps.plan.outputs.matrix }}
       args: ${{ steps.plan.outputs.args }}
@@ -152,7 +152,7 @@ jobs:
     needs: [plan, prepare]
     # Runs when some legs failed: the ones that passed go on, each judged alone.
     if: ${{ !cancelled() && needs.plan.result == 'success' }}
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     outputs:
       tags: ${{ steps.tags.outputs.tags }}
       matrix: ${{ steps.tags.outputs.matrix }}
@@ -223,7 +223,7 @@ jobs:
   release:
     needs: [plan, settle, ci-shared, ci]
     if: ${{ !cancelled() && inputs.dry_run == false && needs.settle.result == 'success' && needs.ci-shared.result == 'success' }}
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     permissions:
       contents: write
       actions: write

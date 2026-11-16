@@ -47,7 +47,7 @@ on:
 
 jobs:
   uplink:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     env:
       GONOGO_UPLINK_VERSION: ${{ inputs.version }}
     steps:

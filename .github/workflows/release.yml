@@ -55,7 +55,7 @@ on:
 
 jobs:
   resolve:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     outputs:
       name: ${{ steps.tag.outputs.name }}
       id: ${{ steps.tag.outputs.id }}
@@ -167,7 +167,7 @@ jobs:
 
   publish:
     needs: [resolve, build]
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     permissions:
       contents: write
     env:

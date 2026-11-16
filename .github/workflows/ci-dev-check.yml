@@ -43,7 +43,7 @@ concurrency:
 jobs:
   trampoline:
     if: github.event_name == 'schedule'
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     permissions:
       actions: write
     steps:
@@ -54,7 +54,7 @@ jobs:
 
   pack:
     if: github.event_name != 'schedule' && github.ref == 'refs/heads/staging'
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     outputs:
       matrix: ${{ steps.matrix.outputs.matrix }}
       sha: ${{ steps.sha.outputs.sha }}
@@ -149,7 +149,7 @@ jobs:
   report:
     needs: [pack, uplink]
     if: always() && github.event_name != 'schedule' && github.ref == 'refs/heads/staging'
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
       - name: Say what the Uplinks did against that commit
         env:

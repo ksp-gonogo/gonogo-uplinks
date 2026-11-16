@@ -33,7 +33,7 @@ concurrency:
 jobs:
   trampoline:
     if: github.event_name == 'schedule'
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     permissions:
       actions: write
     steps:
@@ -44,7 +44,7 @@ jobs:
 
   check:
     if: github.event_name != 'schedule' && github.ref == 'refs/heads/staging'
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v4
       - name: Fetch the published bundles
