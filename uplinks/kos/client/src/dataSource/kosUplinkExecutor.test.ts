@@ -9,7 +9,6 @@ import type { KosProcessorInfo, KosRunResult } from "../__generated__/contract.j
 import { isKosScriptError } from "../shared/KosScriptError.js";
 import { recordDispatch, sentCommands } from "../test/recordedCommands.js";
 import { KosUplinkExecutor } from "./kosUplinkExecutor.js";
-import { buildKosWrapper } from "./kosWrapper.js";
 
 /**
  * Unit tests for the `kos.run` Uplink executor that now backs
@@ -93,12 +92,14 @@ describe("KosUplinkExecutor", () => {
     primeProcessors(executor, client, transport, [
       { coreId: 7, tag: "datastream", hasBooted: true, processorMode: "READY" },
     ]);
-    const pending = executor.run(client, "datastream", "0:/foo.ks", [], null);
+    const pending = executor.run(client, "datastream", "0:/foo.ks", []);
 
     await waitFor(() => commands.length === 1);
     expect(commands[0].command).toBe("kos.run");
     expect(commands[0].args.coreId).toBe(7);
-    expect(commands[0].args.command).toBe('RUNPATH("0:/foo.ks").\n');
+    expect(commands[0].args.path).toBe("0:/foo.ks");
+    expect(commands[0].args.args).toEqual([]);
+    expect(commands[0].args.copyToLocal).toBe(false);
     expect(commands[0].args.requestId).toBeTruthy();
 
     transport.emit("kos.run.7", {
@@ -111,43 +112,8 @@ describe("KosUplinkExecutor", () => {
     await expect(pending).resolves.toEqual({ v: 1, ok: true });
   });
 
-  it("reuses buildKosWrapper's managed-wrapper text verbatim for a managed dispatch", async () => {
-    const { transport, client } = makeClient();
-    const commands = captureDispatches(transport);
-    const executor = new KosUplinkExecutor();
-
-    primeProcessors(executor, client, transport, [
-      { coreId: 3, tag: "datastream", hasBooted: true, processorMode: "READY" },
-    ]);
-    const pending = executor.run(
-      client,
-      "datastream",
-      "0:/widget_scripts/x.ks",
-      [],
-      { body: "PRINT 1.", version: "v1" },
-    );
-
-    await waitFor(() => commands.length === 1);
-    expect(commands[0].args.command).toBe(
-      buildKosWrapper({
-        path: "0:/widget_scripts/x.ks",
-        body: "PRINT 1.",
-        version: "v1",
-        args: [],
-      }),
-    );
-
-    transport.emit("kos.run.3", {
-      coreId: 3,
-      requestId: commands[0].args.requestId,
-      fields: {},
-      ended: false,
-    } satisfies KosRunResult);
-    await pending;
-  });
-
-  it("still resolves with an empty object for a genuinely empty [KOSDATA] body", async () => {
-    // `[KOSDATA][/KOSDATA]` parses to an empty field map mod-side, so `{}`
+  it("still resolves with an empty object for an empty returned lexicon", async () => {
+    // `ADDONS:GONOGO:RETURN(LEXICON())` hands back an empty field map, so `{}`
     // ON THE WIRE is a real answer: the script ran and reported nothing.
     // Only an ABSENT map is the absence.
     const { transport, client } = makeClient();
@@ -157,7 +123,7 @@ describe("KosUplinkExecutor", () => {
     primeProcessors(executor, client, transport, [
       { coreId: 4, tag: "cpu-a", hasBooted: true, processorMode: "READY" },
     ]);
-    const pending = executor.run(client, "cpu-a", "0:/foo.ks", [], null);
+    const pending = executor.run(client, "cpu-a", "0:/foo.ks", []);
     await waitFor(() => commands.length === 1);
 
     transport.emit("kos.run.4", {
@@ -186,7 +152,7 @@ describe("KosUplinkExecutor", () => {
     primeProcessors(executor, client, transport, [
       { coreId: 5, tag: "cpu-a", hasBooted: true, processorMode: "READY" },
     ]);
-    const pending = executor.run(client, "cpu-a", "0:/foo.ks", [], null);
+    const pending = executor.run(client, "cpu-a", "0:/foo.ks", []);
     await waitFor(() => commands.length === 1);
 
     transport.emit("kos.run.5", {
@@ -208,7 +174,7 @@ describe("KosUplinkExecutor", () => {
     const executor = new KosUplinkExecutor({ cpuWaitMs: 0 });
 
     await expect(
-      executor.run(client, "no-such-cpu", "0:/foo.ks", [], null),
+      executor.run(client, "no-such-cpu", "0:/foo.ks", []),
     ).rejects.toThrow(/no known CPU with tagname "no-such-cpu"/);
   });
 
@@ -220,10 +186,10 @@ describe("KosUplinkExecutor", () => {
     primeProcessors(executor, client, transport, [
       { coreId: 1, tag: "cpu-a", hasBooted: true, processorMode: "READY" },
     ]);
-    const first = executor.run(client, "cpu-a", "0:/a.ks", [], null);
+    const first = executor.run(client, "cpu-a", "0:/a.ks", []);
     await waitFor(() => commands.length === 1);
 
-    const second = executor.run(client, "cpu-a", "0:/b.ks", [], null);
+    const second = executor.run(client, "cpu-a", "0:/b.ks", []);
     // Give the second call every chance to (incorrectly) dispatch early.
     await new Promise((r) => setTimeout(r, 20));
     expect(commands).toHaveLength(1);
@@ -237,7 +203,7 @@ describe("KosUplinkExecutor", () => {
     await first;
 
     await waitFor(() => commands.length === 2);
-    expect(commands[1].args.command).toBe('RUNPATH("0:/b.ks").\n');
+    expect(commands[1].args.path).toBe("0:/b.ks");
 
     transport.emit("kos.run.1", {
       coreId: 1,
@@ -257,8 +223,8 @@ describe("KosUplinkExecutor", () => {
       { coreId: 1, tag: "cpu-a", hasBooted: true, processorMode: "READY" },
       { coreId: 2, tag: "cpu-b", hasBooted: true, processorMode: "READY" },
     ]);
-    const a = executor.run(client, "cpu-a", "0:/a.ks", [], null);
-    const b = executor.run(client, "cpu-b", "0:/b.ks", [], null);
+    const a = executor.run(client, "cpu-a", "0:/a.ks", []);
+    const b = executor.run(client, "cpu-b", "0:/b.ks", []);
 
     await waitFor(() => commands.length === 2);
     const forA = commands.find((c) => c.args.coreId === 1);
@@ -289,7 +255,7 @@ describe("KosUplinkExecutor", () => {
     ]);
     transport.setCommandHandler(() => ({ success: false, errorCode: "range" }));
 
-    const pending = executor.run(client, "cpu-a", "0:/a.ks", [], null);
+    const pending = executor.run(client, "cpu-a", "0:/a.ks", []);
 
     // The SPINE settles this now: a `CommandResult.success === false` reply
     // rejects the dispatch promise rather than resolving it, so the refusal
@@ -307,7 +273,7 @@ describe("KosUplinkExecutor", () => {
       { coreId: 1, tag: "cpu-a", hasBooted: true, processorMode: "READY" },
     ]);
 
-    const pending = executor.run(client, "cpu-a", "0:/a.ks", [], null);
+    const pending = executor.run(client, "cpu-a", "0:/a.ks", []);
     await waitFor(() => commands.length === 1);
 
     transport.emit("kos.run.1", {
@@ -338,7 +304,7 @@ describe("KosUplinkExecutor", () => {
       { coreId: 1, tag: "cpu-a", hasBooted: true, processorMode: "READY" },
     ]);
 
-    const pending = executor.run(client, "cpu-a", "0:/a.ks", [], null);
+    const pending = executor.run(client, "cpu-a", "0:/a.ks", []);
 
     const assertion = expect(pending).rejects.toThrow(/did not respond/i);
     await vi.advanceTimersByTimeAsync(1000);
@@ -352,7 +318,7 @@ describe("KosUplinkExecutor", () => {
     primeProcessors(executor, client, transport, [
       { coreId: 6, tag: "cpu-a", hasBooted: true, processorMode: "READY" },
     ]);
-    const pending = executor.run(client, "cpu-a", "0:/quiet.ks", [], null);
+    const pending = executor.run(client, "cpu-a", "0:/quiet.ks", []);
     await waitFor(() => commands.length === 1);
 
     transport.emit("kos.run.6", {
@@ -379,7 +345,7 @@ describe("KosUplinkExecutor", () => {
       { coreId: 1, tag: "cpu-a", hasBooted: true, processorMode: "READY" },
     ]);
 
-    const pending = executor.run(client, "cpu-a", "0:/a.ks", [], null);
+    const pending = executor.run(client, "cpu-a", "0:/a.ks", []);
     const assertion = expect(pending).rejects.toThrow(/did not respond/i);
     await vi.advanceTimersByTimeAsync(1000);
     await assertion;
@@ -405,7 +371,7 @@ describe("KosUplinkExecutor", () => {
     primeProcessors(executor, client, transport, [
       { coreId: 2, tag: "cpu-a", hasBooted: true, processorMode: "READY" },
     ]);
-    const pending = executor.run(client, "cpu-a", "0:/a.ks", [], null);
+    const pending = executor.run(client, "cpu-a", "0:/a.ks", []);
     await waitFor(() => sentCommands(sent, "kos.run").length === 1);
 
     transport.emit("kos.run.2", {
@@ -429,7 +395,7 @@ describe("KosUplinkExecutor", () => {
     ]);
     transport.emit("comms.delay", { oneWaySeconds: 20 });
 
-    const pending = executor.run(client, "cpu-a", "0:/a.ks", [], null);
+    const pending = executor.run(client, "cpu-a", "0:/a.ks", []);
     let settled = false;
     pending.then(
       () => {
@@ -461,7 +427,7 @@ describe("KosUplinkExecutor", () => {
     ]);
     transport.emit("comms.delay", { oneWaySeconds: 20 });
 
-    const pending = executor.run(client, "cpu-a", "0:/a.ks", [], null);
+    const pending = executor.run(client, "cpu-a", "0:/a.ks", []);
     const assertion = expect(pending).rejects.toThrow(/within 70000ms/);
     await vi.advanceTimersByTimeAsync(70_000);
     await assertion;
@@ -475,7 +441,7 @@ describe("KosUplinkExecutor", () => {
       { coreId: 1, tag: "cpu-a", hasBooted: true, processorMode: "READY" },
     ]);
 
-    const pending = executor.run(client, "cpu-a", "0:/a.ks", [], null);
+    const pending = executor.run(client, "cpu-a", "0:/a.ks", []);
     await waitFor(() => commands.length === 1);
 
     transport.emit("kos.run.1", {
@@ -515,9 +481,9 @@ describe("KosUplinkExecutor", () => {
       { coreId: 1, tag: "cpu-a", hasBooted: true, processorMode: "READY" },
     ]);
 
-    const first = executor.run(client, "cpu-a", "0:/a.ks", [], null);
+    const first = executor.run(client, "cpu-a", "0:/a.ks", []);
     await waitFor(() => commands.length === 1);
-    const second = executor.run(client, "cpu-a", "0:/b.ks", [], null); // queued behind first
+    const second = executor.run(client, "cpu-a", "0:/b.ks", []); // queued behind first
 
     executor.dispose();
 
@@ -533,7 +499,7 @@ describe("KosUplinkExecutor", () => {
       { coreId: 1, tag: "cpu-a", hasBooted: true, processorMode: "READY" },
     ]);
 
-    const stale = executor.run(c1, "cpu-a", "0:/a.ks", [], null);
+    const stale = executor.run(c1, "cpu-a", "0:/a.ks", []);
     await waitFor(() => commands1.length === 1);
     expect(t1.isSubscribed("kos.processors")).toBe(true);
     expect(t1.isSubscribed("kos.run.1")).toBe(true);
@@ -545,7 +511,7 @@ describe("KosUplinkExecutor", () => {
     // c2's kos.processors, but rejects itself: c2's processors haven't
     // reported "cpu-a" yet.
     await expect(
-      executor.run(c2, "cpu-a", "0:/x.ks", [], null),
+      executor.run(c2, "cpu-a", "0:/x.ks", []),
     ).rejects.toThrow(/no known CPU/);
 
     await expect(stale).rejects.toThrow();
@@ -558,7 +524,7 @@ describe("KosUplinkExecutor", () => {
     t2.emit("kos.processors", [
       { coreId: 9, tag: "cpu-a", hasBooted: true, processorMode: "READY" },
     ] satisfies KosProcessorInfo[]);
-    const fresh = executor.run(c2, "cpu-a", "0:/c.ks", [], null);
+    const fresh = executor.run(c2, "cpu-a", "0:/c.ks", []);
     await waitFor(() => commands2.length === 1);
     expect(commands2[0].args.coreId).toBe(9);
 
@@ -582,7 +548,7 @@ describe("KosUplinkExecutor", () => {
     const abort = new AbortController();
     const listing = executor.listFiles(client, "cpu-a", "0:", abort.signal);
     const listed = expect(listing).rejects.toThrow(/cancelled/);
-    const run = executor.run(client, "cpu-a", "0:/x.ks", [], null);
+    const run = executor.run(client, "cpu-a", "0:/x.ks", []);
     await waitFor(() => commands.length === 1);
 
     abort.abort();
@@ -606,7 +572,7 @@ describe("KosUplinkExecutor", () => {
       { coreId: 4, tag: "cpu-a", hasBooted: true, processorMode: "READY" },
     ]);
 
-    const first = executor.run(client, "cpu-a", "0:/x.ks", [], null);
+    const first = executor.run(client, "cpu-a", "0:/x.ks", []);
     const abort = new AbortController();
     const listing = executor.listFiles(client, "cpu-a", "0:", abort.signal);
     const listed = expect(listing).rejects.toThrow(/cancelled/);
@@ -630,7 +596,7 @@ describe("KosUplinkExecutor", () => {
     const commands = captureDispatches(transport);
     const executor = new KosUplinkExecutor();
 
-    const pending = executor.run(client, "cpu-a", "0:/a.ks", [], null);
+    const pending = executor.run(client, "cpu-a", "0:/a.ks", []);
     await new Promise((r) => setTimeout(r, 5));
     expect(commands).toHaveLength(0);
 
@@ -653,7 +619,7 @@ describe("KosUplinkExecutor", () => {
     const { transport, client } = makeClient();
     const executor = new KosUplinkExecutor({ cpuWaitMs: 30 });
 
-    const pending = executor.run(client, "cpu-a", "0:/a.ks", [], null);
+    const pending = executor.run(client, "cpu-a", "0:/a.ks", []);
     transport.emit("kos.processors", [
       { coreId: 2, tag: "cpu-b", hasBooted: true, processorMode: "READY" },
     ]);

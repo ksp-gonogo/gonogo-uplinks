@@ -1,9 +1,8 @@
 <!--
   GonogoKosUplink: the kOS bridge extension for gonogo/Sitrep (mod/GonogoKosUplink).
 
-  This assembly compile-time links kOS (GPLv3) and, from P1 onward, 0Harmony for one
-  observe-only patch. The link is deliberate: no arm's-length reflection,
-  no loopback telnet.
+  This assembly compile-time links kOS (GPLv3). The link is deliberate: no
+  loopback telnet.
 
   gonogo overall is MIT (see LICENSING.md). GonogoKosUplink is THE exception:
   linking GPLv3 kOS makes this assembly GPL-3.0-only. It is a dependency
@@ -19,7 +18,7 @@
   own GameData/GonogoKosUplink folder + its own CKAN/SpaceDock listing,
   GPLv3-linkage documented in NOTICE-KOS.txt): build +
   deploy through the reference-set build script. It must not bundle
-  core Gonogo's or kOS's or Harmony's assemblies; every Reference/
+  core Gonogo's or kOS's assemblies; every Reference/
   ProjectReference below that isn't unique to this extension is
   Private="false" for exactly that reason (see each ItemGroup's comment).
 -->
@@ -76,20 +75,6 @@
     </Reference>
     <Reference Include="kOS.Safe" Private="false">
       <HintPath>$(KspGameData)\kOS\Plugins\kOS.Safe.dll</HintPath>
-    </Reference>
-  </ItemGroup>
-
-  <!-- Harmony: P1 uses it for the ONE observe-only postfix on
-       ScreenBuffer.Print (spec §4(b)/§6, KosComputeHarmony.cs), the compute
-       feed's at-source capture. Installed only when the version-guard
-       confirms the target exists; otherwise compute falls back to the
-       snapshot-scrape (spec §4.4). Loaded from 000_Harmony's own
-       mod folder; Private=false: every other Harmony-dependent mod in
-       this install already provides it, GonogoKosUplink must not bundle a
-       second copy. -->
-  <ItemGroup>
-    <Reference Include="0Harmony" Private="false">
-      <HintPath>$(KspGameData)\000_Harmony\0Harmony.dll</HintPath>
     </Reference>
   </ItemGroup>
 

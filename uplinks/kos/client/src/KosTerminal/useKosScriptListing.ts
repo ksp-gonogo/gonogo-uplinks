@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { kosSource } from "../dataSource/kos.js";
-import type { KosData } from "../shared/kos-data-parser.js";
+import type { KosData } from "../shared/kos-data.js";
 import { type KosFileEntry, kosEntryKind } from "./scriptListingScript.js";
 
 /**
@@ -43,11 +43,7 @@ const IDLE: KosScriptListingResult = { paths: [], loading: false, hint: null };
  * the volumes directly and types nothing into the CPU's terminal, merges the file (not
  * directory) entries, and filters to `*.ks`/`*.ksm`: the only RUNPATH-able
  * kinds. This is the RPC-shaped one-shot case (per-call args,
- * request/response), which is the only kOS read pattern that still exists:
- * the centralised `kos.compute.*` feed and the `registerKosScript` registry
- * behind it were deleted with the widgets that consumed them. A directory
- * listing would not have belonged there anyway, being neither passive
- * telemetry nor a fixed no-args interval script.
+ * request/response).
  *
  * With `noLink` set, no request is sent: the drives cannot be reached without a
  * link, so the hint says so at once and the listing is read when the link

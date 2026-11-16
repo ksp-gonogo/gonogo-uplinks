@@ -65,6 +65,12 @@ namespace GonogoKosUplink.Tests.Headless
                 out _)(inner, hook);
 
         [Fact]
+        public void KosSafe_HasEveryMemberTheNativeRunCalls()
+        {
+            Assert.Empty(KosVersionGuard.MissingNativeRunMembers(typeof(SafeSharedObjects).Assembly.GetTypes()));
+        }
+
+        [Fact]
         public void Proxy_ForwardsEveryCallAndHandsTheExceptionToTheHook()
         {
             var inner = new RecordingLogger();

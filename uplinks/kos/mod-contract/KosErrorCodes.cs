@@ -23,7 +23,15 @@ public static class KosErrorCodes
     public static readonly RefusalCode CpuBusy =
         CommandErrorCode.NotClearToProceed.Refine("kos.cpuBusy", "the CPU is busy and not at its prompt");
 
-    /// <summary>The CPU has no terminal window a script could be typed into.</summary>
-    public static readonly RefusalCode NoTerminal =
-        CommandErrorCode.CapabilityMismatch.Refine("kos.noTerminal", "that CPU has no terminal window to type into");
+    /// <summary>There is no script at the path a run named, on the volume the path names.</summary>
+    public static readonly RefusalCode ScriptNotFound =
+        CommandErrorCode.NotFound.Refine("kos.scriptNotFound", "there is no script at that path");
+
+    /// <summary>The CPU's own drive has no room for the copy of the script a run asked for.</summary>
+    public static readonly RefusalCode NoRoom =
+        CommandErrorCode.LimitReached.Refine("kos.noRoom", "the CPU's drive has no room for the script");
+
+    /// <summary>The installed kOS does not let a script be started from outside its terminal.</summary>
+    public static readonly RefusalCode RunUnsupported =
+        CommandErrorCode.CapabilityMismatch.Refine("kos.runUnsupported", "this kOS version cannot start a script from here");
 }

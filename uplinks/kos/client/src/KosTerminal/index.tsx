@@ -37,6 +37,7 @@ import {
   Section,
   Switch,
   useModalSaveBar,
+  useCommandControl,
 } from "@ksp-gonogo/ui-kit";
 import { Terminal } from "@xterm/xterm";
 import {
@@ -54,11 +55,14 @@ import { styled } from "styled-components";
 import type {
   KosKeystrokeArgs,
   KosProcessorInfo,
+  KosRunArgs,
   KosTerminalCloseArgs,
   KosTerminalFrame,
   KosTerminalOpenArgs,
   KosTerminalResizeArgs,
 } from "../__generated__/contract.js";
+import { parseScriptArgs } from "../KosScriptTrigger/args.js";
+import type { KosScriptArg } from "../shared/kos-data.js";
 import { KOS } from "../uplink.js";
 import {
   applyLineEdit,
@@ -355,14 +359,13 @@ function recallNewer(
  * filters `scriptPaths` against `query` and tracks the arrow/mouse-
  * highlighted option; confirming one (Enter or click) moves to "args",
  * where further typed characters compose optional whitespace-separated
- * trailing arguments appended to the eventual RUNPATH call. `copyLocal`
- * (Ctrl+L to toggle, or the composer's own affordance)
- * routes the eventual send through a COPYPATH-then-RUNPATH pair against a
- * local (`1:`) copy instead of running the script where it lives, for
- * scripts run repeatedly, so the archive round-trip is only paid once. A
- * second Enter in "args" builds and sends the whole command through the
- * same `sendKeystrokeRef`/line-history path an ordinary typed line uses,
- * see `buildRunCommand` and the `term.onData` callsite.
+ * whitespace-separated arguments the script is run with. `copyLocal`
+ * (Ctrl+L to toggle, or the composer's own affordance) has the game copy the
+ * script onto the CPU's own drive (`1:`) first and run that copy, for scripts
+ * run repeatedly, so the archive round-trip is only paid once. A second Enter
+ * in "args" sends a `kos.run`: the game starts the script itself, so nothing
+ * is typed into the CPU and the program's output lands on this screen. See
+ * `buildRunRequest` and the `term.onData` callsite.
  */
 export type ScriptComposerState =
   | { phase: "picking"; query: string; activeIndex: number }
@@ -397,51 +400,39 @@ function scriptOptionsFor(
   return { groups, flat: flattenComboboxGroups(groups) };
 }
 
-/**
- * Basename of a kOS volume-qualified path: `"0:/widget_scripts/foo.ks"` →
- * `"foo.ks"`. Names the local (`1:`) copy `copyLocal` lands.
- */
-function scriptBasename(path: string): string {
-  const slash = path.lastIndexOf("/");
-  return slash === -1 ? path : path.slice(slash + 1);
+/** A script run the composer has built, ready to send as a `kos.run`. */
+interface ScriptRunRequest {
+  path: string;
+  args: KosScriptArg[];
+  copyToLocal: boolean;
+  /** How the run is named on the command queue: what was run and with which arguments. */
+  label: string;
 }
 
 /**
- * Builds the command line kOS will execute, from a confirmed script path
- * and raw whitespace-separated argument tokens. Each token is inserted
- * verbatim as a kerboscript literal (e.g. `5`, `true`, `"abc"`), the
- * composer does no quoting or type inference, matching the goal spec's
- * `RUNPATH("<path>"[, arg1, arg2])` shape.
- *
- * `copyLocal` (the "copy local & run" toggle) prefixes a
- * `COPYPATH("<path>", "<local>").` statement ahead of the RUNPATH, targeting
- * the script's basename on the CPU's local (`1:`) drive, both statements
- * on one line, still a single `kos.keystroke` round trip under signal delay
- * delay, so a script run repeatedly only pays the archive round-trip once
- * (subsequent runs execute the already-local copy). Trailing `.` terminates
- * each kerboscript statement; trailing `\r` is the wire Enter byte,
- * identical to an ordinary typed line's `reduceLineModeChar` Enter path.
- *
- * Nothing clears the screen afterwards: the operator's own script keeps its
- * output on the terminal.
+ * Builds the run a confirmed script path and its whitespace-separated argument
+ * tokens describe. Each token reaches the script as a number, a boolean or a
+ * string, read the same way the Script Trigger reads its arguments.
  */
-function buildRunCommand(
+function buildRunRequest(
   path: string,
   argsText: string,
   copyLocal: boolean,
-): { chars: string; label: string } {
-  const args = argsText.trim().split(/\s+/).filter(Boolean);
-  const argsPart = args.length > 0 ? `, ${args.join(", ")}` : "";
-  const runPath = copyLocal ? `1:/${scriptBasename(path)}` : path;
-  const copyPrefix = copyLocal ? `COPYPATH("${path}", "${runPath}"). ` : "";
-  const label = `${copyPrefix}RUNPATH("${runPath}"${argsPart}).`;
-  return { chars: `${label}\r`, label };
+): ScriptRunRequest {
+  const tokens = argsText.trim().split(/\s+/).filter(Boolean);
+  const label = [copyLocal ? "copy and run" : "run", path, ...tokens].join(" ");
+  return {
+    path,
+    args: parseScriptArgs(argsText),
+    copyToLocal: copyLocal,
+    label,
+  };
 }
 
 type ScriptComposerAction =
   | { kind: "update"; next: ScriptComposerState }
   | { kind: "cancel" }
-  | { kind: "send"; chars: string; label: string }
+  | { kind: "run"; request: ScriptRunRequest }
   | { kind: "noop" };
 
 /**
@@ -539,12 +530,10 @@ function handleScriptComposerInput(
   // history/cursor handling below, which would silently corrupt a composer
   // that owns the bar.
   if (data === "\r" || data === "\n") {
-    const { chars, label } = buildRunCommand(
-      state.path,
-      state.argsText,
-      state.copyLocal,
-    );
-    return { kind: "send", chars, label };
+    return {
+      kind: "run",
+      request: buildRunRequest(state.path, state.argsText, state.copyLocal),
+    };
   }
   // Ctrl+L toggles "copy local & run". It is otherwise inert here, never forwarded to the CPU (see the C0 control-char filter below), so repurposing it shadows no existing behaviour.
   if (data === "\x0c") {
@@ -931,6 +920,7 @@ function KosTerminalScreen({
   const openCmd = useCommand("kos.terminal.open", { rail: false });
   const closeCmd = useCommand("kos.terminal.close", { rail: false });
   const resizeCmd = useCommand("kos.terminal.resize", { rail: false });
+  const runCmd = useCommand("kos.run", { rail: false });
   const { dangerouslySendWithoutInput: sendKeystroke } = keystrokeCmd;
   const { dangerouslySendWithoutInput: sendOpen } = openCmd;
   const { dangerouslySendWithoutInput: sendClose } = closeCmd;
@@ -987,6 +977,45 @@ function KosTerminalScreen({
       label ? { label, topic: terminalTopic } : undefined,
     ).then(lease.onKeystrokeAccepted, lease.onKeystrokeRefused);
   };
+
+  /*
+   * A script run from the `/` composer, sent through a command control: Enter
+   * (and the bar's send button, which presses Enter) presses it with the run
+   * just composed, and what became of the press shows in the terminal's notice. The game starts the
+   * script and its output lands on this CPU's screen, so nothing waits on the
+   * run's result here. The composer closes only when the run is actually sent.
+   */
+  const bindRun = (request: ScriptRunRequest) =>
+    runCmd.with(
+      {
+        coreId,
+        requestId: safeRandomUuid(),
+        path: request.path,
+        args: request.args,
+        copyToLocal: request.copyToLocal,
+      } satisfies KosRunArgs,
+      {
+        label: request.label,
+        topic: terminalTopic,
+        before: () => {
+          scriptComposerRef.current = null;
+          setScriptComposer(null);
+        },
+      },
+    );
+  const runControl = useCommandControl({
+    command: bindRun(buildRunRequest("", "", false)),
+    unavailable: readOnly ? "This terminal is read only" : null,
+  });
+  const bindRunRef = useRef(bindRun);
+  bindRunRef.current = bindRun;
+  const runControlRef = useRef(runControl);
+  runControlRef.current = runControl;
+  const runNotice = runControl.isRefused
+    ? runControl.refusalText
+    : runControl.isLost
+      ? runControl.lossText
+      : null;
 
   // Downlink: write each terminal frame straight into xterm. Frames are already
   // xterm-ready (the mod mapped kOS's screen diff through TerminalXtermMapper),
@@ -1092,22 +1121,18 @@ function KosTerminalScreen({
             } else if (action.kind === "cancel") {
               scriptComposerRef.current = null;
               setScriptComposer(null);
-            } else if (action.kind === "send") {
+            } else if (action.kind === "run") {
               /*
-               * Refuses the send with no comms path, same as
+               * Refuses the run with no comms path, same as
                * `reduceLineModeChar`'s `canSend` guard for an ordinary
                * line: leaves the composer exactly as-is so the operator
                * can finish once the path returns, instead of losing the
-               * pending RUNPATH (kos-nopath-block-input parity).
+               * pending run.
                */
               if (!noPathRef.current) {
-                scriptComposerRef.current = null;
-                setScriptComposer(null);
-                lineHistoryRef.current = pushLineHistory(
-                  lineHistoryRef.current,
-                  action.label,
+                runControlRef.current.pressWith(
+                  bindRunRef.current(action.request),
                 );
-                sendKeystrokeRef.current(action.chars, action.label);
               }
             }
             return;
@@ -1518,10 +1543,17 @@ function KosTerminalScreen({
             No path: commands are not being sent
           </NoPathBadge>
         )}
-        {!readOnly && lease.notice && (
+        {!readOnly && lease.notice ? (
           <LeaseNotice role="status" $kind={lease.notice.kind}>
             {lease.notice.text}
           </LeaseNotice>
+        ) : (
+          !readOnly &&
+          runNotice && (
+            <LeaseNotice role="status" $kind="keystroke">
+              {runNotice}
+            </LeaseNotice>
+          )
         )}
         {screenHeld && (
           <HeldCorner role="status">

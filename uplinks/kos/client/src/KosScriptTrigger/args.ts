@@ -1,4 +1,4 @@
-import type { KosScriptArg } from "../shared/kos-data-parser.js";
+import type { KosScriptArg } from "../shared/kos-data.js";
 
 /**
  * Parse the trigger widget's free-text args field into typed `KosScriptArg`s

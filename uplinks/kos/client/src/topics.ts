@@ -16,16 +16,15 @@
 // alone) so the augmentation reaches the emitted `dist/index.d.ts`: see that
 // file's own comment.
 //
-// ## Why this Uplink registers ONE Topic against nine relocated types
+// ## Why this Uplink registers ONE Topic against ten relocated types
 //
-// Only `KosProcessorInfo` carries `[SitrepTopic]`. The other eight are the
+// Only `KosProcessorInfo` carries `[SitrepTopic]`. The other nine are the
 // payloads of DYNAMIC channels and of commands, and neither can have a static
 // Topic entry:
 //
 //   kos.terminal.<coreId>       KosTerminalFrame   one channel per CPU
 //   kos.run.<coreId>            KosRunResult       one channel per CPU
-//   kos.compute.<id>.status     KosComputeStatus   one per compute topic id
-//   (five command args)                            inbound only
+//   (seven command args)                           inbound only
 //
 // A runtime-computed sub-topic has no fixed member in the Topic union, which the
 // SDK's own `TOPIC_IDS` doc states as a deliberate exclusion. The widgets that
@@ -97,14 +96,8 @@ for (const topic of GENERATED_COLLECTION_TOPIC_IDS) {
 //     way, by the same rule that leaves a vessel name alone. The registration
 //     restores the LOOKUP, which is public SDK surface (`unitOf` /
 //     `unitsForTopic`), not a hydration.
-//   • `registerTypeUnits` restores `unitsForType`, and the one entry in this
-//     slice that names a real dimension lives there:
-//     `KosComputeStatus.lastGoodAt` (`"s"`, typed `Value<"s">` in
-//     ./__generated__/contract.ts). It is reached by no Topic's shape map,
-//     because `kos.compute.<id>.status` is a dynamic name, so nothing decodes
-//     through it today; that was already true while the type lived in core.
-//     Registering it keeps the type-keyed lookup honest for the moment something
-//     does.
+//   • `registerTypeUnits` restores `unitsForType`, the type-keyed lookup of
+//     the same non-quantity tokens.
 //   • `GENERATED_TYPE_SHAPES`/`GENERATED_TOPIC_SHAPES` are both EMPTY for this
 //     slice: nothing here nests. `KosRunResult.fields` is the closest thing and
 //     is deliberately not a shape, it is whatever a kerboscript printed.

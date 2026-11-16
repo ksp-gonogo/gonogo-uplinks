@@ -9,41 +9,38 @@ using System.Reflection;
 namespace Gonogo.KosUplink
 {
     /// <summary>
-    /// Result of the mandatory kOS version-guard probe
-    /// (<c>kos-migration-spec.md</c> §7): assembly presence, version pin, and
-    /// member-existence for every kOS member this Uplink binds. Never throws,
-    /// every failure mode degrades to <see cref="IsAvailable"/> = false with a
-    /// <see cref="Reason"/>, per the fail-soft contract
-    /// (<c>IUplinkHost.SetAvailability</c>). <see cref="ComputePostfixAvailable"/>
-    /// is a separate, non-fatal axis: the <c>ScreenBuffer.Print(string,bool)</c>
-    /// postfix target being absent does not make the Uplink unavailable, it
-    /// only means compute falls back to the public snapshot-scrape (spec §4.4).
+    /// Result of the mandatory kOS version-guard probe: assembly presence,
+    /// version pin, and member-existence for every kOS member this Uplink
+    /// binds. Never throws, every failure mode degrades to
+    /// <see cref="IsAvailable"/> = false with a <see cref="Reason"/>, per the
+    /// fail-soft contract (<c>IUplinkHost.SetAvailability</c>).
+    /// <see cref="NativeRunAvailable"/> is a separate, non-fatal axis: without
+    /// it the terminal still works and only <c>kos.run</c> is refused.
     /// </summary>
     public readonly struct KosGuardResult
     {
         public bool IsAvailable { get; }
         public string? Reason { get; }
-        public bool ComputePostfixAvailable { get; }
 
         /// <summary>
-        /// Whether each CPU's private <c>kOSProcessor.shared</c> field is there,
-        /// with a <c>Logger</c> that can be replaced, so a script error can end the
-        /// run it stopped. Absent, an errored run ends as one that returned nothing.
+        /// Whether a script can be started and watched natively: each CPU's
+        /// private <c>kOSProcessor.shared</c> field is there with a <c>Logger</c>
+        /// that can be replaced, and every public kOS.Safe member the start uses
+        /// is present (<see cref="KosVersionGuard.NativeRunMembers"/>).
         /// </summary>
-        public bool RunErrorCaptureAvailable { get; }
+        public bool NativeRunAvailable { get; }
 
-        private KosGuardResult(bool isAvailable, string? reason, bool computePostfixAvailable, bool runErrorCaptureAvailable)
+        private KosGuardResult(bool isAvailable, string? reason, bool nativeRunAvailable)
         {
             IsAvailable = isAvailable;
             Reason = reason;
-            ComputePostfixAvailable = computePostfixAvailable;
-            RunErrorCaptureAvailable = runErrorCaptureAvailable;
+            NativeRunAvailable = nativeRunAvailable;
         }
 
-        public static KosGuardResult Ok(bool computePostfixAvailable, bool runErrorCaptureAvailable = false) =>
-            new KosGuardResult(true, null, computePostfixAvailable, runErrorCaptureAvailable);
+        public static KosGuardResult Ok(bool nativeRunAvailable) =>
+            new KosGuardResult(true, null, nativeRunAvailable);
 
-        public static KosGuardResult Fail(string reason) => new KosGuardResult(false, reason, false, false);
+        public static KosGuardResult Fail(string reason) => new KosGuardResult(false, reason, false);
     }
 
     /// <summary>
@@ -166,12 +163,42 @@ namespace Gonogo.KosUplink
                     $"kOS member-existence probe failed: {string.Join(", ", missing)}");
             }
 
-            // Optional: the compute Print-postfix target. Absent => fall back
-            // to snapshot-scrape, Uplink stays fully available (spec §4.4/§7).
-            Type? screenBuffer = allTypes.FirstOrDefault(t => t.Name == "ScreenBuffer");
-            bool postfix = screenBuffer != null && HasPrintStringBool(screenBuffer);
+            var runReady = SharedObjectsField(processor) != null && MissingNativeRunMembers(allTypes).Count == 0;
+            return KosGuardResult.Ok(runReady);
+        }
 
-            return KosGuardResult.Ok(postfix, SharedObjectsField(processor) != null);
+        /// <summary>
+        /// The public kOS.Safe members a native run calls, by the simple name of
+        /// the type that declares them. Bound at compile time, so a kOS that
+        /// dropped one would fail the run with a missing-method error; checking
+        /// them here refuses the run cleanly instead.
+        /// </summary>
+        public static readonly IReadOnlyDictionary<string, string[]> NativeRunMembers = new Dictionary<string, string[]>
+        {
+            ["ICpu"] = new[] { "SetGlobal", "RemoveVariable", "SwitchToProgramContext", "YieldProgram", "GetCallTrace", "GetOpcodeAt" },
+            ["YieldFinishedCompile"] = new[] { "RunScript" },
+            ["IVolumeManager"] = new[] { "GlobalPathFromObject", "GetVolumeFromPath" },
+            ["Volume"] = new[] { "Open", "IsRoomFor", "SaveFile" },
+            ["Script"] = new[] { "ClearContext" },
+        };
+
+        /// <summary>Each <see cref="NativeRunMembers"/> entry missing from <paramref name="allTypes"/>, as <c>Type.Member</c>.</summary>
+        public static IReadOnlyList<string> MissingNativeRunMembers(IReadOnlyList<Type> allTypes)
+        {
+            var missing = new List<string>();
+            foreach (var kv in NativeRunMembers)
+            {
+                // Every type of that simple name counts, since kOS.dll and kOS.Safe.dll can both declare one.
+                var types = allTypes.Where(t => t.Name == kv.Key).ToList();
+                foreach (var member in kv.Value)
+                {
+                    if (!types.Any(t => t.GetMember(member, BindingFlags.Public | BindingFlags.Instance | BindingFlags.Static).Length > 0))
+                    {
+                        missing.Add(kv.Key + "." + member);
+                    }
+                }
+            }
+            return missing;
         }
 
         /// <summary>The private <c>kOSProcessor</c> field holding the CPU's <c>SharedObjects</c>.</summary>
@@ -219,17 +246,6 @@ namespace Gonogo.KosUplink
                           && p[0].ParameterType == typeof(char)
                           && p[2].ParameterType == typeof(bool)
                           && p[3].ParameterType == typeof(bool));
-        }
-
-        private static bool HasPrintStringBool(Type screenBuffer)
-        {
-            return screenBuffer
-                .GetMethods(BindingFlags.Public | BindingFlags.Instance)
-                .Where(m => m.Name == "Print")
-                .Select(m => m.GetParameters())
-                .Any(p => p.Length == 2
-                          && p[0].ParameterType == typeof(string)
-                          && p[1].ParameterType == typeof(bool));
         }
 
         private static Type[] SafeGetTypes(Assembly asm)

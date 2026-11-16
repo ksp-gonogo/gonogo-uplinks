@@ -32,7 +32,7 @@ import { styled } from "styled-components";
 import type { KosProcessorInfo } from "../__generated__/contract.js";
 import { kosSource } from "../dataSource/kos.js";
 import { isKosScriptError } from "../shared/KosScriptError.js";
-import type { KosData } from "../shared/kos-data-parser.js";
+import type { KosData } from "../shared/kos-data.js";
 import { KOS } from "../uplink.js";
 import { parseScriptArgs } from "./args.js";
 
@@ -52,9 +52,9 @@ interface KosScriptTriggerConfig {
  * The outcome of the most recent dispatch. A kOS run rides the telemetry
  * stream like everything else, so the result only arrives after the full
  * round-trip: `running` holds for exactly that long (the widget never fakes
- * an instant result), then resolves to `ok` with the parsed [KOSDATA] fields
- * or `error` with the message. `scriptFault` distinguishes a script-author
- * fault (explicit [KOSERROR] / a kOS runtime exception) from a transport /
+ * an instant result), then resolves to `ok` with the fields the script handed
+ * back with `ADDONS:GONOGO:RETURN`, or `error` with the message. `scriptFault`
+ * distinguishes an error kOS stopped the script on from a transport or
  * dispatch error, mirroring `KosDataSource`'s own `KosScriptError` split.
  */
 type RunState =
