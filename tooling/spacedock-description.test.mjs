@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
-import { buildEditFields, parseEditForm, renderDescription } from "./spacedock-description.mjs";
+import { buildEditFields, parseEditForm, readListing, renderDescription } from "./spacedock-description.mjs";
 
 const ctx = { repo: "o/r", ref: "kos-v1.0.0", readmePath: "uplinks/kos/README.md" };
 
@@ -53,4 +53,21 @@ test("an unset ML/AI flag is never submitted, because the form would store it as
   assert.throws(() => certifyMl(form, '<h2 title="None">'), /never set/);
   assert.throws(() => certifyMl(form, '<h2 title="False">'), /disagrees/);
   certifyMl(form, '<h2 title="True">');
+});
+
+test("the listing is read with the session cookie, and an unpublished one refuses without it", async () => {
+  const { createServer } = await import("node:http");
+  const server = createServer((req, res) => {
+    const ok = req.headers.cookie === "session=abc";
+    res.statusCode = ok ? 200 : 401;
+    res.end(ok ? '{"versions":[]}' : "{}");
+  });
+  await new Promise((done) => server.listen(0, done));
+  const base = `http://127.0.0.1:${server.address().port}`;
+  try {
+    assert.deepEqual(await readListing(base, 7, new Map([["session", "abc"]])), { versions: [] });
+    await assert.rejects(readListing(base, 7, new Map()), /HTTP 401/);
+  } finally {
+    server.close();
+  }
 });

@@ -349,6 +349,19 @@ function cookieHeader(res, jar) {
 }
 const jarString = (jar) => [...jar].map(([k, v]) => `${k}=${v}`).join("; ");
 
+/**
+ * The listing's JSON, read with the session's cookie: an unpublished listing
+ * answers 401 to a request with no login.
+ */
+export async function readListing(base, modId, jar) {
+  const res = await fetch(`${base}/api/mod/${modId}`, {
+    headers: { cookie: jarString(jar) },
+  });
+  if (!res.ok)
+    throw new Error(`SpaceDock listing ${modId} answered HTTP ${res.status}`);
+  return res.json();
+}
+
 export async function sync({
   readme,
   ctx,
@@ -392,10 +405,12 @@ export async function sync({
   const page = await fetch(editUrl, { headers: { cookie: jarString(jar) } });
   if (!page.ok)
     throw new Error(`SpaceDock edit page answered HTTP ${page.status}`);
-  const before = await (await fetch(`${base}/api/mod/${modId}`)).json();
+  const before = await readListing(base, modId, jar);
   const form = inspectEditForm(await page.text());
   certifyEditForm(form, before);
-  const modPage = await fetch(`${base}/mod/${modId}/mod`);
+  const modPage = await fetch(`${base}/mod/${modId}/mod`, {
+    headers: { cookie: jarString(jar) },
+  });
   if (!modPage.ok)
     throw new Error(`SpaceDock listing page answered HTTP ${modPage.status}`);
   certifyMl(form, await modPage.text());
@@ -413,7 +428,7 @@ export async function sync({
   if (post.status >= 400)
     throw new Error(`SpaceDock edit answered HTTP ${post.status}`);
 
-  const after = await (await fetch(`${base}/api/mod/${modId}`)).json();
+  const after = await readListing(base, modId, jar);
   const same = (a, b) => (a ?? "") === (b ?? "");
   for (const key of [
     "name",

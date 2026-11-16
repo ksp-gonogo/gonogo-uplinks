@@ -45,3 +45,5 @@ export function certifyMl(
   modPageHtml: string,
 ): void;
 export function segments(markdown: string): { code: boolean; text: string }[];
+
+export function readListing(base: string, modId: string | number, jar: Map<string, string>): Promise<unknown>;

@@ -281,6 +281,9 @@ jobs:
       - name: Decide whether SpaceDock gets this release
         id: sd
         if: needs.resolve.outputs.prerelease != 'true' && needs.resolve.outputs.dry != 'true'
+        env:
+          SPACEDOCK_USERNAME: ${{ secrets.SPACEDOCK_USERNAME }}
+          SPACEDOCK_PASSWORD: ${{ secrets.SPACEDOCK_PASSWORD }}
         run: |
           set -euo pipefail
           if ! node tooling/spacedock-release.mjs eligible "$TAG"; then
@@ -296,8 +299,14 @@ jobs:
           fi
           echo "version=${VERSION}" >> "$GITHUB_OUTPUT"
           echo "mod_id=${MOD_ID}" >> "$GITHUB_OUTPUT"
-          # Public read, no login: the listing names every version it holds.
-          curl -fsS "https://spacedock.info/api/mod/${MOD_ID}" -o sd-listing.json
+          # An unpublished listing answers 401 to a request with no login, so the read
+          # logs in first. The listing names every version it holds.
+          login="$(curl -sS -F username="$SPACEDOCK_USERNAME" -F password="$SPACEDOCK_PASSWORD" -c ./sd-read-cookies https://spacedock.info/api/login)"
+          if printf '%s' "$login" | grep -q '"error"[[:space:]]*:[[:space:]]*true'; then
+            echo "::error::SpaceDock login failed: $login"; exit 1
+          fi
+          curl -fsS -b ./sd-read-cookies "https://spacedock.info/api/mod/${MOD_ID}" -o sd-listing.json
+          rm -f ./sd-read-cookies
           if [ "$(node tooling/spacedock-release.mjs holds sd-listing.json "$VERSION")" = "held" ]; then
             echo "upload=false" >> "$GITHUB_OUTPUT"
             echo "::notice::SpaceDock mod ${MOD_ID} already holds ${VERSION}; not uploading it again"
