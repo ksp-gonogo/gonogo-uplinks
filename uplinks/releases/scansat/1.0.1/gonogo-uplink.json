@@ -1,0 +1,19 @@
+{
+  "id": "scansat",
+  "name": "SCANsat",
+  "description": "Integrates SCANsat's map data system into Gonogo. The Ground Track widget relies on scanning data from SCANsat to show any real map data.",
+  "author": "jpeps",
+  "repo": "https://github.com/ksp-gonogo/gonogo-uplinks",
+  "mod": {
+    "name": "SCANsat",
+    "builtAgainst": "21.1"
+  },
+  "version": "1.0.1",
+  "minAppVersion": "0.0.0",
+  "apiVersion": "7.0.0",
+  "contractMajor": 52,
+  "contractMinor": 2,
+  "bundleUrl": "scansat/scansat.client.js",
+  "integrity": "sha256-21a11692f8f91806d474e71284e3d3a5a76e357d97b993d8eb0031d4f631a89a",
+  "sdkVersion": "1.0.0"
+}
