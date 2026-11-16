@@ -1664,7 +1664,7 @@ describe("KosTerminal: blocks a send with no comms path", () => {
   });
 });
 
-describe("kOS terminal: `/` script-run composer", () => {
+describe("kOS terminal: `/` script-run composer (RUNPATH injection)", () => {
   beforeEach(() => {
     vi.clearAllMocks();
     clearRegistry();
@@ -1752,7 +1752,7 @@ describe("kOS terminal: `/` script-run composer", () => {
     ).toHaveTextContent("cd 0/");
   });
 
-  it("ArrowDown highlights an option; Enter confirms it into args mode, and a further Enter sends the run, typing nothing", async () => {
+  it("ArrowDown highlights an option; Enter confirms it into args mode, and a further Enter injects RUNPATH through the line-mode send path", async () => {
     const fixture = terminalFixture();
     render(
       <fixture.Provider>
@@ -1781,20 +1781,19 @@ describe("kOS terminal: `/` script-run composer", () => {
     });
 
     await waitFor(() => {
-      const runs = sentCommands(fixture.commands, "kos.run");
-      expect(runs).toHaveLength(1);
-      expect(runs[0].args).toMatchObject({
-        coreId: 7,
-        path: "0:/widget_scripts/gravityturn.ks",
-        args: [5, 10],
-        copyToLocal: false,
-      });
+      const keys = sentCommands(fixture.commands, "kos.keystroke");
+      expect(keys).toHaveLength(1);
+      expect(keys[0].args.chars).toBe(
+        'RUNPATH("0:/widget_scripts/gravityturn.ks", 5, 10).\r',
+      );
     });
-    expect(sentCommands(fixture.commands, "kos.keystroke")).toHaveLength(0);
-    // Named on the queue by what ran, on the terminal's own topic.
-    const run = sentCommand(fixture.transport.sentCommands, "kos.run");
-    expect(run?.label).toBe("run 0:/widget_scripts/gravityturn.ks 5 10");
-    expect(run?.topic).toBe("kos/7");
+    // Same label convention as an ordinary composed line, trimmed of the
+    // trailing wire CR, carried on the terminal's own topic.
+    const key = sentCommand(fixture.transport.sentCommands, "kos.keystroke");
+    expect(key?.label).toBe(
+      'RUNPATH("0:/widget_scripts/gravityturn.ks", 5, 10).',
+    );
+    expect(key?.topic).toBe("kos/7");
   });
 
   it("typing a query filters the list; Enter with no arrow-navigation picks the first filtered result, with no args", async () => {
@@ -1827,12 +1826,11 @@ describe("kOS terminal: `/` script-run composer", () => {
     act(() => onData("\r")); // no args: send immediately
 
     await waitFor(() => {
-      const runs = sentCommands(fixture.commands, "kos.run");
-      expect(runs).toHaveLength(1);
-      expect(runs[0].args).toMatchObject({
-        path: "0:/widget_scripts/deorbit.ks",
-        args: [],
-      });
+      const keys = sentCommands(fixture.commands, "kos.keystroke");
+      expect(keys).toHaveLength(1);
+      expect(keys[0].args.chars).toBe(
+        'RUNPATH("0:/widget_scripts/deorbit.ks").\r',
+      );
     });
   });
 
@@ -1903,7 +1901,7 @@ describe("kOS terminal: `/` script-run composer", () => {
     );
   });
 
-  it("no comms path blocks the run but keeps the composer intact for when the path returns", async () => {
+  it("no comms path blocks the final RUNPATH send but keeps the composer intact for when the path returns", async () => {
     const fixture = setupStreamFixture({
       pinnedUt: 10,
     });
@@ -1930,40 +1928,14 @@ describe("kOS terminal: `/` script-run composer", () => {
     act(() => onData("\r")); // blocked send
 
     await Promise.resolve();
-    expect(commands.filter((c) => c.command === "kos.run")).toHaveLength(0);
+    expect(commands.filter((c) => c.command === "kos.keystroke")).toHaveLength(
+      0,
+    );
     // The composer is still alive (not silently dropped), so the operator
     // can send once the path returns instead of retyping.
     expect(screen.getByRole("group", { name: "Run script" })).toHaveTextContent(
       "0:/widget_scripts/gravityturn.ks",
     );
-  });
-
-  it("a run the game refuses says why, in the terminal's notice", async () => {
-    const fixture = terminalFixture();
-    fixture.transport.setCommandHandler((command) =>
-      command === "kos.run"
-        ? { success: false, errorCode: "notFound", reason: "kos.scriptNotFound" }
-        : { success: true },
-    );
-    render(
-      <fixture.Provider>
-        <KosTerminalComponent
-          id="kos-terminal"
-          config={{ lineMode: true, scriptPaths: SCRIPTS }}
-        />
-      </fixture.Provider>,
-    );
-    act(() => fixture.emit("kos.processors", ONE_CPU));
-    await waitFor(() => expect(termSpies.onData).toHaveBeenCalled());
-
-    const onData = getOnData();
-    act(() => onData("/"));
-    act(() => onData("\r"));
-    act(() => onData("\r"));
-
-    expect(
-      await screen.findByText("There is no script at that path"),
-    ).toBeInTheDocument();
   });
 
   it("has no accessible violations with the picker open", async () => {
@@ -1985,7 +1957,7 @@ describe("kOS terminal: `/` script-run composer", () => {
   });
 });
 
-describe("kOS terminal: live drive listing + copy-local", () => {
+describe("kOS terminal: live drive listing + copy-local (RUNPATH injection increment (b))", () => {
   beforeEach(() => {
     vi.clearAllMocks();
     clearRegistry();
@@ -2177,7 +2149,7 @@ describe("kOS terminal: live drive listing + copy-local", () => {
     expect(sentCommands(fixture.commands, "kos.files.list")).toHaveLength(0);
   });
 
-  it("Ctrl+L toggles 'copy local & run', and the run asks the game to copy the script to the CPU's drive first", async () => {
+  it("Ctrl+L toggles 'copy local & run'; the send prefixes COPYPATH before RUNPATH, targeting the local (1:) copy", async () => {
     const fixture = terminalFixture();
     render(
       <fixture.Provider>
@@ -2205,13 +2177,11 @@ describe("kOS terminal: live drive listing + copy-local", () => {
     });
 
     await waitFor(() => {
-      const runs = sentCommands(fixture.commands, "kos.run");
-      expect(runs).toHaveLength(1);
-      expect(runs[0].args).toMatchObject({
-        path: "0:/widget_scripts/gravityturn.ks",
-        args: [5],
-        copyToLocal: true,
-      });
+      const keys = sentCommands(fixture.commands, "kos.keystroke");
+      expect(keys).toHaveLength(1);
+      expect(keys[0].args.chars).toBe(
+        'COPYPATH("0:/widget_scripts/gravityturn.ks", "1:/gravityturn.ks"). RUNPATH("1:/gravityturn.ks", 5).\r',
+      );
     });
   });
 

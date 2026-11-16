@@ -8,8 +8,8 @@ namespace GonogoKosUplink.Tests
 {
     /// <summary>
     /// Headless tests for <see cref="KosRunManager"/>: the pure per-CPU
-    /// arm/complete/cancel bookkeeping behind the <c>kos.run</c> command. No
-    /// KosExtension, no kOS/Unity:
+    /// arm/complete/cancel bookkeeping behind the <c>kos.run</c> command (see
+    /// <c>kos-uplink-full-migration.md</c>). No KosExtension, no kOS/Unity:
     /// this class stands entirely on its own, exactly like
     /// <c>KosTerminalManagerTests</c> stands alone from
     /// <c>KosProcessorScreen</c>.
@@ -23,6 +23,7 @@ namespace GonogoKosUplink.Tests
 
             Assert.True(mgr.TryArm(7, "req-1"));
             Assert.True(mgr.IsArmed(7));
+            Assert.True(mgr.HasAnyArmed());
         }
 
         [Fact]
@@ -66,15 +67,82 @@ namespace GonogoKosUplink.Tests
             mgr.SetPublisher((coreId, result) => published.Add((coreId, result)));
             mgr.TryArm(7, "req-1");
 
-            Assert.True(mgr.Complete(7, new Dictionary<string, object?> { ["v"] = 1.0 }));
+            var block = new KosComputeBlock("default", new Dictionary<string, object> { ["v"] = 1.0 });
+            mgr.Complete(7, block);
 
             var (coreId, result) = Assert.Single(published);
             Assert.Equal(7, coreId);
             Assert.Equal("req-1", result.RequestId);
+            Assert.Equal(7, result.CoreId);
+            Assert.NotNull(result.Fields);
             Assert.Equal(1.0, result.Fields!["v"]);
             Assert.Null(result.Error);
-            Assert.False(result.Ended);
+
+            // Disarmed: a new run can be armed for the same CPU now.
             Assert.False(mgr.IsArmed(7));
+            Assert.True(mgr.TryArm(7, "req-2"));
+        }
+
+        [Fact]
+        public void Complete_ForAnErrorBlock_PublishesErrorAndNullFields()
+        {
+            var mgr = new KosRunManager();
+            var published = new List<KosRunResult>();
+            mgr.SetPublisher((_, result) => published.Add(result));
+            mgr.TryArm(7, "req-1");
+
+            var block = KosComputeBlock.ForError("engine flameout");
+            mgr.Complete(7, block);
+
+            var result = Assert.Single(published);
+            Assert.Null(result.Fields);
+            Assert.Equal("engine flameout", result.Error);
+        }
+
+        /// <summary>
+        /// <c>KosRunResult</c>'s own doc states the R7 invariant: exactly one
+        /// of Fields/Error is non-null. An error block whose message we never
+        /// managed to read (the public ctor takes isError and errorMessage
+        /// independently, and defaults the message to null) published both as
+        /// null, which the client's `payload.fields ?? {}` then resolved as a
+        /// successful run that returned no fields: a green ok for a script
+        /// that failed.
+        /// </summary>
+        [Fact]
+        public void Complete_ForAnErrorBlockWithNoMessage_StillPublishesAnError()
+        {
+            var mgr = new KosRunManager();
+            var published = new List<KosRunResult>();
+            mgr.SetPublisher((_, result) => published.Add(result));
+            mgr.TryArm(7, "req-1");
+
+            mgr.Complete(7, new KosComputeBlock("t", new Dictionary<string, object>(), isError: true));
+
+            var result = Assert.Single(published);
+            Assert.Null(result.Fields);
+            Assert.False(string.IsNullOrWhiteSpace(result.Error));
+        }
+
+        /// <summary>
+        /// An empty <c>[KOSERROR][/KOSERROR]</c> body is the same absence
+        /// arriving by the sanctioned route: the script signalled a failure
+        /// and told us nothing about it. The widget renders <c>Error</c> as
+        /// the whole explanation, so an empty string draws a "Script error"
+        /// badge over blank space.
+        /// </summary>
+        [Fact]
+        public void Complete_ForAnEmptyKoserrorBody_PublishesAReadableError()
+        {
+            var mgr = new KosRunManager();
+            var published = new List<KosRunResult>();
+            mgr.SetPublisher((_, result) => published.Add(result));
+            mgr.TryArm(7, "req-1");
+
+            mgr.Complete(7, KosComputeBlock.ForError("   "));
+
+            var result = Assert.Single(published);
+            Assert.Null(result.Fields);
+            Assert.False(string.IsNullOrWhiteSpace(result.Error));
         }
 
         [Fact]
@@ -84,7 +152,10 @@ namespace GonogoKosUplink.Tests
             var published = new List<KosRunResult>();
             mgr.SetPublisher((_, result) => published.Add(result));
 
-            Assert.False(mgr.Complete(7, new Dictionary<string, object?> { ["v"] = 1.0 }));
+            // No TryArm call: a completed block with nobody waiting (the
+            // ordinary kos.compute fanout path) must not publish here.
+            var block = new KosComputeBlock("t", new Dictionary<string, object> { ["v"] = 1.0 });
+            mgr.Complete(7, block);
 
             Assert.Empty(published);
         }
@@ -101,106 +172,97 @@ namespace GonogoKosUplink.Tests
 
             Assert.False(mgr.IsArmed(7));
             Assert.Empty(published);
-            // A stray return landing after cancellation is not mis-attributed.
-            mgr.Complete(7, new Dictionary<string, object?>());
+            // A stray block landing after cancellation is not mis-attributed.
+            mgr.Complete(7, new KosComputeBlock("t", new Dictionary<string, object>()));
             Assert.Empty(published);
         }
 
         [Fact]
-        public void ArmAndStart_WhenTheStartSucceeds_AcksAndStaysArmedForTheResult()
+        public void ArmAndType_WhenTypingSucceeds_AcksAndStaysArmedForTheResult()
         {
             var mgr = new KosRunManager();
 
-            var result = mgr.ArmAndStart(7, "req-1", () => null);
+            var result = mgr.ArmAndType(7, "req-1", () => true);
 
             Assert.True(result.Success);
             Assert.True(mgr.IsArmed(7));
-        }
-
-        [Fact]
-        public void ArmAndStart_WhenTheStartIsRefused_AnswersWithThatRefusal()
-        {
-            var mgr = new KosRunManager();
-
-            var result = mgr.ArmAndStart(7, "req-1", () => CommandResult.Fail(KosErrorCodes.ScriptNotFound));
-
-            Assert.False(result.Success);
-            Assert.Equal(KosErrorCodes.ScriptNotFound, result.ErrorCode);
         }
 
         /// <summary>
-        /// Arming happens before the start, so a run that never started has to
-        /// be unarmed again, or every later <c>kos.run</c> to that CPU is
-        /// rejected forever.
+        /// The CPU had no terminal window, so nothing was typed and no
+        /// <c>[KOSDATA]</c> block will ever come back. Acking that leaves the
+        /// operator watching a 30 s round-trip timeout for a script that never
+        /// ran, which is the lesser half of the defect.
         /// </summary>
         [Fact]
-        public void ArmAndStart_WhenTheStartIsRefused_LeavesTheCpuRunnable()
+        public void ArmAndType_WhenTypingFails_IsRefusedNotAcked()
         {
             var mgr = new KosRunManager();
 
-            mgr.ArmAndStart(7, "req-1", () => CommandResult.Fail(KosErrorCodes.NoRoom));
+            var result = mgr.ArmAndType(7, "req-1", () => false);
+
+            Assert.False(result.Success);
+            Assert.Equal(KosErrorCodes.NoTerminal, result.ErrorCode);
+        }
+
+        /// <summary>
+        /// The lasting half: arming happens before typing, so a run that was
+        /// never typed has to be unarmed again. Left armed, every later
+        /// <c>kos.run</c> to that CPU is rejected by <c>TryArm</c> forever and
+        /// nothing evicts it.
+        /// </summary>
+        [Fact]
+        public void ArmAndType_WhenTypingFails_LeavesTheCpuRunnable()
+        {
+            var mgr = new KosRunManager();
+
+            mgr.ArmAndType(7, "req-1", () => false);
 
             Assert.False(mgr.IsArmed(7));
-            Assert.True(mgr.ArmAndStart(7, "req-2", () => null).Success);
+            Assert.False(mgr.HasAnyArmed());
+            Assert.True(mgr.ArmAndType(7, "req-2", () => true).Success);
         }
 
         [Fact]
-        public void ArmAndStart_WhenTheStartThrows_LeavesTheCpuRunnable()
+        public void ArmAndType_WhenAnotherRunIsInFlight_IsRejectedWithoutTyping()
         {
             var mgr = new KosRunManager();
+            Assert.True(mgr.ArmAndType(7, "req-1", () => true).Success);
 
-            Assert.Throws<InvalidOperationException>(() =>
-                mgr.ArmAndStart(7, "req-1", () => throw new InvalidOperationException("kOS")));
-
-            Assert.False(mgr.IsArmed(7));
-        }
-
-        /// <summary>A script can return before the start call itself returns, and that result stands.</summary>
-        [Fact]
-        public void ArmAndStart_AResultDuringTheStart_IsPublished()
-        {
-            var mgr = new KosRunManager();
-            var published = new List<KosRunResult>();
-            mgr.SetPublisher((_, result) => published.Add(result));
-
-            var result = mgr.ArmAndStart(7, "req-1", () =>
-            {
-                mgr.Complete(7, new Dictionary<string, object?> { ["v"] = 1.0 });
-                return null;
-            });
-
-            Assert.True(result.Success);
-            Assert.Equal("req-1", Assert.Single(published).RequestId);
-        }
-
-        [Fact]
-        public void ArmAndStart_WhenAnotherRunIsInFlight_IsRejectedWithoutStarting()
-        {
-            var mgr = new KosRunManager();
-            Assert.True(mgr.ArmAndStart(7, "req-1", () => null).Success);
-
-            var started = false;
-            var result = mgr.ArmAndStart(7, "req-2", () => { started = true; return null; });
+            var typed = false;
+            var result = mgr.ArmAndType(7, "req-2", () => { typed = true; return true; });
 
             Assert.False(result.Success);
             Assert.Equal(KosErrorCodes.CpuBusy, result.ErrorCode);
-            Assert.False(started);
+            Assert.False(typed);
             // The first request's correlation survives the rejection.
             Assert.True(mgr.IsArmed(7));
+        }
+
+        [Fact]
+        public void HasAnyArmed_ReflectsAnyCpu()
+        {
+            var mgr = new KosRunManager();
+            Assert.False(mgr.HasAnyArmed());
+
+            mgr.TryArm(7, "req-1");
+            Assert.True(mgr.HasAnyArmed());
+
+            mgr.Cancel(7);
+            Assert.False(mgr.HasAnyArmed());
         }
 
         [Fact]
         public void Reset_DisarmsEveryCpuSoTheNextRunGetsThrough()
         {
             var mgr = new KosRunManager();
-            Assert.True(mgr.ArmAndStart(7, "a", () => null).Success);
+            Assert.True(mgr.ArmAndType(7, "a", () => true).Success);
             Assert.True(mgr.TryArm(8, "b"));
 
             mgr.Reset();
 
-            Assert.False(mgr.IsArmed(7));
-            Assert.False(mgr.IsArmed(8));
-            Assert.True(mgr.ArmAndStart(7, "c", () => null).Success);
+            Assert.False(mgr.HasAnyArmed());
+            Assert.True(mgr.ArmAndType(7, "c", () => true).Success);
         }
 
         private static void Idle(KosRunManager mgr, Func<int, bool> isIdle, int polls)
@@ -212,12 +274,12 @@ namespace GonogoKosUplink.Tests
         }
 
         [Fact]
-        public void PollIdle_RunThatReturnsNothing_PublishesAnEndedResultAndFreesTheCpu()
+        public void PollIdle_RunThatPrintsNothing_PublishesAnEndedResultAndFreesTheCpu()
         {
             var mgr = new KosRunManager();
             var published = new List<(int coreId, KosRunResult result)>();
             mgr.SetPublisher((coreId, result) => published.Add((coreId, result)));
-            Assert.True(mgr.ArmAndStart(7, "req-1", () => null).Success);
+            Assert.True(mgr.ArmAndType(7, "req-1", () => true).Success);
 
             Idle(mgr, _ => true, KosRunManager.IdlePollsToEnd);
 
@@ -228,7 +290,7 @@ namespace GonogoKosUplink.Tests
             Assert.Null(result.Fields);
             Assert.Null(result.Error);
             Assert.False(mgr.IsArmed(7));
-            Assert.True(mgr.ArmAndStart(7, "req-2", () => null).Success);
+            Assert.True(mgr.ArmAndType(7, "req-2", () => true).Success);
         }
 
         [Fact]
@@ -318,7 +380,7 @@ namespace GonogoKosUplink.Tests
         }
 
         [Fact]
-        public void StrayReturn_WithNothingArmed_CompletesNothing()
+        public void StrayBlock_WithNothingArmed_CompletesNothing()
         {
             var mgr = new KosRunManager();
             var published = new List<KosRunResult>();
@@ -327,14 +389,14 @@ namespace GonogoKosUplink.Tests
             Idle(mgr, _ => true, KosRunManager.IdlePollsToEnd);
             published.Clear();
 
-            mgr.Complete(7, new Dictionary<string, object?> { ["v"] = 1.0 });
+            mgr.Complete(7, new KosComputeBlock("default", new Dictionary<string, object> { ["v"] = 1.0 }));
 
             Assert.Empty(published);
             Assert.False(mgr.IsArmed(7));
         }
 
         [Fact]
-        public void StrayReturn_AfterACancel_DoesNotCompleteTheNextRequestEarly()
+        public void StrayBlock_AfterACancel_DoesNotCompleteTheNextRequestEarly()
         {
             var mgr = new KosRunManager();
             var published = new List<KosRunResult>();
@@ -342,7 +404,7 @@ namespace GonogoKosUplink.Tests
             mgr.TryArm(7, "req-1");
             mgr.CancelRun(7, "req-1");
 
-            mgr.Complete(7, new Dictionary<string, object?> { ["v"] = 1.0 });
+            mgr.Complete(7, new KosComputeBlock("default", new Dictionary<string, object> { ["v"] = 1.0 }));
             mgr.TryArm(7, "req-2");
 
             Assert.Empty(published);

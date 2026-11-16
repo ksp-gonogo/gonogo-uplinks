@@ -51,6 +51,31 @@
   "nestedPayloads": [],
   "otherPayloads": [
     {
+      "name": "KosComputeStatus",
+      "fields": [
+        {
+          "name": "lastGoodAt",
+          "unit": "ut"
+        },
+        {
+          "name": "parseError",
+          "unit": "text"
+        },
+        {
+          "name": "paused",
+          "unit": "flag"
+        },
+        {
+          "name": "running",
+          "unit": "flag"
+        },
+        {
+          "name": "scriptError",
+          "unit": "text"
+        }
+      ]
+    },
+    {
       "name": "KosRunResult",
       "fields": [
         {
@@ -178,16 +203,12 @@
       "name": "KosRunArgs",
       "fields": [
         {
-          "name": "copyToLocal",
-          "unit": "flag"
+          "name": "command",
+          "unit": "text"
         },
         {
           "name": "coreId",
           "unit": "id"
-        },
-        {
-          "name": "path",
-          "unit": "text"
         },
         {
           "name": "requestId",
@@ -330,22 +351,10 @@
       "meaning": "The CPU is booting, running a program, or already running a script for another request, so it is not at a prompt that can take one."
     },
     {
-      "id": "kos.noRoom",
-      "refines": "limitReached",
-      "sentence": "the CPU's drive has no room for the script",
-      "meaning": "The CPU's own drive has no room for the copy of the script a run asked for."
-    },
-    {
-      "id": "kos.runUnsupported",
+      "id": "kos.noTerminal",
       "refines": "capabilityMismatch",
-      "sentence": "this kOS version cannot start a script from here",
-      "meaning": "The installed kOS does not let a script be started from outside its terminal."
-    },
-    {
-      "id": "kos.scriptNotFound",
-      "refines": "notFound",
-      "sentence": "there is no script at that path",
-      "meaning": "There is no script at the path a run named, on the volume the path names."
+      "sentence": "that CPU has no terminal window to type into",
+      "meaning": "The CPU has no terminal window a script could be typed into."
     },
     {
       "id": "kos.terminalHeld",

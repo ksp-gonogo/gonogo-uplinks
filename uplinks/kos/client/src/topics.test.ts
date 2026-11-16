@@ -142,12 +142,25 @@ describe("registerTopicUnits: the Topic-keyed half", () => {
 });
 
 describe("registerTypeUnits: the type-keyed half", () => {
-  // Every type in the slice: a type-keyed lookup that silently returned {} for
-  // the command args would be a regression, and this is the assertion that
-  // would catch a loop narrowed to a few of them.
-  it("restores unitsForType for the relocated types", () => {
+  // The one declared quantity in the whole nine-type slice. Its type is
+  // reached by no Topic's shape map, because `kos.compute.<id>.status` is a
+  // dynamic channel name, so nothing decodes through it today, which was already
+  // true while the type lived in core. The lookup is what the relocation broke
+  // and what this restores.
+  it("restores unitsForType for the slice's one real quantity", () => {
+    // An INSTANT: when the last good result came back, not how long ago.
+    expect(unitsForType("KosComputeStatus").lastGoodAt).toBe("ut");
+    expect(lookupUnit("s")).toBeDefined();
+  });
+
+  // Every type in the slice, not just the one with a quantity: a type-keyed
+  // lookup that silently returned {} for the command args would be just as much
+  // a regression, and this is the assertion that would catch a loop narrowed to
+  // "only the interesting one".
+  it("restores unitsForType for all nine relocated types", () => {
     for (const typeName of [
       "KosProcessorInfo",
+      "KosComputeStatus",
       "KosTerminalFrame",
       "KosTerminalOpenArgs",
       "KosKeystrokeArgs",

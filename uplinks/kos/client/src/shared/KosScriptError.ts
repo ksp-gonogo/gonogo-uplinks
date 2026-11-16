@@ -1,7 +1,8 @@
 /**
- * Marker subclass: an error kOS stopped the running kerboscript on (a
- * runtime error such as an undefined variable, or a compile error in the
- * script), not one from transport or session bookkeeping. Raised by `KosUplinkExecutor` (via `kosUplinkExecutor.ts`)
+ * Marker subclass: errors raised by the running kerboscript itself
+ * (explicit [KOSERROR], or kOS runtime exceptions like
+ * KOSUndefinedIdentifierException), not by transport / proxy / session
+ * bookkeeping. Raised by `KosUplinkExecutor` (via `kosUplinkExecutor.ts`)
  * so callers can distinguish a script-author fault from a transport error
  * without every failure mode collapsing into a generic `Error`.
  */

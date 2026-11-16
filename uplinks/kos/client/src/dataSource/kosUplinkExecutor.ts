@@ -8,12 +8,16 @@ import type {
   KosRunResult,
 } from "../__generated__/contract.js";
 import { KosScriptError } from "../shared/KosScriptError.js";
-import type { KosData, KosScriptArg } from "../shared/kos-data.js";
+import type { KosData, KosScriptArg } from "../shared/kos-data-parser.js";
+import type { KosManagedScript } from "../shared/ScriptableDataSource.js";
+import { buildKosRunCommand } from "./kosWrapper.js";
 
 /**
  * `KosDataSource.executeScript`'s Uplink implementation: dispatches the
- * script's path and arguments via the `kos.run` command and resolves with the
- * correlated `kos.run.<coreId>` result.
+ * kerboscript wrapper text (see `kosWrapper.ts`'s `buildKosRunCommand`) via
+ * the `kos.run` command and resolves with the correlated `kos.run.<coreId>`
+ * result. This is the only transport `executeScript` uses, there is no
+ * telnet path anymore.
  *
  * The `kos.processors` push channel it subscribes to for tagname → coreId
  * resolution doubles as the app's CPU-discovery feed: `onProcessorsChanged`
@@ -45,6 +49,7 @@ const DEFAULT_TIMEOUT_MS = 30_000;
 interface QueuedRun {
   script: string;
   args: KosScriptArg[];
+  managed: KosManagedScript | null;
   /** Set for a file listing, which the game reads without typing anything. */
   listVolume?: string;
   /** Aborting it drops the call, see `KosUplinkCpuQueue.cancel`. */
@@ -83,9 +88,13 @@ class KosUplinkCpuQueue {
     });
   }
 
-  enqueue(script: string, args: KosScriptArg[]): Promise<KosData> {
+  enqueue(
+    script: string,
+    args: KosScriptArg[],
+    managed: KosManagedScript | null,
+  ): Promise<KosData> {
     return new Promise<KosData>((resolve, reject) => {
-      this.queue.push({ script, args, resolve, reject });
+      this.queue.push({ script, args, managed, resolve, reject });
       this.drain();
     });
   }
@@ -100,6 +109,7 @@ class KosUplinkCpuQueue {
       const call: QueuedRun = {
         script: "",
         args: [],
+        managed: null,
         listVolume: volume,
         signal,
         resolve,
@@ -165,9 +175,7 @@ class KosUplinkCpuQueue {
         ? this.client.dispatch("kos.run", {
             coreId: this.coreId,
             requestId,
-            path: next.script,
-            args: next.args,
-            copyToLocal: false,
+            command: buildKosRunCommand(next.script, next.args, next.managed),
           } satisfies KosRunArgs)
         : this.client.dispatch("kos.files.list", {
             coreId: this.coreId,
@@ -208,20 +216,28 @@ class KosUplinkCpuQueue {
     clearTimeout(timer);
     this.inFlight = null;
     if (payload.error != null) {
-      // kOS stopped the script on an error: KosScriptError so callers can
-      // tell a script fault from a transport error.
+      // Both parse-time kOS errors and explicit [KOSERROR] blocks arrive
+      // this way from the mod (KosRunManager.Complete): KosScriptError so
+      // callers can distinguish a script-author fault from a transport
+      // error, same as the telnet path's explicit/implicit error handling.
       call.reject(new KosScriptError(payload.error));
     } else if (payload.ended === true) {
-      // The program finished without handing anything back: a finished run
-      // with nothing to report, not a fault.
+      // The CPU went back to its prompt without printing a block: the script
+      // ran and reported nothing, which is a finished run rather than a fault.
       call.resolve({});
     } else if (payload.fields == null) {
       // Unless `ended` says so, `KosRunResult`'s contract is that exactly one
       // of fields/error is non-null, so a frame with neither is one we cannot
-      // read. Note `== null`: JsonWriter writes an absent value as JSON null
-      // and KEEPS the key, so the strict form would let a null straight
-      // through. A plain Error, not a KosScriptError, because nothing here is
-      // the script author's fault.
+      // read. Note
+      // `== null`: JsonWriter writes an absent value as JSON null and KEEPS
+      // the key, so the strict form would let a null straight through.
+      //
+      // This used to resolve with `{}`, which is indistinguishable from a
+      // script that genuinely printed `[KOSDATA][/KOSDATA]`, so a result
+      // frame that never arrived intact read as a completed run that
+      // returned nothing: KosScriptTrigger drew a green OK over "No fields
+      // returned." A plain Error, not a KosScriptError, because nothing here
+      // is the script author's fault.
       call.reject(
         new Error(
           `kos.run: CPU ${this.coreId} reported neither an error nor a field map, so the result could not be read`,
@@ -346,6 +362,7 @@ export class KosUplinkExecutor {
     cpu: string,
     script: string,
     args: KosScriptArg[],
+    managed: KosManagedScript | null,
   ): Promise<KosData> {
     this.adoptClient(client);
     return this.resolveCoreId(cpu).then((coreId) => {
@@ -354,7 +371,7 @@ export class KosUplinkExecutor {
           `kos.run: no known CPU with tagname "${cpu}", waiting on kos.processors, or the tagname is wrong`,
         );
       }
-      return this.getOrCreateQueue(coreId).enqueue(script, args);
+      return this.getOrCreateQueue(coreId).enqueue(script, args, managed);
     });
   }
 

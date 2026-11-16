@@ -80,6 +80,7 @@ The live terminal of a kOS CPU.
 
 | Payload | Fields |
 | --- | --- |
+| `KosComputeStatus` | `lastGoodAt` ut, `parseError` text, `paused` flag, `running` flag, `scriptError` text |
 | `KosRunResult` | `coreId` id, `ended` flag, `error` text, `requestId` id |
 | `KosTerminalFrame` | `chunk` text, `coreId` id, `fullRepaint` flag |
 
@@ -103,7 +104,7 @@ The live terminal of a kOS CPU.
 | `KosCancelArgs` | `coreId` id, `requestId` id |
 | `KosFilesListArgs` | `coreId` id, `requestId` id, `volume` text |
 | `KosKeystrokeArgs` | `chars` text, `coreId` id, `leaseToken` id |
-| `KosRunArgs` | `copyToLocal` flag, `coreId` id, `path` text, `requestId` id |
+| `KosRunArgs` | `command` text, `coreId` id, `requestId` id |
 | `KosTerminalCloseArgs` | `coreId` id, `leaseToken` id |
 | `KosTerminalOpenArgs` | `coreId` id, `leaseToken` id |
 | `KosTerminalResizeArgs` | `cols` count, `coreId` id, `leaseToken` id, `rows` count |
@@ -117,9 +118,7 @@ The live terminal of a kOS CPU.
 | --- | --- | --- | --- |
 | `kos.terminalHeld` | `notClearToProceed` | another screen is using this CPU's terminal | Another screen holds this CPU's terminal. A terminal is leased to one screen at a time and never taken from it; it frees when that screen closes it. |
 | `kos.cpuBusy` | `notClearToProceed` | the CPU is busy and not at its prompt | The CPU is booting, running a program, or already running a script for another request, so it is not at a prompt that can take one. |
-| `kos.scriptNotFound` | `notFound` | there is no script at that path | There is no script at the path a run named, on the volume the path names. |
-| `kos.noRoom` | `limitReached` | the CPU's drive has no room for the script | The CPU's own drive has no room for the copy of the script a run asked for. |
-| `kos.runUnsupported` | `capabilityMismatch` | this kOS version cannot start a script from here | The installed kOS does not let a script be started from outside its terminal. |
+| `kos.noTerminal` | `capabilityMismatch` | that CPU has no terminal window to type into | The CPU has no terminal window a script could be typed into. |
 
 </details>
 

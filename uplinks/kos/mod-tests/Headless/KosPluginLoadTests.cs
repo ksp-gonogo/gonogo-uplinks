@@ -49,6 +49,7 @@ namespace GonogoKosUplink.Tests.Headless
             new Regex(@"^Gonogo\.KosUplink\.ScreenDiffMapper::(_prev|_mapper|_lastScreenRef)$"),
             new Regex(@"^Gonogo\.KosUplink\.KosProcessorScreen::_resolve$"),
             new Regex(@"^Gonogo\.KosUplink\.KosExtension\+<>O::<\d+>__FindProcessor$"),
+            new Regex(@"^Gonogo\.KosUplink\.KosExtension\+<>c__DisplayClass\d+_\d+::proc$"),
         };
 
         [Fact]

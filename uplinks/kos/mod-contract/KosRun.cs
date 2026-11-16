@@ -7,17 +7,24 @@ using Sitrep.Contract;
 namespace Gonogo.KosUplink;
 
 /// <summary>
-/// Args for the <c>kos.run</c> command: runs the script at <see cref="Path"/>
-/// on one CPU with <see cref="Args"/> as its parameters, the way
-/// <c>RUNPATH(path, args...)</c> typed at that CPU's terminal would. The mod
-/// starts the program itself; nothing in these args is ever compiled as
-/// kerboscript, so a path or argument cannot inject code.
+/// Args for the <c>kos.run</c> command, the general-purpose in-process
+/// replacement for the standalone telnet proxy's ad-hoc RUNPATH path
+/// (<c>kos-uplink-full-migration.md</c>). It
+/// carries the whole literal command text to type into the CPU's REPL,
+/// exactly what the app already builds client-side for the telnet path
+/// (a bare <c>RUNPATH("path", args...).</c> line, or the multi-line managed-
+/// sync wrapper from <c>packages/app/src/dataSources/kosWrapper.ts</c>). The
+/// mod does not parse or interpret <see cref="Command"/> at all, it types it
+/// into the interpreter exactly like <c>kos.keystroke</c> types terminal
+/// input, via the same <c>TermWindow.ProcessOneInputChar</c> seam.
 ///
-/// <para>Delivered delayed, single-in-flight-per-CPU: reachability and the
-/// idle-prompt guard are re-checked at delivery on the KSP main thread, and a
-/// second <c>kos.run</c> for a CPU that already has one in flight is refused
-/// with <c>kos.cpuBusy</c>. A path with no script behind it is refused with
-/// <c>kos.scriptNotFound</c>, before anything runs.</para>
+/// <para>Delivered delayed, single-in-flight-per-CPU (spec §3.0):
+/// reachability + the <c>HasBooted</c>/<c>IsWaitingForCommand()</c> idle-
+/// prompt guard are re-checked at delivery on the KSP main thread. A second
+/// <c>kos.run</c> for a CPU that already
+/// has one in flight is rejected with <c>CommandErrorCode.ModeUnavailable</c>,
+/// the caller (mirroring <c>KosComputeSession</c>'s existing per-CPU FIFO
+/// queue) is expected to serialize calls to the same CPU client-side.</para>
 /// </summary>
 [SitrepContract]
 #if SITREP_CODEGEN
@@ -41,27 +48,12 @@ public class KosRunArgs
     public string RequestId { get; set; } = "";
 
     /// <summary>
-    /// The script to run, as kOS reads a path: <c>0:/launch.ks</c> on the
-    /// Archive, <c>1:/launch.ks</c> on the CPU's own drive, or a path relative
-    /// to the CPU's current volume.
+    /// The literal text to type into the CPU's REPL, terminated the same way
+    /// a human would press Enter (a trailing <c>\n</c> or <c>.\n</c>). Never
+    /// parsed or rewritten by the mod.
     /// </summary>
     [SitrepUnit(Units.Text)]
-    public string Path { get; set; } = "";
-
-    /// <summary>
-    /// The script's parameters, in order: each a number, a string or a
-    /// boolean, reaching the script as the matching kOS value. At most 32.
-    /// </summary>
-    public List<object?> Args { get; set; } = new List<object?>();
-
-    /// <summary>
-    /// Copy the script onto the CPU's own drive (<c>1:</c>) under its file
-    /// name first, then run that copy. Refused with <c>kos.noRoom</c> when the
-    /// drive cannot hold it, and with <c>noConnection</c> when the script is on
-    /// the Archive and the craft has no link home.
-    /// </summary>
-    [SitrepUnit(Units.Flag)]
-    public bool CopyToLocal { get; set; }
+    public string Command { get; set; } = "";
 }
 
 /// <summary>
@@ -69,15 +61,22 @@ public class KosRunArgs
 /// <c>kos.run.&lt;coreId&gt;</c> dynamic channel
 /// (<c>Delivery.ReliableOrdered</c>, <c>DelayRole.Delayed</c>: same posture
 /// as <see cref="KosTerminalFrame"/>: this is vessel telemetry riding
-/// gonogo's reveal clock). Published exactly once per armed request: when the
-/// script hands back a lexicon with <c>ADDONS:GONOGO:RETURN(lexicon)</c>,
-/// when kOS stops the script on an error, or when the program ends having
-/// handed nothing back (<see cref="Ended"/>).
+/// gonogo's reveal clock). Published exactly once per armed request, the
+/// moment the mod's <c>[KOSDATA]</c>/<c>[KOSERROR]</c> block-capture pipeline
+/// (<c>KosComputeAccumulator</c>/<c>KosDataParser</c>: the same one that
+/// feeds <c>kos.compute.*</c>) completes a block for that CPU while the
+/// request is still armed, the moment kOS stops the script on an error, or,
+/// when the CPU returns to its prompt first, the moment that happens
+/// (<see cref="Ended"/>).
 ///
-/// <para>Exactly one of <see cref="Fields"/> / <see cref="Error"/> is
-/// non-null, or neither with <see cref="Ended"/> true. Field values are a
-/// number, a boolean or a string; any other kOS value arrives as its kOS
-/// text.</para>
+/// <para>R7 typed-absence: exactly one of <see cref="Fields"/> /
+/// <see cref="Error"/> is non-null, a successful <c>[KOSDATA]</c> parse
+/// carries <see cref="Fields"/> with <see cref="Error"/> null; a kOS error or an
+/// explicit script-author <c>[KOSERROR]</c> carries <see cref="Error"/> with
+/// <see cref="Fields"/> null; a run that printed neither has both null and
+/// <see cref="Ended"/> true. Field values keep the exact
+/// <c>KosDataParser.Coerce</c> shape (bool / double / string) the telnet
+/// path already produces: no re-typing on the wire.</para>
 /// </summary>
 [SitrepContract]
 #if SITREP_CODEGEN
@@ -93,21 +92,22 @@ public class KosRunResult
     [SitrepUnit(Units.Id)]
     public string RequestId { get; set; } = "";
 
-    /// <summary>The lexicon the script passed to <c>ADDONS:GONOGO:RETURN</c>, keyed by its keys' text: null on an error or ended result.</summary>
+    /// <summary>Parsed <c>[KOSDATA]</c> field map: null on an error result.</summary>
     public Dictionary<string, object?>? Fields { get; set; }
 
     /// <summary>
-    /// Why the run failed: the message of the error kOS stopped the script on,
-    /// followed by the script and line when kOS can say. Null on a data or
-    /// ended result.
+    /// Why the run failed: the message of an error kOS stopped the script on,
+    /// followed by the script and line when kOS can say, or the text of an
+    /// explicit <c>[KOSERROR]</c> block. Null on a data result.
     /// </summary>
     [SitrepUnit(Units.Text)]
     public string? Error { get; set; }
 
     /// <summary>
-    /// True when the program finished without handing anything back, so the
-    /// run has nothing to report: <see cref="Fields"/> and <see cref="Error"/>
-    /// are both null. False on every result that carries one of them.
+    /// True when the CPU went back to waiting for a command without printing a
+    /// <c>[KOSDATA]</c> or <c>[KOSERROR]</c> block, so the run finished with
+    /// nothing to report: <see cref="Fields"/> and <see cref="Error"/> are both
+    /// null. False on every result that carries one of them.
     /// </summary>
     [SitrepUnit(Units.Flag)]
     public bool Ended { get; set; }

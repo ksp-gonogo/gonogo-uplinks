@@ -91,6 +91,13 @@ export const GENERATED_TYPE_UNITS: Readonly<Record<string, UnitsByField>> = {
     coreId: "id",
     requestId: "id",
   },
+  "KosComputeStatus": {
+    lastGoodAt: "ut",
+    parseError: "text",
+    paused: "flag",
+    running: "flag",
+    scriptError: "text",
+  },
   "KosFilesListArgs": {
     coreId: "id",
     requestId: "id",
@@ -110,9 +117,8 @@ export const GENERATED_TYPE_UNITS: Readonly<Record<string, UnitsByField>> = {
     tag: "text",
   },
   "KosRunArgs": {
-    copyToLocal: "flag",
+    command: "text",
     coreId: "id",
-    path: "text",
     requestId: "id",
   },
   "KosRunResult": {

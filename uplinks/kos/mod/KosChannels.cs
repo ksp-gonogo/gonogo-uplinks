@@ -5,15 +5,26 @@ namespace Gonogo.KosUplink
 {
     /// <summary>
     /// Pure (kOS/KSP-type-free) channel/command topic conventions for the
-    /// kOS Uplink: the exact wire strings the client consumes,
+    /// kOS Uplink P1 surface: the exact wire strings the client consumes,
     /// kept in one place so both the manifest wiring
     /// (<see cref="KosExtension"/>) and the headless tests reference the same
-    /// constants.
+    /// constants. See <c>kos-migration-spec.md</c> §4.4's topic table.
+    ///
+    /// <para><b>The compute namespace has no client left.</b>
+    /// <c>kos.compute.&lt;id&gt;.&lt;field&gt;</c> kept the app's old
+    /// centralised-feed keys byte-for-byte so the client could migrate without
+    /// a wire change; that registry was later deleted and nothing subscribes.
+    /// <see cref="ComputePrefix"/> and <see cref="ComputeStatusSubTopic"/>
+    /// survive as the shape a compute feed would take, not as a live
+    /// surface.</para>
     /// </summary>
     public static class KosChannels
     {
         /// <summary>Static channel: the list of live CPUs (was the telnet menu-scrape). Payload = <c>List&lt;KosProcessorInfo&gt;</c>.</summary>
         public const string ProcessorsTopic = "kos.processors";
+
+        /// <summary>Dynamic namespace prefix for every compute feed's parsed values: <c>kos.compute.&lt;id&gt;.&lt;field&gt;</c>.</summary>
+        public const string ComputePrefix = "kos.compute.";
 
         /// <summary>
         /// Dynamic namespace prefix for the interactive terminal screen
@@ -69,10 +80,32 @@ namespace Gonogo.KosUplink
                 out coreId);
         }
 
+        /// <summary>Sub-topic (relative to <see cref="ComputePrefix"/>) for one compute field: <c>"&lt;id&gt;.&lt;field&gt;"</c>.</summary>
+        public static string ComputeFieldSubTopic(string scriptId, string field) => scriptId + "." + field;
+
         /// <summary>
-        /// Command: run the script at a path on a CPU, with arguments, and answer
-        /// on <see cref="RunTopic"/> when it returns, fails or ends
-        /// (<see cref="Sitrep.Contract.KosRunArgs"/>).
+        /// Sub-topic (relative to <see cref="ComputePrefix"/>) for one compute
+        /// feed's status: <c>"&lt;id&gt;.status"</c>.
+        ///
+        /// <para><b>Nothing produces this sub-topic.</b> The status channel
+        /// (<c>KosComputeStatus</c>: running / lastGoodAt / scriptError /
+        /// parseError / paused) needs a mod-side per-topic breaker, which was
+        /// never built, and the app-side registry that would have consumed it
+        /// has since been deleted. The contract type and the topic convention
+        /// are all that survive: a subscriber gets nothing.</para>
+        /// </summary>
+        public static string ComputeStatusSubTopic(string scriptId) => scriptId + ".status";
+
+        /// <summary>
+        /// Command: run an arbitrary, caller-supplied command line on a CPU's
+        /// REPL and correlate the resulting <c>[KOSDATA]</c>/<c>[KOSERROR]</c>
+        /// block back via <see cref="RunTopic"/> (<see cref="Sitrep.Contract.KosRunArgs"/>).
+        /// The general-purpose replacement for the standalone telnet proxy's
+        /// ad-hoc <c>executeScript</c> RPC: see
+        /// <c>kos-uplink-full-migration.md</c>. The only way to run anything on
+        /// a CPU now that the fixed pre-registered compute-script trigger is
+        /// gone: it runs whatever command text the caller built and reports back
+        /// exactly that call's result.
         /// </summary>
         public const string RunCommand = "kos.run";
 

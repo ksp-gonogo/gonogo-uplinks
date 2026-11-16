@@ -16,6 +16,7 @@
     "assembly": "kOS/Plugins/kOS.dll",
     "channels": [{ "ckan": "kOS" }, { "github": "KSP-KOS/KOS" }, { "spacedock": 60 }]
   },
+  "ckanDepends": [{ "name": "Harmony2" }],
   "codegen": {
     "assembly": "GonogoKosUplink.Contract",
     "configurationMethod": "Gonogo.KosUplink.KosRtConfig.Configure",

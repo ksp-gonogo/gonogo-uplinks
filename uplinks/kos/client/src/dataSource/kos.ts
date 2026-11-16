@@ -5,12 +5,19 @@ import {
   registerUplinkHandle,
 } from "@ksp-gonogo/sitrep-sdk";
 import type { KosProcessorInfo } from "../__generated__/contract.js";
-import type { KosData, KosScriptArg } from "../shared/kos-data.js";
+import type { KosData, KosScriptArg } from "../shared/kos-data-parser.js";
+import type { KosManagedScript } from "../shared/ScriptableDataSource.js";
 import { KosUplinkExecutor } from "./kosUplinkExecutor.js";
 
-export type { KosScriptArg };
+export type { KosManagedScript, KosScriptArg };
 
-/** Milliseconds a single executeScript call waits for its script to return, fail or end. */
+/**
+ * Milliseconds a single executeScript call will wait for its [KOSDATA] line.
+ * Generous because a managed-script wrapper that needs to rewrite the file
+ * runs ~140 LOG-to-disk ops on the kOS side, each one Unity-tick-bound, a
+ * cold first dispatch after a bundled-script change can take several
+ * seconds before RUNPATH even starts.
+ */
 const DEFAULT_CALL_TIMEOUT_MS = 30_000;
 
 /**
@@ -103,19 +110,25 @@ export class KosDataSource {
   }
 
   /**
-   * Run a script on the named CPU and resolve with the lexicon it handed back
-   * with `ADDONS:GONOGO:RETURN` (empty when it finished without one),
-   * dispatched over the `kos.run` Uplink (see `kosUplinkExecutor.ts`),
+   * Run a script on the named CPU and resolve with its parsed [KOSDATA]
+   * object, dispatched over the `kos.run` Uplink (see `kosUplinkExecutor.ts`),
    * the only transport this method uses. Calls to the same CPU are
    * serialised by a per-core FIFO queue; calls to different CPUs run in
    * parallel. Rejects if the CPU's tagname doesn't resolve to a known
    * `coreId`, no `kos.run.<coreId>` result arrives within the call timeout,
    * or no telemetry stream is mounted at all (`kOS Uplink not connected`).
+   *
+   * If `managed` is provided, the dispatch is wrapped in a check-and-write
+   * preamble that keeps `script` on the kOS volume in sync with the
+   * bundled `managed.body` (versioned via `managed.version` against a
+   * `<script>.ver` sidecar). Without `managed`, `script` is treated as a
+   * pre-existing path on the kOS volume: same behaviour as before.
    */
   executeScript(
     cpu: string,
     script: string,
     args: KosScriptArg[],
+    managed?: KosManagedScript,
   ): Promise<KosData> {
     KOS_DISPATCH_BUDGET.record();
     const client = getActiveTelemetryClient();
@@ -126,7 +139,7 @@ export class KosDataSource {
         ),
       );
     }
-    return this.uplinkExecutor.run(client, cpu, script, args);
+    return this.uplinkExecutor.run(client, cpu, script, args, managed ?? null);
   }
 
   /**
@@ -176,8 +189,9 @@ export class KosDataSource {
         cpu: string;
         script: string;
         args: KosScriptArg[];
+        managed?: KosManagedScript;
       };
-      return this.executeScript(a.cpu, a.script, a.args);
+      return this.executeScript(a.cpu, a.script, a.args, a.managed);
     }
     if (method === "listFiles") {
       if (

@@ -85,8 +85,7 @@ describe("KosDataSource.executeScript: Uplink cutover", () => {
     await waitFor(() => runArgs().length === 1);
     const [first] = runArgs();
     expect(first.coreId).toBe(4);
-    expect(first.path).toBe("0:/foo.ks");
-    expect(first.args).toEqual([1, "hi"]);
+    expect(first.command).toBe('RUNPATH("0:/foo.ks", 1, "hi").\n');
 
     transport.emit("kos.run.4", {
       coreId: 4,

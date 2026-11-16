@@ -86,7 +86,7 @@ namespace GonogoKosUplink.Tests
         /// Regression for the kos-uplink-gap self-deadlock: every kos command
         /// (kos.run/kos.terminal.*) timed out with
         /// a timeout after ~4s and
-        /// its kOS side effect (starting a script) never executed.
+        /// its kOS side effect (TypeCommand/RUNPATH) never executed.
         ///
         /// <para>Root cause is a double main-thread marshal. In production the
         /// <c>ChannelEngine</c> is built <c>executeCommandsOnMainThread:true</c>,

@@ -51,6 +51,13 @@
       "coreId": "id",
       "requestId": "id"
     },
+    "KosComputeStatus": {
+      "lastGoodAt": "ut",
+      "parseError": "text",
+      "paused": "flag",
+      "running": "flag",
+      "scriptError": "text"
+    },
     "KosFilesListArgs": {
       "coreId": "id",
       "requestId": "id",
@@ -70,9 +77,8 @@
       "tag": "text"
     },
     "KosRunArgs": {
-      "copyToLocal": "flag",
+      "command": "text",
       "coreId": "id",
-      "path": "text",
       "requestId": "id"
     },
     "KosRunResult": {

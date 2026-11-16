@@ -1,12 +1,16 @@
 /**
- * FakeKosUplink: a fake `kos.run` Uplink responder, so `executeScript` and CPU
- * discovery coverage exercises the real dispatch → correlate → resolve
- * pipeline over a real `StubTransport` + `TelemetryClient`.
+ * FakeKosUplink: a fake `kos.run` Uplink responder, the `kos.run`-era
+ * counterpart to `MockKosTelnet.ts`. `KosDataSource.executeScript` no
+ * longer talks to telnet at all (see `kosUplinkExecutor.ts`); this fixture
+ * lets `executeScript`/CPU-discovery integration coverage keep exercising
+ * the real dispatch → correlate → resolve pipeline, just over a real
+ * `StubTransport` + `TelemetryClient` instead of a fake WebSocket telnet
+ * session.
  *
  * Usage:
  *   const fake = FakeKosUplink.install();
  *   fake.setCpus([{ number: 1, tagname: "datastream" }]);
- *   fake.registerScript("0:/deltav.ks", (inv) => ({ fields: { dv: inv.args[0] } }));
+ *   fake.registerScript("0:/widget_scripts/deltav.ks", (inv) => `[KOSDATA] dv=${inv.args[0]} [/KOSDATA]`);
  *   // ... run code under test that calls KosDataSource.executeScript ...
  *   FakeKosUplink.uninstall();
  *
@@ -14,13 +18,26 @@
  *   - `kos.processors`: publishes the coreId/tag list `setCpus()` is given.
  *     Subscribed eagerly on construction (a dummy listener) so it stays
  *     flowing: `KosUplinkExecutor`'s own lazy subscribe then replays the
- *     current list synchronously instead of racing an empty cache.
- *   - `kos.run`: looks up the handler registered for the run's path and
- *     answers with what it returns, as the mod would: `fields` for a script
- *     that called `ADDONS:GONOGO:RETURN`, `error` for one kOS stopped on an
- *     error, `ended` for one that finished without returning anything. A path
- *     with no handler is refused with `kos.scriptNotFound`, as the mod refuses
- *     a path with no script behind it.
+ *     current list synchronously instead of racing an empty cache, this
+ *     mirrors the real app, where something (e.g. the KosProcessors widget)
+ *     already has `kos.processors` flowing before a user triggers a script.
+ *   - `kos.run` command dispatch, parses the last non-blank line of the
+ *     dispatched command text (works for both the bare `RUNPATH(...)` form
+ *     and the multi-line managed-wrapper form, which always ends with the
+ *     same RUNPATH line) via the same regex/arg-splitter `MockKosTelnet`
+ *     uses, looks up the registered handler by path, and converts its
+ *     string return value into a `KosRunResult` the same way the mod does:
+ *     an explicit `[KOSERROR]...[/KOSERROR]` wins over `[KOSDATA]` if both are
+ *     present; otherwise `parseKosData` produces `fields`.
+ *
+ * What it deliberately does not handle:
+ *   - kOS's raw REPL error-dump format (`At interpreter`, `Message:`,
+ *     `VERBOSE DESCRIPTION`, ...), that parsing (`kosComputeSession.ts`'s
+ *     `parseKosError`) is telnet-REPL-text-specific, and since executeScript
+ *     does not talk to telnet it is unreachable in production. The mod
+ *     does its own equivalent extraction server-side and hands back an
+ *     already-clean message, which is what registered script handlers
+ *     should return directly for an implicit/runtime error.
  */
 
 import type { CommandResult } from "@ksp-gonogo/sitrep-sdk";
@@ -33,7 +50,7 @@ import type {
   KosProcessorInfo,
   KosRunResult,
 } from "../__generated__/contract.js";
-import type { KosData, KosScriptArg } from "../shared/kos-data.js";
+import { parseKosData } from "../shared/kos-data-parser.js";
 
 export interface FakeKosCpu {
   /** Used as the coreId on the kos.processors wire shape. */
@@ -43,17 +60,17 @@ export interface FakeKosCpu {
 
 export interface FakeKosInvocation {
   script: string;
-  args: KosScriptArg[];
-  copyToLocal: boolean;
+  args: string[];
   cpu: { tagname: string };
 }
 
-/** What a fake script does: hand back fields, stop on an error, or finish with nothing. */
-export type FakeKosOutcome = { fields: KosData } | { error: string } | { ended: true };
-
 export type FakeKosScriptHandler = (
   invocation: FakeKosInvocation,
-) => FakeKosOutcome | Promise<FakeKosOutcome>;
+) => string | Promise<string>;
+
+// Same shape MockKosTelnetSocket matches: the wrapper's final line and a
+// bare RUNPATH dispatch are textually identical.
+const RUNPATH_RE = /^RUNPATH\s*\(\s*"([^"]+)"\s*(?:,\s*(.*?))?\s*\)\s*\.\s*$/i;
 
 export class FakeKosUplink {
   private static active: FakeKosUplink | null = null;
@@ -119,21 +136,37 @@ export class FakeKosUplink {
     if (command !== "kos.run") return { success: true };
     const run = asRunArgs(rawArgs);
     if (!run) return { success: false, errorCode: "notFound" };
-    const { coreId, requestId, path } = run;
+    const { coreId, requestId, command: text } = run;
+    const lines = text
+      .trim()
+      .split("\n")
+      .map((l) => l.trim())
+      .filter(Boolean);
+    const last = lines[lines.length - 1] ?? "";
+    const match = RUNPATH_RE.exec(last);
+    if (!match) {
+      this.respond(coreId, requestId, {
+        error: `FakeKosUplink: could not parse a RUNPATH call from: ${last}`,
+      });
+      return { success: true };
+    }
+    const [, path, argText] = match;
     const invocation: FakeKosInvocation = {
       script: path,
-      args: run.args,
-      copyToLocal: run.copyToLocal === true,
+      args: splitArgs(argText ?? ""),
       cpu: { tagname: this.cpuTagByCoreId.get(coreId) ?? "" },
     };
     this.invocationLog.push(invocation);
 
     const handler = this.scripts.get(path);
     if (!handler) {
-      return { success: false, errorCode: "notFound", reason: "kos.scriptNotFound" };
+      this.respond(coreId, requestId, {
+        error: `Cannot open file '${path}'.`,
+      });
+      return { success: true };
     }
-    void Promise.resolve(handler(invocation)).then((outcome) => {
-      this.respond(coreId, requestId, outcome);
+    void Promise.resolve(handler(invocation)).then((output) => {
+      this.respond(coreId, requestId, outputToResult(output));
     });
     return { success: true };
   }
@@ -141,45 +174,69 @@ export class FakeKosUplink {
   private respond(
     coreId: number,
     requestId: string,
-    outcome: FakeKosOutcome,
+    partial: Pick<KosRunResult, "fields" | "error">,
   ): void {
     this.transport.emit(`kos.run.${coreId}`, {
       coreId,
       requestId,
-      fields: "fields" in outcome ? outcome.fields : null,
-      error: "error" in outcome ? outcome.error : null,
-      ended: "ended" in outcome,
+      ended: false,
+      ...partial,
     } satisfies KosRunResult);
   }
 }
 
+function outputToResult(
+  output: string,
+): Pick<KosRunResult, "fields" | "error"> {
+  const explicit = /\[KOSERROR\]([\s\S]*?)\[\/KOSERROR\]/.exec(output);
+  if (explicit) return { error: explicit[1].trim() };
+  const fields = parseKosData(output);
+  if (fields) return { fields };
+  return { error: output.trim() };
+}
+
+// Splits `a, "b, c", 3` into ["a", '"b, c"', "3"]. Copied from
+// MockKosTelnet.ts (not exported there): the production data source
+// builds these with its own escaping, so a fixture just has to round-trip
+// what it sent.
+function splitArgs(raw: string): string[] {
+  const out: string[] = [];
+  let depth = 0;
+  let inString = false;
+  let current = "";
+  for (const ch of raw) {
+    if (ch === '"' && depth === 0) inString = !inString;
+    if (!inString) {
+      if (ch === "(" || ch === "[") depth++;
+      else if (ch === ")" || ch === "]") depth--;
+    }
+    if (ch === "," && depth === 0 && !inString) {
+      out.push(current.trim());
+      current = "";
+      continue;
+    }
+    current += ch;
+  }
+  if (current.trim() !== "" || out.length > 0) out.push(current.trim());
+  return out;
+}
+
 /**
- * The `kos.run` args a dispatch carried, and `null` when the fields this
+ * The `kos.run` args a dispatch carried, and `null` when the three fields this
  * fake answers on are not all there: a run it cannot correlate is refused
  * rather than answered against undefined.
  */
-function asRunArgs(rawArgs: unknown): {
-  coreId: number;
-  requestId: string;
-  path: string;
-  args: KosScriptArg[];
-  copyToLocal?: boolean;
-} | null {
+function asRunArgs(
+  rawArgs: unknown,
+): { coreId: number; requestId: string; command: string } | null {
   if (
     typeof rawArgs !== "object" ||
     rawArgs === null ||
     typeof Reflect.get(rawArgs, "coreId") !== "number" ||
     typeof Reflect.get(rawArgs, "requestId") !== "string" ||
-    typeof Reflect.get(rawArgs, "path") !== "string" ||
-    !Array.isArray(Reflect.get(rawArgs, "args"))
+    typeof Reflect.get(rawArgs, "command") !== "string"
   ) {
     return null;
   }
-  return rawArgs as {
-    coreId: number;
-    requestId: string;
-    path: string;
-    args: KosScriptArg[];
-    copyToLocal?: boolean;
-  };
+  return rawArgs as { coreId: number; requestId: string; command: string };
 }

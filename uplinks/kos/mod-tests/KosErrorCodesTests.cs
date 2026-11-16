@@ -17,7 +17,7 @@ namespace GonogoKosUplink.Tests
         {
             var codes = ErrorCodeCatalog.Of(typeof(KosErrorCodes));
 
-            Assert.Equal(5, codes.Count);
+            Assert.Equal(3, codes.Count);
             Assert.All(codes, code =>
             {
                 Assert.False(code.IsRoot, code.Id);

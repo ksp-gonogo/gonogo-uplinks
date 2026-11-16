@@ -15,18 +15,23 @@ namespace GonogoKosUplink.Tests
     /// <c>UnitCoverageAssertion.AssertExhaustive</c>, shared with every other
     /// relocated Uplink; this file names what is this Uplink's own.
     ///
-    /// <para><b>Why no baseline file.</b> Every scalar property on all ten
+    /// <para><b>Why no baseline file.</b> Every scalar property on all nine
     /// types is already annotated, so the surface starts, and must stay, entirely
     /// covered: same zero-pending starting point as every other relocated
     /// slice.</para>
     ///
-    /// <para><b>No quantities at all.</b> Every property here is an
-    /// <c>Id</c>/<c>Text</c>/<c>Flag</c>/<c>Count</c>, so the attribute gate does
-    /// all the work: a bare <c>string LeaseToken</c> added to one of the terminal
+    /// <para><b>What is distinctive about this slice, and it is not the
+    /// quantities.</b> Five of the nine are inbound-only command args, and the
+    /// nine types between them declare exactly one property whose token names a
+    /// real dimension (<see cref="KosComputeStatus.LastGoodAt"/>,
+    /// <c>Units.Seconds</c>). Everything else is <c>Id</c>/<c>Text</c>/
+    /// <c>Flag</c>/<c>Count</c>. That makes this the thinnest slice of the six on
+    /// units and the one where the attribute gate does the most work relative to
+    /// the retyping: a bare <c>string LeaseToken</c> added to one of the terminal
     /// arg types would be invisible to any Value-based check and is caught here.
-    /// The <c>Units.Count</c> pair on <see cref="KosTerminalResizeArgs"/> shows
-    /// the two halves are separate: <c>Count</c> is deliberately not in
-    /// <c>RtConfig.NonQuantityUnits</c>, so those two would retype on any
+    /// The <c>Units.Count</c> pair on <see cref="KosTerminalResizeArgs"/> is the
+    /// case that shows the two halves are separate: <c>Count</c> is deliberately
+    /// not in <c>RtConfig.NonQuantityUnits</c>, so those two would retype on any
     /// non-args type, and they stay bare purely because of the inbound-only
     /// rule.</para>
     ///
@@ -41,7 +46,7 @@ namespace GonogoKosUplink.Tests
         public void EveryScalarWirePropertyDeclaresAUnit() =>
             UnitCoverageAssertion.AssertExhaustive(
                 typeof(KosProcessorInfo).Assembly,
-                "Units.Count");
+                "Units.Seconds/Units.Count");
 
         /// <summary>
         /// All ten are reached by the sweep, and nothing else is.
@@ -54,7 +59,7 @@ namespace GonogoKosUplink.Tests
         public void EveryRelocatedTypeIsReachedByTheCoverageScan() =>
             UnitCoverageAssertion.AssertContractTypesAreExactly(
                 typeof(KosProcessorInfo).Assembly,
-                nameof(KosProcessorInfo),
+                nameof(KosProcessorInfo), nameof(KosComputeStatus),
                 nameof(KosTerminalFrame), nameof(KosTerminalOpenArgs),
                 nameof(KosKeystrokeArgs), nameof(KosTerminalResizeArgs),
                 nameof(KosTerminalCloseArgs),
@@ -62,10 +67,33 @@ namespace GonogoKosUplink.Tests
                 nameof(KosFilesListArgs));
 
         /// <summary>
-        /// <see cref="KosRunResult.Fields"/> and <see cref="KosRunArgs.Args"/> are
-        /// the properties in the slice the sweep must not demand a unit for: each
-        /// holds whatever values a script hands back or is given, so there is no
-        /// single dimension that could describe them. It is the contrast case to a name-keyed map of same-unit
+        /// The one field in this whole slice that a formatter could get wrong, as
+        /// opposed to merely print bare, pinned by name. Everything else here is
+        /// an identifier or a flag, where an absent unit costs nothing;
+        /// <see cref="KosComputeStatus.LastGoodAt"/> is an instant on the
+        /// universal-time clock, and a client that does not know that renders a
+        /// timestamp as a raw five-digit number, or worse counts down to it.
+        ///
+        /// <para><c>UniversalTime</c> rather than <c>Seconds</c>, and the
+        /// difference is the point: this is when the last good result came back,
+        /// never how long ago. The two shared a token until an absolute UT
+        /// reached a countdown in two shipped widgets.</para>
+        /// </summary>
+        [Fact]
+        public void TheOneRealQuantityDeclaresAnInstant()
+        {
+            var lastGoodAt = typeof(KosComputeStatus).GetProperty(nameof(KosComputeStatus.LastGoodAt))!;
+
+            Assert.True(UnitCoverageAssertion.RequiresUnit(lastGoodAt));
+            Assert.Equal(Units.UniversalTime, lastGoodAt.GetCustomAttribute<SitrepUnitAttribute>()!.Unit);
+        }
+
+        /// <summary>
+        /// <see cref="KosRunResult.Fields"/> is the one property in the slice the
+        /// sweep must not demand a unit for, and the reason is worth pinning: it
+        /// is a <c>Dictionary&lt;string, object?&gt;</c> of whatever a kerboscript
+        /// printed, so there is no single dimension that could describe its
+        /// values. It is the contrast case to a name-keyed map of same-unit
         /// readings, where the annotation is the thing that makes the numbers
         /// renderable.
         /// </summary>
@@ -78,10 +106,6 @@ namespace GonogoKosUplink.Tests
                 UnitCoverageAssertion.RequiresUnit(fields),
                 "A dictionary collapses to object: the sweep cannot demand an annotation.");
             Assert.Null(fields.GetCustomAttribute<SitrepUnitAttribute>());
-
-            var args = typeof(KosRunArgs).GetProperty(nameof(KosRunArgs.Args))!;
-            Assert.False(UnitCoverageAssertion.RequiresUnit(args));
-            Assert.Null(args.GetCustomAttribute<SitrepUnitAttribute>());
         }
     }
 }

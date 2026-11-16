@@ -12,9 +12,10 @@
 // To wire it into the app: `import "@ksp-gonogo/gonogo-kos-uplink";` during app bootstrap
 // (alongside the other component-registration imports in app/src/main.tsx).
 //
-// Everything kOS-specific lives in this package: the CPU registry and the
-// KosDataSource transport itself (`dataSource/kos.ts`: `kos.run` dispatch and
-// `kos.processors` CPU discovery). This is NOT a thin UI-only client over an
+// Everything kOS-specific lives in this package: the CPU registry, the
+// [KOSDATA] parser, and the KosDataSource transport itself (`dataSource/
+// kos.ts`: `kos.run` dispatch, `kos.processors` CPU discovery, the
+// kerboscript wrapper builder). This is NOT a thin UI-only client over an
 // app-side transport.
 
 // defineUplinkClient(KOS): every widget/augment this package registers
@@ -34,10 +35,11 @@ import "./shared/rootProvider.js";
 // core (relocated out of Sitrep.Contract, see ./topics.ts and
 // ../../GonogoKosUplink.Contract). A consumer that reads a kos.* channel names
 // its shape from HERE, the same way it used to name it from
-// @ksp-gonogo/sitrep-sdk. They are exported with the command args:
+// @ksp-gonogo/sitrep-sdk. All nine are exported, including the command args:
 // a caller building a kos.run or kos.keystroke payload needs the arg shape as
 // much as a reader needs the frame shape.
 export type {
+  KosComputeStatus,
   KosKeystrokeArgs,
   KosProcessorInfo,
   KosRunArgs,
@@ -56,8 +58,8 @@ export { UPLINK_COMMAND_IDS } from "./commands.js";
 export * from "./KosScriptTrigger/index.js";
 export * from "./KosTerminal/index.js";
 // Non-widget infra (defineUplinkClient/registerUplinkHandle side effects,
-// KosCpuDiscovery, the shared CpuRegistryService/Context and the result
-// types) lives in `./runtime`, split out specifically so
+// KosCpuDiscovery, the shared CpuRegistryService/Context/[KOSDATA] parser/
+// ScriptableDataSource) lives in `./runtime`, split out specifically so
 // MainScreen/StationScreen can depend on it WITHOUT also evaluating
 // `./KosTerminal` above (see `./runtime`'s own doc comment for why that
 // matters to the Uplink loader). Re-exported here too so the package root

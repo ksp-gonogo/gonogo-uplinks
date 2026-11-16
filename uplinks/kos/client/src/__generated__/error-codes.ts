@@ -23,18 +23,9 @@ export const KosErrorCodes = {
    */
   CpuBusy: "kos.cpuBusy",
   /**
-   * There is no script at the path a run named, on the volume the path names.
+   * The CPU has no terminal window a script could be typed into.
    */
-  ScriptNotFound: "kos.scriptNotFound",
-  /**
-   * The CPU's own drive has no room for the copy of the script a run asked for.
-   */
-  NoRoom: "kos.noRoom",
-  /**
-   * The installed kOS does not let a script be started from outside its
-   * terminal.
-   */
-  RunUnsupported: "kos.runUnsupported",
+  NoTerminal: "kos.noTerminal",
 } as const;
 export type KosErrorCodes = (typeof KosErrorCodes)[keyof typeof KosErrorCodes];
 
@@ -61,27 +52,11 @@ export const KOS_ERROR_CODES: readonly UplinkErrorCodeDeclaration[] = [
     meaning: "The CPU is booting, running a program, or already running a script for another request, so it is not at a prompt that can take one.",
   },
   {
-    id: "kos.scriptNotFound",
-    kind: "refusal",
-    refines: "notFound",
-    origin: null,
-    sentence: "there is no script at that path",
-    meaning: "There is no script at the path a run named, on the volume the path names.",
-  },
-  {
-    id: "kos.noRoom",
-    kind: "refusal",
-    refines: "limitReached",
-    origin: null,
-    sentence: "the CPU's drive has no room for the script",
-    meaning: "The CPU's own drive has no room for the copy of the script a run asked for.",
-  },
-  {
-    id: "kos.runUnsupported",
+    id: "kos.noTerminal",
     kind: "refusal",
     refines: "capabilityMismatch",
     origin: null,
-    sentence: "this kOS version cannot start a script from here",
-    meaning: "The installed kOS does not let a script be started from outside its terminal.",
+    sentence: "that CPU has no terminal window to type into",
+    meaning: "The CPU has no terminal window a script could be typed into.",
   },
 ];

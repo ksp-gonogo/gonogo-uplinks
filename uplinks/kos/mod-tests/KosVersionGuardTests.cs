@@ -57,37 +57,10 @@ namespace GonogoKosUplink.Tests
             public void ProcessOneInputChar(char ch, object? whichTelnet) { }
         }
 
-        public interface ICpu
+        public class ScreenBuffer
         {
-            void SetGlobal(string identifier, object value);
-            void RemoveVariable(string identifier);
-            object SwitchToProgramContext();
-            void YieldProgram(object yieldTracker);
-            List<int> GetCallTrace();
-            object GetOpcodeAt(int instructionPtr);
-        }
-
-        public class YieldFinishedCompile
-        {
-            public static object? RunScript(object path, int line, string content, string context, object options) => null;
-        }
-
-        public interface IVolumeManager
-        {
-            object GlobalPathFromObject(object pathObject);
-            object GetVolumeFromPath(object path);
-        }
-
-        public class Volume
-        {
-            public object? Open(object path, bool ksmDefault = false) => null;
-            public bool IsRoomFor(object path, object content) => true;
-            public object? SaveFile(object path, object content, bool verifyFreeSpace = true) => null;
-        }
-
-        public class Script
-        {
-            public void ClearContext(string contextId) { }
+            public void Print(string textToPrint) { }
+            public void Print(string textToPrint, bool addNewLine) { }
         }
 
         // A TermWindow whose ONLY ProcessOneInputChar is the non-pinned 3-arg
@@ -101,25 +74,17 @@ namespace GonogoKosUplink.Tests
     /// <summary>
     /// Headless tests for the kOS version guard (spec §7), assembly/member
     /// existence + the 4-arg <c>ProcessOneInputChar</c> overload pin, plus the
-    /// native-run availability axis.
+    /// optional-postfix availability axis.
     /// </summary>
     public class KosVersionGuardTests
     {
-        private static readonly Type[] NativeRunTypes =
-        {
-            typeof(Fakes.ICpu),
-            typeof(Fakes.YieldFinishedCompile),
-            typeof(Fakes.IVolumeManager),
-            typeof(Fakes.Volume),
-            typeof(Fakes.Script),
-        };
-
-        private static readonly Type[] FullSet = new[]
+        private static readonly Type[] FullSet =
         {
             typeof(Fakes.kOSProcessor),
             typeof(Fakes.IInterpreter),
             typeof(Fakes.TermWindow),
-        }.Concat(NativeRunTypes).ToArray();
+            typeof(Fakes.ScreenBuffer),
+        };
 
         [Fact]
         public void Probe_NullAssemblies_FailSoft()
@@ -130,21 +95,20 @@ namespace GonogoKosUplink.Tests
         }
 
         [Fact]
-        public void ProbeTypes_FullSet_AvailableWithNativeRun()
+        public void ProbeTypes_FullSet_AvailableWithPostfix()
         {
             var r = KosVersionGuard.ProbeTypes(FullSet);
             Assert.True(r.IsAvailable);
-            Assert.True(r.NativeRunAvailable);
+            Assert.True(r.ComputePostfixAvailable);
         }
 
         [Fact]
-        public void ProbeTypes_ANativeRunMemberMissing_AvailableButNoNativeRun()
+        public void ProbeTypes_NoScreenBuffer_AvailableButNoPostfix()
         {
-            var types = FullSet.Where(t => t.Name != "Script").ToList();
+            var types = FullSet.Where(t => t.Name != "ScreenBuffer").ToList();
             var r = KosVersionGuard.ProbeTypes(types);
             Assert.True(r.IsAvailable);
-            Assert.False(r.NativeRunAvailable);
-            Assert.Contains("Script.ClearContext", KosVersionGuard.MissingNativeRunMembers(types));
+            Assert.False(r.ComputePostfixAvailable);
         }
 
         [Fact]
@@ -165,22 +129,30 @@ namespace GonogoKosUplink.Tests
                 typeof(FakesMissing.kOSProcessor),
                 typeof(Fakes.IInterpreter),
                 typeof(Fakes.TermWindow),
+                typeof(Fakes.ScreenBuffer),
             });
             Assert.False(r.IsAvailable);
             Assert.Contains("KOSCoreId", r.Reason);
         }
 
         [Fact]
-        public void ProbeTypes_NoSharedField_AvailableButNoNativeRun()
+        public void ProbeTypes_FullSet_CanCaptureRunErrors()
+        {
+            Assert.True(KosVersionGuard.ProbeTypes(FullSet).RunErrorCaptureAvailable);
+        }
+
+        [Fact]
+        public void ProbeTypes_NoSharedField_AvailableButNoRunErrorCapture()
         {
             var r = KosVersionGuard.ProbeTypes(new[]
             {
                 typeof(FakesNoShared.kOSProcessor),
                 typeof(Fakes.IInterpreter),
                 typeof(Fakes.TermWindow),
-            }.Concat(NativeRunTypes).ToList());
+                typeof(Fakes.ScreenBuffer),
+            });
             Assert.True(r.IsAvailable);
-            Assert.False(r.NativeRunAvailable);
+            Assert.False(r.RunErrorCaptureAvailable);
         }
 
         [Fact]

@@ -1,6 +1,7 @@
-GonogoKosUplink compile-time links kOS (kOS.dll / kOS.Safe.dll) and reads it
-in-process: kOS's public API, plus one private field of kOS's processor module
-(the CPU's shared objects), read by reflection. No loopback telnet.
+GonogoKosUplink compile-time links kOS (kOS.dll / kOS.Safe.dll) and, from P1
+onward, Harmony (0Harmony.dll) for one observe-only ScreenBuffer.Print
+postfix. It reads kOS's public API in-process, no arm's-length reflection,
+no loopback telnet.
 
 kOS is distributed under the GNU General Public License v3.0. Because
 GonogoKosUplink direct-links kOS, GonogoKosUplink is itself GPL-3.0-only.
@@ -20,5 +21,10 @@ kOS:
   Licensed under GNU General Public License v3.0
   https://github.com/KSP-KOS/KOS/blob/develop/LICENSE
 
-No kOS assemblies are bundled with GonogoKosUplink: they are reference-only
-(Private="false") and provided by the user's own kOS install at runtime.
+Harmony:
+  Copyright (c) Andreas Pardeike (https://github.com/pardeike/Harmony)
+  Licensed under the MIT License
+
+No kOS or Harmony assemblies are bundled with GonogoKosUplink, both are
+reference-only (Private="false") and provided by the user's own kOS /
+Harmony installs at runtime.

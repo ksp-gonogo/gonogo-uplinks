@@ -17,15 +17,9 @@ using System.Linq;
 using System.Reflection;
 using System.Threading;
 using kOS.Module;
-using kOS.Safe.Compilation;
-using kOS.Safe.Encapsulation;
-using kOS.Safe.Execution;
-using kOS.Safe.Persistence;
 using kOS.Safe.Screen;
-using SafeHouse = kOS.Safe.Utilities.SafeHouse;
 using Sitrep.Contract;
 using UnityEngine;
-using Debug = UnityEngine.Debug;
 
 namespace Gonogo.KosUplink
 {
@@ -38,25 +32,22 @@ namespace Gonogo.KosUplink
         private KosMainThreadDispatcherAddon? _boundAddon;
 
         // kOSProcessor's private SharedObjects field, bound once the version guard
-        // has checked its shape and the members a native run calls; null when it
-        // has not, which refuses every kos.run.
+        // has checked its shape; null when it has not, which leaves runs ending
+        // without kOS's error message.
         private FieldInfo? _sharedField;
-
-        // CPUs whose run left its argument globals behind, with the CPU (a kOS
-        // ICpu, held as object) and the names, removed once the CPU is back at
-        // its prompt so they never show up in the operator's session.
-        private readonly Dictionary<int, KeyValuePair<object, List<string>>> _globalsToClear = new Dictionary<int, KeyValuePair<object, List<string>>>();
 
         /// <summary>
         /// Implements the seam declared in KosExtension.cs: installs the real
-        /// Debug.LogError sink and the real GameObject/addon binder for a
-        /// production instance (the public parameterless ctor's path only: see
-        /// the ctor's useProductionDefaults gate).
+        /// Debug.LogError sink, the real GameObject/addon binder, and the real
+        /// kOSProcessor-reverse-map CoreIdResolver for a production instance
+        /// (the public parameterless ctor's path only: see the ctor's
+        /// useProductionDefaults gate).
         /// </summary>
         partial void InstallProductionDefaults()
         {
             _bindDispatcherAddon = BindRealAddon;
             _logError = LogErrorToUnity;
+            CoreIdResolver = ResolveCoreId;
         }
 
         // Named static helper (not an inline lambda) so ONLY this method's body
@@ -104,24 +95,48 @@ namespace Gonogo.KosUplink
                 HandleProcessors,
                 KosChannels.ProcessorsTopic);
 
-            _sharedField = guard.NativeRunAvailable ? KosVersionGuard.SharedObjectsField(typeof(kOSProcessor)) : null;
+            // kos.compute.<id>.<field>: dynamic namespace fed by the Print
+            // postfix (or the snapshot-scrape fallback when the postfix target
+            // is absent). Every compute value is DELAYED (comms authority,
+            // script PRINT downlink is vessel telemetry, spec §4.4).
+            _computeSource = host.RegisterDynamicNamespace(KosChannels.ComputePrefix, ComputeNamespace());
+
+            // Subscription short-circuit source for OnPrint: every kerboscript
+            // PRINT flows through the postfix, but if nobody is subscribed under
+            // kos.compute.* the whole capture (resolve + accumulate + publish)
+            // must be skipped so a terminal-only session burns no GC on the main
+            // thread (adversarial-review I1). Reads the engine's thread-safe
+            // subscribed-topics mirror.
+            _computeSubscribed = () => host.IsAnyTopicSubscribed(KosChannels.ComputePrefix);
+
+            // The instant every compute publish is stamped with. Same seam and
+            // same reason as the terminal downlink below and the processor
+            // capture above: a Delayed channel is revealed and keyframed
+            // against its stamp, so it has to be the game's clock rather than
+            // a constant.
+            _nowUt = host.NowUt;
+
+            _sharedField = guard.RunErrorCaptureAvailable ? KosVersionGuard.SharedObjectsField(typeof(kOSProcessor)) : null;
             if (_sharedField == null)
             {
-                var missing = new List<string>(KosVersionGuard.MissingNativeRunMembers(typeof(ScreenBuffer).Assembly.GetTypes()));
-                if (missing.Count == 0)
+                Debug.Log("[Gonogo.KosUplink] kOSProcessor.shared is not the field this Uplink expects, so a script that stops on an error ends its run without the error message");
+            }
+
+            if (guard.ComputePostfixAvailable)
+            {
+                KosComputeHarmony.Sink = OnPrint;
+                try
                 {
-                    missing.Add("kOSProcessor." + KosVersionGuard.SharedFieldName);
+                    KosComputeHarmony.Install();
                 }
-                Debug.Log("[Gonogo.KosUplink] this kOS lacks what a native run needs, so kos.run is refused: " + string.Join(", ", missing));
-            }
-            KosGonogoAddon.Sink = (coreId, fields) => OnScriptReturn(coreId, fields);
-            try
-            {
-                KosGonogoAddon.Register();
-            }
-            catch (Exception ex)
-            {
-                Debug.LogError("[Gonogo.KosUplink] could not add ADDONS:GONOGO to kOS, so a script cannot hand a result back: " + ex);
+                catch (Exception ex)
+                {
+                    // Fall back to the snapshot-scrape path (not wired in P1,
+                    // see the known-gap note in the report). Never crash the
+                    // engine on a patch failure.
+                    Debug.LogError("[Gonogo.KosUplink] compute Print-postfix install failed: " + ex);
+                    KosComputeHarmony.Sink = null;
+                }
             }
 
             // Interactive terminal: kos.terminal.<coreId> ReliableOrdered
@@ -169,7 +184,6 @@ namespace Gonogo.KosUplink
                 {
                     terminalPoll(dt);
                     PollRuns();
-                    ClearRunGlobals();
                 };
             }
 
@@ -235,7 +249,16 @@ namespace Gonogo.KosUplink
                     return CommandResult.Fail(CommandErrorCode.NotFound);
                 }
 
-                var refusal = KosFileListing.Refusal(args.Volume, ArchiveReachable(proc));
+                /*
+                 * The condition kOS's own volume manager refuses the Archive on
+                 * (ConnectivityVolumeManager.CheckRange): on the launchpad, or with a
+                 * link home. The manager itself is private to the processor.
+                 */
+                var vessel = proc.vessel;
+                var archiveReachable = vessel != null
+                    && (vessel.situation == Vessel.Situations.PRELAUNCH
+                        || kOS.Communication.ConnectivityManager.HasConnectionToHome(vessel));
+                var refusal = KosFileListing.Refusal(args.Volume, archiveReachable);
                 if (refusal != null)
                 {
                     return refusal;
@@ -340,223 +363,120 @@ namespace Gonogo.KosUplink
             return new ProcessorsCapture { Ut = snapshot.Ut, List = list };
         }
 
-        /// <summary>The most arguments a <c>kos.run</c> may pass, so the started line stays bounded.</summary>
-        internal const int MaxRunArgs = 32;
-
-        private const string PathGlobal = "gonogo_run_path";
-        private const string ArgGlobalPrefix = "gonogo_run_arg";
+        /// <summary>
+        /// Reverse map from the postfix's <c>ScreenBuffer</c>/interpreter to
+        /// the owning CPU's <c>KOSCoreId</c> (spec §4.2:
+        /// <c>AllInstances().First(p =&gt; p.GetScreen() == __instance)</c>).
+        /// Returns -1 when no CPU owns the screen (should not happen for a
+        /// script print, but fail-soft). Called only on block completion; never
+        /// per <c>PRINT</c> fragment: so its <c>AllInstances()</c> allocation
+        /// is off the hot path.
+        /// </summary>
+        private static int ResolveCoreId(object screen)
+        {
+            foreach (var p in kOSProcessor.AllInstances())
+            {
+                if (p != null && ReferenceEquals(p.GetScreen(), screen))
+                {
+                    return p.KOSCoreId;
+                }
+            }
+            return -1;
+        }
 
         /// <summary>
-        /// <c>kos.run</c> command handler: starts the script at
-        /// <see cref="KosRunArgs.Path"/> on the CPU as a program, the way kOS's
-        /// own boot sequence starts a boot script. The path and the arguments go
-        /// in as kOS globals, and the line compiled to start the program is built
-        /// only from fixed text and those globals' names, so nothing the caller
-        /// sent is ever compiled. The run ends when the script calls
-        /// <c>ADDONS:GONOGO:RETURN</c>, when kOS stops it on an error, or when
-        /// the program finishes.
+        /// <c>kos.run</c> command handler, the general-purpose replacement
+        /// for the standalone telnet proxy's ad-hoc <c>executeScript</c> RPC
+        /// (see <c>kos-uplink-full-migration.md</c>). The only way to run
+        /// anything on a CPU: it types the caller's own literal
+        /// <see cref="KosRunArgs.Command"/> text and arms
+        /// <see cref="_runManager"/> so <see cref="KosExtension.OnPrint"/>
+        /// routes the resulting completed block back to
+        /// <c>kos.run.&lt;coreId&gt;</c> instead of the compute fanout.
+        ///
+        /// <para><b>Unverified against live KSP</b>: this file has no
+        /// reference DLLs to build against in a headless environment (see the
+        /// migration plan's "What's left"). Only a real kOS smoke test proves
+        /// <see cref="TypeCommand"/>'s multi-line handling is correct.</para>
         /// </summary>
         private CommandResult Run(KosRunArgs args)
         {
-            if (args == null || string.IsNullOrEmpty(args.RequestId) || string.IsNullOrEmpty(args.Path))
+            if (args == null || string.IsNullOrEmpty(args.RequestId) || string.IsNullOrEmpty(args.Command))
             {
                 return CommandResult.Fail(CommandErrorCode.NotFound);
             }
-            var runArgs = args.Args ?? new List<object?>();
-            if (runArgs.Count > MaxRunArgs)
+
+            return RunOnMainThread(() =>
             {
-                return CommandResult.Fail(CommandErrorCode.Range);
-            }
-            foreach (var value in runArgs)
-            {
-                if (!(value is double || value is bool || value is string))
+                var proc = FindProcessor(args.CoreId);
+                if (proc == null)
                 {
-                    return CommandResult.Fail(CommandErrorCode.Range);
+                    return CommandResult.Fail(CommandErrorCode.NotFound);
                 }
-            }
 
-            return RunOnMainThread(() => RunOnCpu(args, runArgs));
-        }
+                // Guard: never type into a booting or busy prompt (spec §4(a)).
+                if (!proc.HasBooted || !(proc.GetScreen() is IInterpreter interp) || !interp.IsWaitingForCommand())
+                {
+                    return CommandResult.Fail(KosErrorCodes.CpuBusy);
+                }
 
-        /*
-         * The kOS objects a run needs travel as object through every lambda here:
-         * a captured local becomes a field of a compiler-generated class, and a
-         * kOS-typed field in this assembly is what KSP cannot load before kOS.
-         */
-        private CommandResult RunOnCpu(KosRunArgs args, List<object?> runArgs)
-        {
-            var proc = FindProcessor(args.CoreId);
-            if (proc == null)
-            {
-                return CommandResult.Fail(CommandErrorCode.NotFound);
-            }
-            if (_sharedField == null || !(_sharedField.GetValue(proc) is kOS.SharedObjects shared) || shared.Cpu == null)
-            {
-                return CommandResult.Fail(KosErrorCodes.RunUnsupported);
-            }
-            if (!IsCpuIdle(args.CoreId) || !(proc.GetScreen() is IInterpreter interp) || !interp.IsAtStartOfCommand())
-            {
-                return CommandResult.Fail(KosErrorCodes.CpuBusy);
-            }
+                CaptureRunErrors(proc);
 
-            CaptureRunErrors(proc);
-            object procRef = proc;
-            object sharedRef = shared;
-            return _runManager.ArmAndStart(
-                args.CoreId,
-                args.RequestId,
-                () => StartScript(procRef, sharedRef, args, runArgs));
+                // Arming, typing, and disarming again when there was no window
+                // to type into all live in KosRunManager.ArmAndType, which is
+                // KSP-free and therefore testable: see its doc comment for the
+                // ordering and for why an untyped run must be left unarmed.
+                return _runManager.ArmAndType(
+                    args.CoreId,
+                    args.RequestId,
+                    () => TypeCommand(proc, args.Command));
+            });
         }
 
         /// <summary>
-        /// Resolves the script, copies it to the CPU's drive when asked, and
-        /// starts it. Returns null once the program is started, or the refusal
-        /// to answer with; nothing has run when it refuses.
+        /// Types <paramref name="command"/>: potentially several kerboscript
+        /// statements separated by <c>\n</c> (the shape
+        /// <c>packages/app/src/dataSources/kosWrapper.ts</c>'s managed-sync
+        /// wrapper already builds for the telnet path), into
+        /// <paramref name="proc"/>'s interpreter via the pinned 4-arg
+        /// <c>ProcessOneInputChar</c> overload (spec §7, <c>forceQueue: true</c>
+        /// preserving order against the interpreter's async pace). Every
+        /// embedded <c>\n</c> is converted to an Enter press (<c>\r</c> via
+        /// <c>ProcessOneInputChar</c>) so each statement submits to the REPL
+        /// in turn, the same way a human pasting multi-line input would; a
+        /// final Enter is appended when <paramref name="command"/> doesn't
+        /// already end with one. A stray <c>\r</c> in the input is dropped
+        /// (never double-submits): <c>Command</c> is caller-built kerboscript
+        /// text, not raw keyboard bytes, so CRLF normalisation is the mod's
+        /// job, not the caller's.
+        ///
+        /// <para>Returns false when the CPU has no terminal window and nothing
+        /// could be typed at all. That is the same condition
+        /// <see cref="KosProcessorScreen.TypeChars"/> already reports as a
+        /// failure on the <c>kos.keystroke</c> path, and the caller turns it
+        /// into the same refusal rather than acking a run that never
+        /// happened.</para>
         /// </summary>
-        private CommandResult? StartScript(object procRef, object sharedRef, KosRunArgs args, List<object?> runArgs)
+        private static bool TypeCommand(kOSProcessor proc, string command)
         {
-            var proc = (kOSProcessor)procRef;
-            var shared = (kOS.SharedObjects)sharedRef;
-            GlobalPath path;
-            Volume volume;
-            try
+            var window = proc.GetWindow();
+            if (window == null)
             {
-                path = shared.VolumeMgr.GlobalPathFromObject(new StringValue(args.Path));
-                volume = shared.VolumeMgr.GetVolumeFromPath(path);
+                return false;
             }
-            catch (Exception)
+            foreach (var ch in command)
             {
-                return CommandResult.Fail(KosErrorCodes.ScriptNotFound);
-            }
-            if (volume is Archive && !ArchiveReachable(proc))
-            {
-                return CommandResult.Fail(CommandErrorCode.NoConnection);
-            }
-            if (!(volume?.Open(path) is VolumeFile file))
-            {
-                return CommandResult.Fail(KosErrorCodes.ScriptNotFound);
-            }
-
-            if (args.CopyToLocal && !(volume is Harddisk))
-            {
-                var local = proc.HardDisk;
-                if (local == null)
-                {
-                    return CommandResult.Fail(KosErrorCodes.NoRoom);
-                }
-                var content = file.ReadAll();
-                var root = shared.VolumeMgr.GlobalPathFromObject(local);
-                var localPath = GlobalPath.FromVolumePath(VolumePath.FromString("/" + file.Name), root.VolumeId);
-                if (!local.IsRoomFor(localPath, content) || local.SaveFile(localPath, content, true) == null)
-                {
-                    return CommandResult.Fail(KosErrorCodes.NoRoom);
-                }
-                path = localPath;
-            }
-
-            var cpu = shared.Cpu;
-            var globals = new List<string> { PathGlobal };
-            cpu.SetGlobal("$" + PathGlobal, new StringValue(path.ToString()));
-            var line = new System.Text.StringBuilder("RUNPATH(").Append(PathGlobal);
-            for (var i = 0; i < runArgs.Count; i++)
-            {
-                var name = ArgGlobalPrefix + i.ToString(CultureInfo.InvariantCulture);
-                cpu.SetGlobal("$" + name, Structure.FromPrimitiveWithAssert(runArgs[i]!));
-                globals.Add(name);
-                line.Append(", ").Append(name);
-            }
-            line.Append(").");
-            _globalsToClear[args.CoreId] = new KeyValuePair<object, List<string>>(cpu, globals);
-
-            proc.GetScreen()?.Print("[gonogo] run " + path + Describe(runArgs));
-
-            var text = line.ToString();
-            var options = new CompilerOptions
-            {
-                LoadProgramsInSameAddressSpace = true,
-                FuncManager = shared.FunctionManager,
-                BindManager = shared.BindingMgr,
-                AllowClobberBuiltins = SafeHouse.Config.AllowClobberBuiltIns,
-                IsCalledFromRun = false,
-            };
-            shared.ScriptHandler.ClearContext("program");
-            cpu.SwitchToProgramContext();
-            cpu.YieldProgram(YieldFinishedCompile.RunScript(StartLinePath(), 1, text, "program", options));
-            return null;
-        }
-
-        /// <summary>The volume id the started line is compiled under; no CPU has a volume by that name.</summary>
-        internal const string StartLineVolume = "gonogo";
-
-        /*
-         * The started line is compiled under a path on a volume that does not
-         * exist, so when kOS shows where an error happened it finds no source to
-         * quote rather than quoting a line of some real file.
-         */
-        private static GlobalPath StartLinePath() => GlobalPath.FromVolumePath(VolumePath.FromString("/run"), StartLineVolume);
-
-        private static string Describe(List<object?> runArgs)
-        {
-            var sb = new System.Text.StringBuilder();
-            foreach (var value in runArgs)
-            {
-                sb.Append(' ').Append(value is bool b ? (b ? "true" : "false")
-                    : value is double d ? d.ToString(CultureInfo.InvariantCulture)
-                    : value);
-            }
-            return sb.ToString();
-        }
-
-        /// <summary>
-        /// Removes the argument globals a finished run left behind, once its CPU
-        /// is back at its prompt. Runs on the main thread.
-        /// </summary>
-        private void ClearRunGlobals()
-        {
-            if (_globalsToClear.Count == 0)
-            {
-                return;
-            }
-            List<int>? cleared = null;
-            foreach (var kv in _globalsToClear)
-            {
-                if (_runManager.IsArmed(kv.Key) || !IsCpuIdle(kv.Key))
+                if (ch == '\r')
                 {
                     continue;
                 }
-                try
-                {
-                    foreach (var name in kv.Value.Value)
-                    {
-                        ((ICpu)kv.Value.Key).RemoveVariable("$" + name);
-                    }
-                }
-                catch (Exception ex)
-                {
-                    Debug.LogError("[Gonogo.KosUplink] could not clear a run's globals on CPU " + kv.Key + ": " + ex.Message);
-                }
-                (cleared ??= new List<int>()).Add(kv.Key);
+                window.ProcessOneInputChar(ch == '\n' ? '\r' : ch, null, true, true);
             }
-            if (cleared != null)
+            if (command.Length == 0 || command[command.Length - 1] != '\n')
             {
-                foreach (var coreId in cleared)
-                {
-                    _globalsToClear.Remove(coreId);
-                }
+                window.ProcessOneInputChar('\r', null, true, true);
             }
-        }
-
-        /// <summary>
-        /// The condition kOS's own volume manager refuses the Archive on
-        /// (<c>ConnectivityVolumeManager.CheckRange</c>): reachable on the
-        /// launchpad, or with a link home.
-        /// </summary>
-        private static bool ArchiveReachable(kOSProcessor proc)
-        {
-            var vessel = proc.vessel;
-            return vessel != null
-                && (vessel.situation == Vessel.Situations.PRELAUNCH
-                    || kOS.Communication.ConnectivityManager.HasConnectionToHome(vessel));
+            return true;
         }
 
         /// <summary>
@@ -644,8 +564,7 @@ namespace Gonogo.KosUplink
                 }
                 var opcode = kosCpu.GetOpcodeAt(trace[0]);
                 if (opcode == null || opcode is kOS.Safe.Compilation.OpcodeEOF || opcode.SourcePath == null
-                    || opcode.SourcePath is kOS.Safe.Execution.InternalPath
-                    || Equals(opcode.SourcePath.VolumeId, StartLineVolume) || opcode.SourceLine <= 0)
+                    || opcode.SourcePath is kOS.Safe.Execution.InternalPath || opcode.SourceLine <= 0)
                 {
                     return null;
                 }
