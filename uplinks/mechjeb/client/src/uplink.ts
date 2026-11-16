@@ -14,7 +14,6 @@ export const MECHJEB = defineUplinkClient({
   version: UPLINK_VERSION,
   name: "MechJeb",
   description:
-    "Flies the vessel from the console: engage MechJeb's ascent autopilot, execute the " +
-    "next node, or land at the selected target, over the delayed command path.",
+    "Integrates MechJeb controls into the dashboard.",
   tags: GENERATED_CONTRACT_TAGS,
 });

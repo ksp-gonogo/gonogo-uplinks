@@ -3,7 +3,7 @@
 
 # Kerbcast
 
-Live in-flight camera views from Hullcam VDS parts, with aim and zoom controls, streamed by kerbcast.
+Integrates Kerbcast's camera feeds into a Camera Feed widget, as well as EVA feeds for Crew Status and a docking camera in Rendezvous.
 
 An Uplink for [Gonogo](https://ksp-gonogo.github.io/), the mission-control dashboard for Kerbal Space Program that runs in a web browser on any screen.
 

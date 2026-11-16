@@ -1,7 +1,7 @@
 {
   "id": "testflight",
   "name": "TestFlight",
-  "description": "TestFlight engine reliability on the fleet roster: failed engines, rated burn nearly spent and survival odds, with TestFlight's own repair.",
+  "description": "Adds the ability for Gonogo to display TestFlight reliability in the Vessel Catalog and Vessel Schematics.",
   "author": "jpeps",
   "repo": "https://github.com/ksp-gonogo/gonogo-uplinks",
   "mod": {

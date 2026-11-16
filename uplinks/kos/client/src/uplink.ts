@@ -24,8 +24,7 @@ export const KOS = defineUplinkClient({
   version: UPLINK_VERSION,
   name: "kOS",
   description:
-    "Puts a kOS CPU's real terminal on the dashboard, streamed in process with no " +
-    "proxy to run, and dispatches kerboscripts to a chosen CPU.",
+    "Integrates kOS terminals into the dashboard.",
   tags: GENERATED_CONTRACT_TAGS,
 });
 

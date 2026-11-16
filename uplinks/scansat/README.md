@@ -3,7 +3,7 @@
 
 # SCANsat
 
-Brings [SCANsat](https://github.com/S-C-A-N/SCANsat)'s orbital survey data onto the mission-control dashboard: what has been scanned, by which craft, and where the anomalies are.
+Integrates SCANsat's map data system into Gonogo. The Ground Track widget relies on scanning data from SCANsat to show any real map data.
 
 An Uplink for [Gonogo](https://ksp-gonogo.github.io/), the mission-control dashboard for Kerbal Space Program that runs in a web browser on any screen.
 

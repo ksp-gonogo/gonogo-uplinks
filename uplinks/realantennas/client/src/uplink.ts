@@ -18,7 +18,6 @@ export const REALANTENNAS = defineUplinkClient({
   version: UPLINK_VERSION,
   name: "RealAntennas",
   description:
-    "Shows RealAntennas' radio links in the comms readouts when it is installed: " +
-    "band, data rate and link margin.",
+    "Integrates RealAntennas' model into Gonogo. Antenna data is shown in the CommNet widget.",
   tags: GENERATED_CONTRACT_TAGS,
 });

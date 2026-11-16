@@ -1,6 +1,7 @@
 {
   "id": "actionGroupsExtended",
-  "name": "ActionGroupsExtended",
+  "name": "Action Groups Extended",
+  "description": "Integrates extended action groups into Gonogo's action group system.",
   "author": "jpeps",
   "repo": "https://github.com/ksp-gonogo/gonogo-uplinks",
   "gamedata": "GonogoActionGroupsExtendedUplink",

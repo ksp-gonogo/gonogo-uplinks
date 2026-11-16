@@ -17,8 +17,7 @@ export const KERBALISM = defineUplinkClient({
   version: UPLINK_VERSION,
   name: "Kerbalism",
   description:
-    "Kerbalism life support as one ledger: every profile resource as a meter with the " +
-    "per-source rates that move it, plus wear, habitat, processes and power.",
+    "Adds life support meters for crew status, and new widgets for tracking life support systems and CMEs.",
   tags: GENERATED_CONTRACT_TAGS,
 });
 

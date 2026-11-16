@@ -1,7 +1,7 @@
 {
   "id": "kos",
   "name": "kOS",
-  "description": "Puts a kOS CPU's real terminal on the dashboard, streamed in process with no proxy to run, and dispatches kerboscripts to a chosen CPU.",
+  "description": "Integrates kOS terminals into the dashboard.",
   "author": "jpeps",
   "repo": "https://github.com/ksp-gonogo/gonogo-uplinks",
   "mod": {

@@ -16,8 +16,7 @@ export const RP1 = defineUplinkClient({
   version: UPLINK_VERSION,
   name: "RP-1",
   description:
-    "Brings RP-1's career layer to the dashboard: Programs with their objectives, " +
-    "deadlines, funding curves and the Confidence price at each speed.",
+    "Adds the RP-1 career to the dashboard: Programs, build queues, research.",
   tags: GENERATED_CONTRACT_TAGS,
 });
 

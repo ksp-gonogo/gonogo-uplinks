@@ -3,7 +3,7 @@
 
 # RP-1
 
-Brings RP-1's career layer to the dashboard: Programs with their objectives, deadlines, funding curves and the Confidence price at each speed.
+Adds the RP-1 career to the dashboard: Programs, build queues, research.
 
 An Uplink for [Gonogo](https://ksp-gonogo.github.io/), the mission-control dashboard for Kerbal Space Program that runs in a web browser on any screen.
 

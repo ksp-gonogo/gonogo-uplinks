@@ -1,6 +1,7 @@
 {
   "id": "contractConfigurator",
   "name": "Contract Configurator",
+  "description": "Integrates the Contract Configurator model with Gonogo.",
   "author": "jpeps",
   "repo": "https://github.com/ksp-gonogo/gonogo-uplinks",
   "gamedata": "GonogoContractConfiguratorUplink",

@@ -1,7 +1,7 @@
 {
   "id": "kerbcast",
   "name": "Kerbcast",
-  "description": "Live in-flight camera views from Hullcam VDS parts, with aim and zoom controls, streamed by kerbcast.",
+  "description": "Integrates Kerbcast's camera feeds into a Camera Feed widget, as well as EVA feeds for Crew Status and a docking camera in Rendezvous.",
   "author": "jpeps",
   "repo": "https://github.com/ksp-gonogo/gonogo-uplinks",
   "mod": {

@@ -14,9 +14,7 @@ export const PRINCIPIA = defineUplinkClient({
   version: UPLINK_VERSION,
   name: "Principia",
   description:
-    "Principia's n-body flight on the dashboard: how far each trajectory holds, the " +
-    "flight plan and its burns, the reference frame they are quoted in, and " +
-    "the integrator settings.",
+    "Makes Gonogo compatible with Principia's n-body physics. All planning widgets work with the integrated model where it's useful.",
   tags: GENERATED_CONTRACT_TAGS,
 });
 

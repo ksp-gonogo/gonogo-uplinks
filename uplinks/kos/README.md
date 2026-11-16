@@ -3,7 +3,7 @@
 
 # kOS
 
-Puts a kOS CPU's real terminal on the dashboard, streamed in process with no proxy to run, and dispatches kerboscripts to a chosen CPU.
+Integrates kOS terminals into the dashboard.
 
 An Uplink for [Gonogo](https://ksp-gonogo.github.io/), the mission-control dashboard for Kerbal Space Program that runs in a web browser on any screen.
 

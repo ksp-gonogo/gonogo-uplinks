@@ -7,11 +7,11 @@ built and released on its own, and loaded by the app at runtime.
 <!-- uplinks:start -->
 | Uplink | id | wraps |
 |---|---|---|
-| [ActionGroupsExtended](uplinks/actiongroupsextended/) | `actionGroupsExtended` | Action Groups Extended 2.4.1.4 (ckan) |
-| [Contract Configurator](uplinks/contractconfigurator/) | `contractConfigurator` | Contract Configurator 2.13.3.0 (ckan) |
-| [Aerodynamics](uplinks/ferramaerospaceresearch/README.md) | `aero` | Ferram Aerospace Research 0.16.1.2 (ckan) |
+| [Action Groups Extended](uplinks/actiongroupsextended/README.md) | `actionGroupsExtended` | Action Groups Extended 2.4.1.4 (ckan) |
+| [Contract Configurator](uplinks/contractconfigurator/README.md) | `contractConfigurator` | Contract Configurator 2.13.3.0 (ckan) |
+| [Ferram Aerospace Research](uplinks/ferramaerospaceresearch/README.md) | `aero` | Ferram Aerospace Research 0.16.1.2 (ckan) |
 | [Kerbalism](uplinks/kerbalism/README.md) | `kerbalism` | Kerbalism 3.32 (ckan) |
-| [Kerbcast](uplinks/kerbcast/README.md) | `kerbcast` | kerbcast 1.12.1 (ckan) |
+| [Kerbcast](uplinks/kerbcast/README.md) | `kerbcast` | kerbcast 1.13.0 (ckan) |
 | [kOS](uplinks/kos/README.md) | `kos` | kOS 1.6.0.1 (ckan) |
 | [MechJeb](uplinks/mechjeb/README.md) | `mechjeb` | MechJeb2 2.15.3.0 (ckan) |
 | [Principia](uplinks/principia/README.md) | `principia` | Principia 2026110907-Lie (manual) |

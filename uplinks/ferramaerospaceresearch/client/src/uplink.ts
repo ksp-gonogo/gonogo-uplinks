@@ -13,9 +13,8 @@ const UPLINK_VERSION = "0.0.0-development";
 export const AERO = defineUplinkClient({
   id: "aero",
   version: UPLINK_VERSION,
-  name: "Aerodynamics",
+  name: "Ferram Aerospace Research",
   description:
-    "Puts Ferram Aerospace Research's own aerodynamic numbers on the board: angle " +
-    "of attack, sideslip, stall, lift and drag.",
+    "Adds Ferram Aerospace Research's own aerodynamics data to the dashboard, including through its own Aerodynamics widget.",
   tags: GENERATED_CONTRACT_TAGS,
 });

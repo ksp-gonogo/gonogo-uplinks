@@ -19,7 +19,6 @@ export const KERBCAST = defineUplinkClient({
   version: UPLINK_VERSION,
   name: "Kerbcast",
   description:
-    "Live in-flight camera views from Hullcam VDS parts, with aim and zoom " +
-    "controls, streamed by kerbcast.",
+    "Integrates Kerbcast's camera feeds into a Camera Feed widget, as well as EVA feeds for Crew Status and a docking camera in Rendezvous.",
   tags: GENERATED_CONTRACT_TAGS,
 });

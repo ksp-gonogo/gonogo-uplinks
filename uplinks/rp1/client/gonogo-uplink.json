@@ -1,7 +1,7 @@
 {
   "id": "rp1",
   "name": "RP-1",
-  "description": "Brings RP-1's career layer to the dashboard: Programs with their objectives, deadlines, funding curves and the Confidence price at each speed.",
+  "description": "Adds the RP-1 career to the dashboard: Programs, build queues, research.",
   "author": "jpeps",
   "repo": "https://github.com/ksp-gonogo/gonogo-uplinks",
   "mod": {

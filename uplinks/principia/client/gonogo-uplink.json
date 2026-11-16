@@ -1,7 +1,7 @@
 {
   "id": "principia",
   "name": "Principia",
-  "description": "Principia's n-body flight on the dashboard: how far each trajectory holds, the flight plan and its burns, the reference frame they are quoted in, and the integrator settings.",
+  "description": "Makes Gonogo compatible with Principia's n-body physics. All planning widgets work with the integrated model where it's useful.",
   "author": "jpeps",
   "repo": "https://github.com/ksp-gonogo/gonogo-uplinks",
   "mod": {

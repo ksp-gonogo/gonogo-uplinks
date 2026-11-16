@@ -20,8 +20,6 @@ export const SCANSAT = defineUplinkClient({
   version: UPLINK_VERSION,
   name: "SCANsat",
   description:
-    "Brings [SCANsat](https://github.com/S-C-A-N/SCANsat)'s orbital survey " +
-    "data onto the mission-control dashboard: what has been scanned, by " +
-    "which craft, and where the anomalies are.",
+    "Integrates SCANsat's map data system into Gonogo. The Ground Track widget relies on scanning data from SCANsat to show any real map data.",
   tags: GENERATED_CONTRACT_TAGS,
 });

@@ -3,7 +3,7 @@
 
 # Kerbalism
 
-Kerbalism life support as one ledger: every profile resource as a meter with the per-source rates that move it, plus wear, habitat, processes and power.
+Adds life support meters for crew status, and new widgets for tracking life support systems and CMEs.
 
 An Uplink for [Gonogo](https://ksp-gonogo.github.io/), the mission-control dashboard for Kerbal Space Program that runs in a web browser on any screen.
 

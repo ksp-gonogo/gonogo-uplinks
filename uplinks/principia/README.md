@@ -3,7 +3,7 @@
 
 # Principia
 
-Principia's n-body flight on the dashboard: how far each trajectory holds, the flight plan and its burns, the reference frame they are quoted in, and the integrator settings.
+Makes Gonogo compatible with Principia's n-body physics. All planning widgets work with the integrated model where it's useful.
 
 An Uplink for [Gonogo](https://ksp-gonogo.github.io/), the mission-control dashboard for Kerbal Space Program that runs in a web browser on any screen.
 

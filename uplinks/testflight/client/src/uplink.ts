@@ -11,8 +11,7 @@ export const TESTFLIGHT = defineUplinkClient({
   version: UPLINK_VERSION,
   name: "TestFlight",
   description:
-    "TestFlight engine reliability on the fleet roster: failed engines, rated " +
-    "burn nearly spent and survival odds, with TestFlight's own repair.",
+    "Adds the ability for Gonogo to display TestFlight reliability in the Vessel Catalog and Vessel Schematics.",
   tags: GENERATED_CONTRACT_TAGS,
 });
 

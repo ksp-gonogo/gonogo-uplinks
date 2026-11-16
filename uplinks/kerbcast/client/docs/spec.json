@@ -4,7 +4,7 @@
     "id": "kerbcast",
     "name": "Kerbcast",
     "version": "0.0.0-development",
-    "description": "Live in-flight camera views from Hullcam VDS parts, with aim and zoom controls, streamed by kerbcast.",
+    "description": "Integrates Kerbcast's camera feeds into a Camera Feed widget, as well as EVA feeds for Crew Status and a docking camera in Rendezvous.",
     "wraps": {
       "name": "kerbcast",
       "builtAgainst": "1.13.0",

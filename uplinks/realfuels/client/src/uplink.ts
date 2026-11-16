@@ -15,7 +15,6 @@ export const REALFUELS = defineUplinkClient({
   version: UPLINK_VERSION,
   name: "RealFuels",
   description:
-    "Reports per-engine RealFuels limits: ignitions remaining, ullage " +
-    "stability and pressure feed, plus cryogenic boiloff.",
+    "Integrates RealFuels data into Gonogo.",
   tags: GENERATED_CONTRACT_TAGS,
 });

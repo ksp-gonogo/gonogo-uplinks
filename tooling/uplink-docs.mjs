@@ -9,9 +9,13 @@
  * completeness, and it silently stops describing the Uplink the first time
  * somebody adds a widget and forgets.
  *
+ * An Uplink with no client has no registrations for `uplink-tools docs` to read,
+ * so its README is written by `clientless-page.mjs` from its `uplink.json`, and
+ * the three modes below cover it the same way.
+ *
  * Three questions, and they are NOT the same:
  *
- *   --gate    does every client-bearing Uplink HAVE a generated page. Pure
+ *   --gate    does every Uplink HAVE a generated page. Pure
  *             filesystem, a second, no browser
  *   --check   is each page CURRENT. Renders every widget in chromium
  *   (default)  regenerate them
@@ -56,6 +60,11 @@ import {
 import { tmpdir } from "node:os";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
+import {
+  CLIENTLESS_BANNER,
+  buildClientlessReadme,
+  clientlessDeclarationFaults,
+} from "./clientless-page.mjs";
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), "..");
 const args = process.argv.slice(2);
@@ -164,6 +173,45 @@ function selfCheck() {
       );
     }
 
+    const declaration = JSON.stringify({
+      id: "x",
+      name: "X",
+      description: "Does a thing.",
+      gamedata: "GonogoXUplink",
+    });
+    const clientlessBare = missingClientlessPageReasons(tree("clientless-bare", {}));
+    if (clientlessBare.length < 2) {
+      faults.push(
+        `an empty directory should be missing the declaration and the README of a client-less Uplink, and this reported ${clientlessBare.length}`,
+      );
+    }
+    const clientlessTyped = missingClientlessPageReasons(
+      tree("clientless-typed", { "uplink.json": declaration, "README.md": "# X\n" }),
+    );
+    if (!clientlessTyped.some((r) => r.includes("not generated"))) {
+      faults.push("a hand-written README of a client-less Uplink passed");
+    }
+    const clientlessUndescribed = missingClientlessPageReasons(
+      tree("clientless-undescribed", {
+        "uplink.json": JSON.stringify({ id: "x", name: "X", gamedata: "G" }),
+        "README.md": `${CLIENTLESS_BANNER} -->\n`,
+      }),
+    );
+    if (!clientlessUndescribed.some((r) => r.includes("description"))) {
+      faults.push("a client-less Uplink with no description passed");
+    }
+    const clientlessComplete = missingClientlessPageReasons(
+      tree("clientless-complete", {
+        "uplink.json": declaration,
+        "README.md": `${CLIENTLESS_BANNER} -->\n`,
+      }),
+    );
+    if (clientlessComplete.length !== 0) {
+      faults.push(
+        `a complete client-less page was reported as missing: ${clientlessComplete.join("; ")}`,
+      );
+    }
+
     if (faults.length > 0) {
       console.error(
         "✖ this cannot see its own failure, so its verdict about the real Uplinks means\n" +
@@ -178,15 +226,39 @@ function selfCheck() {
 }
 
 /**
+ * What a client-less Uplink is missing of its page. Its README sits beside its
+ * `uplink.json`, and the README is the whole page: it has no prose file and no
+ * manifest.
+ */
+export function missingClientlessPageReasons(uplinkDir) {
+  const reasons = [];
+  const declaration = join(uplinkDir, "uplink.json");
+  if (existsSync(declaration)) {
+    reasons.push(...clientlessDeclarationFaults(JSON.parse(readFileSync(declaration, "utf8"))));
+  } else {
+    reasons.push("no uplink.json");
+  }
+  const readme = join(uplinkDir, "README.md");
+  if (!existsSync(readme)) {
+    reasons.push("no README.md");
+  } else if (!readFileSync(readme, "utf8").startsWith(CLIENTLESS_BANNER)) {
+    reasons.push("README.md was not generated (no generator banner on line 1)");
+  }
+  return reasons;
+}
+
+/**
  * Discovered from the same matrix CI iterates, never a list here. An Uplink
  * missing from a hand-kept list is an Uplink this never checks, reported as a
  * clean pass.
  */
-const discovered = JSON.parse(
+const matrix = JSON.parse(
   execFileSync("node", [join(ROOT, "scripts/uplink-matrix.mjs")], {
     encoding: "utf8",
   }),
-).filter((leg) => leg.client);
+);
+const discovered = matrix.filter((leg) => leg.client);
+const clientlessDiscovered = matrix.filter((leg) => !leg.client);
 
 if (discovered.length === 0) {
   console.error(
@@ -205,10 +277,13 @@ const legs = only
 
 // A `--only` that matches nothing is a typo in a workflow, and it would examine
 // nothing and exit clean, which is the shape this whole file is against.
-if (legs.length === 0) {
+const clientlessLegs = only
+  ? clientlessDiscovered.filter((leg) => leg.name === only)
+  : clientlessDiscovered;
+if (legs.length === 0 && clientlessLegs.length === 0) {
   console.error(
-    `✖ --only ${only} matches no client-bearing Uplink. Known: ` +
-      `${discovered.map((leg) => leg.name).join(", ")}`,
+    `✖ --only ${only} matches no Uplink. Known: ` +
+      `${matrix.map((leg) => leg.name).join(", ")}`,
   );
   process.exit(1);
 }
@@ -305,13 +380,19 @@ if (args.includes("--restore")) {
 
 if (mode === "gate") {
   selfCheck();
-  const rows = judged.map((leg) => ({
-    name: leg.name,
-    reasons: missingPageReasons(
-      join(ROOT, "uplinks", leg.name, "client"),
-      join(ROOT, "uplinks", leg.name),
-    ),
-  }));
+  const rows = [
+    ...judged.map((leg) => ({
+      name: leg.name,
+      reasons: missingPageReasons(
+        join(ROOT, "uplinks", leg.name, "client"),
+        join(ROOT, "uplinks", leg.name),
+      ),
+    })),
+    ...clientlessLegs.map((leg) => ({
+      name: leg.name,
+      reasons: missingClientlessPageReasons(join(ROOT, "uplinks", leg.name)),
+    })),
+  ];
   for (const row of rows) {
     console.log(
       `  ${(row.reasons.length === 0 ? "page" : "NO PAGE").padEnd(8)} ${row.name.padEnd(20)} ${row.reasons.join("; ")}`,
@@ -320,17 +401,18 @@ if (mode === "gate") {
   const without = rows.filter((row) => row.reasons.length > 0);
   if (without.length > 0) {
     console.error(
-      `\n✖ ${without.length} client-bearing Uplink(s) have no generated page:\n` +
+      `\n✖ ${without.length} Uplink(s) have no generated page:\n` +
         without.map((r) => `    ${r.name}: ${r.reasons.join("; ")}`).join("\n") +
         "\n\n  The page is generated from the registrations, the contract slice and the fixtures,\n" +
         "  so the only part to write is the prose. Create client/uplink.md with a lede and\n" +
-        "  optional `## widget:<id>` sections, then run:\n" +
+        "  optional `## widget:<id>` sections (an Uplink with no client declares its\n" +
+        "  `description` in uplink.json instead), then run:\n" +
         "    node tooling/uplink-docs.mjs",
     );
     process.exit(1);
   }
   console.log(
-    `\nall ${rows.length} client-bearing Uplink(s) have a generated page` +
+    `\nall ${rows.length} Uplink(s) have a generated page` +
       `${skipped.size > 0 ? `; ${legs.length - judged.length} not judged, having failed to regenerate in this run` : ""}.`,
   );
   process.exit(0);
@@ -339,6 +421,27 @@ if (mode === "gate") {
 const verb = mode === "check" ? ["docs", "--check"] : ["docs"];
 const failed = [];
 const unexpectedPass = [];
+
+for (const leg of clientlessLegs) {
+  if (skipped.has(leg.name)) continue;
+  console.log(`── ${leg.name}`);
+  const dir = join(ROOT, "uplinks", leg.name);
+  const readme = join(dir, "README.md");
+  try {
+    const page = buildClientlessReadme(
+      JSON.parse(readFileSync(join(dir, "uplink.json"), "utf8")),
+    );
+    if (mode === "check") {
+      const current = existsSync(readme) ? readFileSync(readme, "utf8") : undefined;
+      if (current !== page) throw new Error("README.md does not match uplink.json");
+    } else {
+      writeFileSync(readme, page);
+    }
+  } catch (error) {
+    console.error(`   ${error.message}`);
+    failed.push(leg.name);
+  }
+}
 
 for (const leg of judged) {
   /*
@@ -398,7 +501,7 @@ if (unexpectedPass.length > 0) {
 
 if (failed.length > 0) {
   console.error(
-    `\n✖ ${failed.length} of ${judged.length} Uplink page(s) ` +
+    `\n✖ ${failed.length} of ${judged.length + clientlessLegs.length} Uplink page(s) ` +
       `${mode === "check" ? "no longer describe the code" : "could not be generated"}:\n` +
       failed.map((n) => `    ${n}`).join("\n") +
       (mode === "check"
@@ -421,8 +524,8 @@ const notJudged =
     : "";
 console.log(
   mode === "check"
-    ? `\nall ${judged.length} Uplink page(s) match the code` +
+    ? `\nall ${judged.length + clientlessLegs.length} Uplink page(s) match the code` +
         `${excused > 0 ? `; ${excused} render failure(s) excused by RENDER_DEBT` : ""}${notJudged}.`
-    : `\n${judged.length - excused} Uplink page(s) regenerated` +
+    : `\n${judged.length + clientlessLegs.length - excused} Uplink page(s) regenerated` +
         `${excused > 0 ? `; ${excused} skipped, in RENDER_DEBT` : ""}${notJudged}.`,
 );

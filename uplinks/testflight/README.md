@@ -3,7 +3,7 @@
 
 # TestFlight
 
-TestFlight engine reliability on the fleet roster: failed engines, rated burn nearly spent and survival odds, with TestFlight's own repair.
+Adds the ability for Gonogo to display TestFlight reliability in the Vessel Catalog and Vessel Schematics.
 
 An Uplink for [Gonogo](https://ksp-gonogo.github.io/), the mission-control dashboard for Kerbal Space Program that runs in a web browser on any screen.
 

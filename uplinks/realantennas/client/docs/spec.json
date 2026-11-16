@@ -4,7 +4,7 @@
     "id": "realantennas",
     "name": "RealAntennas",
     "version": "0.0.0-development",
-    "description": "Shows RealAntennas' radio links in the comms readouts when it is installed: band, data rate and link margin.",
+    "description": "Integrates RealAntennas' model into Gonogo. Antenna data is shown in the CommNet widget.",
     "wraps": {
       "name": "RealAntennas",
       "builtAgainst": "2.11.1.0",

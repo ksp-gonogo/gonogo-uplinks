@@ -4,7 +4,7 @@
     "id": "kos",
     "name": "kOS",
     "version": "0.0.0-development",
-    "description": "Puts a kOS CPU's real terminal on the dashboard, streamed in process with no proxy to run, and dispatches kerboscripts to a chosen CPU.",
+    "description": "Integrates kOS terminals into the dashboard.",
     "wraps": {
       "name": "kOS",
       "builtAgainst": "1.6.0.1",
