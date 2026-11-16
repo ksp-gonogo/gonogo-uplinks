@@ -28,6 +28,13 @@ function control(word: string): HTMLElement {
   return button;
 }
 
+/** The step limits sent on `principia.plan.integrator`, in order. */
+function sentSteps(stream: ReturnType<typeof mount>): unknown[] {
+  return stream.transport.sentCommands
+    .filter((c) => c.command === "principia.plan.integrator")
+    .map((c) => (c.args as { maxSteps?: number }).maxSteps);
+}
+
 const renderedTrees: Array<() => void> = [];
 
 afterEach(() => {
@@ -66,6 +73,14 @@ function mount(plan: PrincipiaPlan | null) {
     </stream.Provider>,
   );
   renderedTrees.push(result.unmount);
+  stream.transport.setCommandHandler(() =>
+    planWriteReply({
+      requestId: "written",
+      replayed: false,
+      outcome: PrincipiaWriteOutcome.Written,
+      refusal: null,
+    }),
+  );
   return { ...stream, ...result };
 }
 
@@ -181,23 +196,13 @@ describe("PlanIntegrationBlock", () => {
   });
 
   /**
-   * And the write is refused while it is null. A dispatch composed against a
-   * limit nobody read is a limit nobody chose.
-   */
-  it("refuses the step-limit write while the limit is unread", async () => {
-    mount(plan({ integrator: integratorWithoutStepLimit() }));
-
-    expect(control("SET")).toHaveAttribute("aria-disabled", "true");
-  });
-
-  /**
    * The operator can still act. Stepping onto a value makes it theirs, which is
    * why the control holds the null rather than being replaced by a bare
    * readout: hiding it would leave the one remedy for an under-integrated plan
    * unreachable on exactly the plan that needs it.
    */
   it("lets the operator step onto a value and send it", async () => {
-    mount(plan({ integrator: integratorWithoutStepLimit() }));
+    const stream = mount(plan({ integrator: integratorWithoutStepLimit() }));
 
     await userEvent.click(
       screen.getByRole("button", {
@@ -213,7 +218,7 @@ describe("PlanIntegrationBlock", () => {
       "aria-valuetext",
       MAX_STEPS_OPTIONS[0].toLocaleString("en-GB"),
     );
-    expect(control("SET")).not.toHaveAttribute("aria-disabled", "true");
+    expect(sentSteps(stream)).toEqual([MAX_STEPS_OPTIONS[0]]);
   });
 
   /**
@@ -221,8 +226,8 @@ describe("PlanIntegrationBlock", () => {
    * through that set. A free numeric field would let an operator send a value
    * the producer's own write gate refuses.
    */
-  it("steps through the producer's own eight step counts", async () => {
-    mount(plan());
+  it("steps through the producer's own eight step counts, sending each step", async () => {
+    const stream = mount(plan());
     const spin = screen.getByRole("spinbutton", {
       name: "Max integration steps per segment",
     });
@@ -238,23 +243,12 @@ describe("PlanIntegrationBlock", () => {
       }),
     );
     expect(spin).toHaveAttribute("aria-valuetext", "4,096");
+    expect(sentSteps(stream)).toEqual([4096]);
   });
 
-  /**
-   * Sending the value the plan already holds is a delayed round trip that
-   * changes nothing, so the control that dispatches it stays inert until the
-   * operator has actually moved the number.
-   */
-  it("offers no dispatch until the step count has been moved", async () => {
-    mount(plan());
-    expect(control("SET")).toHaveAttribute("aria-disabled", "true");
-
-    await userEvent.click(
-      screen.getByRole("button", {
-        name: "Increase Max integration steps per segment",
-      }),
-    );
-    expect(control("SET")).not.toHaveAttribute("aria-disabled", "true");
+  it("sends nothing until the step count has been moved", async () => {
+    const stream = mount(plan());
+    expect(sentSteps(stream)).toEqual([]);
   });
 
   /**
@@ -269,7 +263,7 @@ describe("PlanIntegrationBlock", () => {
    * `SetHorizon` writes no step parameters and takes no verdict.
    */
   it("freezes the step limit when the step parameters were never verified", async () => {
-    mount(
+    const stepStream = mount(
       plan({
         writeSurface: {
           available: true,
@@ -280,23 +274,21 @@ describe("PlanIntegrationBlock", () => {
       }),
     );
 
-    // Both remedies moved off the value the plan holds, since neither control
-    // dispatches an unchanged one. What separates them here is the verdict.
-    await userEvent.click(
-      screen.getByRole("button", {
-        name: "Increase Max integration steps per segment",
-      }),
-    );
+    const stream = stepStream;
     await userEvent.click(
       screen.getByRole("button", { name: "Plan end later by 1h" }),
     );
+    const increase = screen.getByRole("button", {
+      name: "Increase Max integration steps per segment",
+    });
+    await userEvent.click(increase);
 
-    expect(control("SET")).toHaveAttribute("aria-disabled", "true");
-    expect(control("SET END")).not.toHaveAttribute("aria-disabled", "true");
-    expect(control("SET")).toHaveAttribute(
-      "data-tooltip",
-      expect.stringMatching(/step parameters have not survived/),
+    expect(increase).toHaveAttribute("aria-disabled", "true");
+    expect(increase).toHaveAccessibleDescription(
+      /step parameters have not survived/,
     );
+    expect(sentSteps(stream)).toEqual([]);
+    expect(control("SET END")).not.toHaveAttribute("aria-disabled", "true");
   });
 
   /**
@@ -370,7 +362,6 @@ describe("PlanIntegrationBlock", () => {
       }),
     );
 
-    expect(control("SET")).toHaveAttribute("aria-disabled", "true");
     expect(control("SET END")).toHaveAttribute("aria-disabled", "true");
     /*
      * `aria-disabled`, not `disabled`: the kit keeps a dark control in the
@@ -397,8 +388,12 @@ describe("PlanIntegrationBlock", () => {
   it("freezes both remedies while Principia is optimising", async () => {
     mount(plan({ optimisationRunning: true }));
 
-    expect(control("SET")).toHaveAttribute("aria-disabled", "true");
     expect(control("SET END")).toHaveAttribute("aria-disabled", "true");
+    expect(
+      screen.getByRole("spinbutton", {
+        name: "Max integration steps per segment",
+      }),
+    ).toHaveAttribute("aria-disabled", "true");
     expect(screen.getByText("WRITES HELD")).toHaveAccessibleDescription(
       /Principia is optimising this plan/,
     );
@@ -429,15 +424,6 @@ describe("PlanIntegrationBlock", () => {
         name: "Increase Max integration steps per segment",
       }),
     );
-    await userEvent.click(
-      screen.getByRole("button", { name: "Set the flight plan's step limit" }),
-    );
-    await userEvent.click(
-      screen.getByRole("button", {
-        name: "Confirm setting the flight plan's step limit",
-      }),
-    );
-
     expect(await screen.findByText("NOTHING WAS WRITTEN")).toBeInTheDocument();
     await act(async () => {});
   });

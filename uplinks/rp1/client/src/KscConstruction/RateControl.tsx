@@ -1,17 +1,26 @@
-import { magnitudeOf, value } from "@ksp-gonogo/sitrep-sdk";
+import {
+  type CommandResult,
+  magnitudeOf,
+  type UseCommandResult,
+  useUtNow,
+  useValueCommand,
+  value,
+} from "@ksp-gonogo/sitrep-sdk";
 import {
   Button,
   Cluster,
   type CommandButtonHandle,
   MissionDate,
   NULL_DISPLAY,
-  Stepper,
+  Slider,
+  Stack,
   Text,
   Unit,
 } from "@ksp-gonogo/ui-kit";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import type {
   Rp1ConstructionEntry,
+  Rp1ConstructionRateArgs,
   Rp1ConstructionRateStep,
   Rp1ConstructionRateTable,
 } from "../__generated__/contract.js";
@@ -24,9 +33,10 @@ export const RP1_CONSTRUCTION_CANCEL_COMMAND = "rp1.construction.cancel";
 
 /** RP-1's slider: twenty steps to the full rate, thirty to its fastest rush. */
 const STEPS_PER_UNIT = 20;
-const STEPS = Array.from({ length: 31 }, (_, step) => step);
+const MAX_RATE = 1.5;
 
 type Handle = CommandButtonHandle;
+type RateHandle = UseCommandResult<Rp1ConstructionRateArgs, CommandResult>;
 
 /**
  * The slider step a work rate sits on, or null when RP-1 did not say. Rounded,
@@ -61,66 +71,82 @@ export function drawPerDay(
 }
 
 /**
- * The work rate on one construction, with what the chosen rate draws per day
- * and when it would finish beside it.
+ * The work rate on one construction as a slider, with what the rate under the
+ * thumb draws per day and when it would finish beside it. The thumb marks the
+ * rate commanded, a blue triangle the rate the construction is expected to run
+ * at now and a yellow square the rate last reported while the reading is held.
  *
  * <para><b>A construction is a progressive spend.</b> Nothing is charged when
  * the rate is set: RP-1 draws the funds as the work advances and slows it when
- * the career cannot meet the draw. So the figures under the stepper are a rate
+ * the career cannot meet the draw. So the figures under the slider are a rate
  * and a date, never an affordability verdict.</para>
  *
- * <para>The stepper chooses and the button commits, because the rate is an
- * order that crosses the link like any other: stepping through six values
- * should not send six.</para>
+ * <para>The rate is sent when the operator lets go of the thumb, so dragging
+ * through six values sends one command. The figures follow the thumb meanwhile.</para>
  */
 export function RateControl({
   row,
   label,
   table,
   handle,
+  held = false,
 }: Readonly<{
   row: Rp1ConstructionEntry;
   label: string;
   table: Rp1ConstructionRateTable | undefined;
-  handle: Handle;
+  handle: RateHandle;
+  /** The constructions reading is the last one heard rather than a current one. */
+  held?: boolean;
 }>) {
-  const current = stepOf(row.workRate);
-  const [chosen, setChosen] = useState<number | null>(null);
-  if (row.id == null || current === null) {
+  const received = magnitudeOf(row.workRate);
+  const nowUt = useUtNow() ?? 0;
+  // This screen's newest rate, so the thumb follows a press before the centre's queue lists it.
+  const [own, setOwn] = useState<number | null>(null);
+  const rate = useValueCommand(RP1_CONSTRUCTION_SET_RATE_COMMAND, {
+    received,
+    own: own === null ? null : { value: own, at: value("ut", nowUt) },
+    matches: (entry) => entry.label.startsWith(`Set ${label} to `),
+  });
+  const [previewed, setPreviewed] = useState<number | null>(null);
+  const commanded = rate.commanded;
+  // biome-ignore lint/correctness/useExhaustiveDependencies: the thumb returns to the commanded rate whenever that moves
+  useEffect(() => setPreviewed(null), [commanded]);
+  if (row.id == null || received === null || commanded === null) {
     return null;
   }
-  const step = chosen ?? current;
+  const id = row.id;
+  const step = previewed ?? Math.round(commanded * STEPS_PER_UNIT);
   const priced = table?.steps?.find((s) => stepOf(s.workRate) === step);
 
   return (
-    <Cluster align="start" gap="related-dense" justify="start" wrap>
-      <Stepper
-        format={percent}
-        label={`Work rate for ${label}`}
-        onChange={setChosen}
-        options={STEPS}
-        value={step}
-      >
-        <Text size="xs" level="muted">
-          <StepReadout step={step} priced={priced} />
-        </Text>
-      </Stepper>
-      <Button
-        command={handle.with(
-          { id: row.id, workRate: step / STEPS_PER_UNIT },
-          { label: `Set ${label} to ${percent(step)}` },
+    <Stack gap="caption">
+      <Slider
+        aria-label={`Work rate for ${label}`}
+        command={handle.toArgs((next: number) => {
+          const to = Math.round(next * STEPS_PER_UNIT);
+          return { id, workRate: to / STEPS_PER_UNIT };
+        }, {
+            label: `Set ${label} to ${percent(step)}`,
+            before: (args) => setOwn(args?.workRate ?? null),
+          },
         )}
-        variant="ghost"
-        aria-label={`Set ${label} to ${percent(step)}`}
-        confirmLabel={`Set ${percent(step)}`}
-        unavailable={
-          step === current ? `${label} is already at ${percent(step)}` : null
+        expected={rate.expected}
+        expectedCaption="expected at the space centre now"
+        figure={(v) => percent(Math.round(v * STEPS_PER_UNIT))}
+        lastSeen={held ? received : null}
+        lastSeenCaption="last reported"
+        max={MAX_RATE}
+        min={0}
+        onChange={(e) =>
+          setPreviewed(Math.round(Number(e.target.value) * STEPS_PER_UNIT))
         }
-        size="sm"
-      >
-        Set rate
-      </Button>
-    </Cluster>
+        step={1 / STEPS_PER_UNIT}
+        value={commanded}
+      />
+      <Text size="xs" level="muted">
+        <StepReadout step={step} priced={priced} />
+      </Text>
+    </Stack>
   );
 }
 

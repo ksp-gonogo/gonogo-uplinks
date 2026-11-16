@@ -6,12 +6,7 @@
       "w": 12,
       "h": 14
     },
-    "paints": ["INTEGRATION FAILED", "MAX STEPS"],
-    "before": [
-      {
-        "press": "Increase Max integration steps per segment"
-      }
-    ]
+    "paints": ["INTEGRATION FAILED", "MAX STEPS"]
   },
   "_stream": {
     "pinnedUt": 1000000,

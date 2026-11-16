@@ -1,7 +1,9 @@
 import {
+  fireEvent,
   render,
   screen,
   setupStreamFixture,
+  waitFor,
 } from "@ksp-gonogo/sitrep-sdk/testing";
 import { DelayRailProvider } from "@ksp-gonogo/ui-kit";
 import {
@@ -15,7 +17,6 @@ import {
   RP1_CONSTRUCTION_CANCEL_COMMAND,
   RP1_CONSTRUCTION_SET_RATE_COMMAND,
 } from "./RateControl.js";
-import { getButtonDescribedBy } from "../test/describedButton.js";
 
 const ID = "6f1c2a0e-3b4d-4c5e-8f60-7a8b9c0d1e2f";
 
@@ -86,41 +87,41 @@ describe("KscConstruction work rate and cancel", () => {
   it("shows the draw per day at the current rate, and no affordability verdict", async () => {
     const { view } = mount();
 
-    await screen.findByText("Set rate");
+    const slider = await screen.findByRole("slider", {
+      name: "Work rate for Vehicle Assembly Building",
+    });
     const text = visibleText(view.container);
     expect(text).toContain("100%");
     expect(text).toContain("draws");
     expect(text).toContain("2000 f/day");
     expect(text).not.toMatch(/afford/i);
     // Already at this rate, so there is nothing to set.
-    expect(
-      getButtonDescribedBy("Vehicle Assembly Building is already at 100%"),
-    ).toHaveAttribute("aria-disabled", "true");
+    expect(slider).toHaveValue("1");
     await expectNoA11yViolations(view.container);
   });
 
   it("prices a rush at the chosen step, names its multiplier, and sends that step", async () => {
-    const user = userEvent.setup();
     const { fixture, view } = mount();
 
-    const increase = await screen.findByRole("button", {
-      name: "Increase Work rate for Vehicle Assembly Building",
-    });
-    await user.click(increase);
-    await user.click(increase);
+    fireEvent.change(
+      await screen.findByRole("slider", {
+        name: "Work rate for Vehicle Assembly Building",
+      }),
+      { target: { value: "1.1" } },
+    );
 
     const text = visibleText(view.container);
     expect(text).toContain("110%");
     expect(text).toContain("2200 f/day");
     expect(text).toContain("rush cost ×1.20");
 
-    await user.click(
-      screen.getByRole("button", {
-        name: "Set Vehicle Assembly Building to 110%",
-      }),
+    await waitFor(() =>
+      expect(
+        fixture.transport.sentCommands.some(
+          (c) => c.command === RP1_CONSTRUCTION_SET_RATE_COMMAND,
+        ),
+      ).toBe(true),
     );
-    await user.click(await screen.findByRole("button", { name: "Set 110%" }));
-
     const sent = fixture.transport.sentCommands.find(
       (c) => c.command === RP1_CONSTRUCTION_SET_RATE_COMMAND,
     );
@@ -128,13 +129,13 @@ describe("KscConstruction work rate and cancel", () => {
   });
 
   it("says a stopped construction draws nothing and never finishes", async () => {
-    const user = userEvent.setup();
     const { view } = mount(construction({ workRate: 0.05 }));
 
-    await user.click(
-      await screen.findByRole("button", {
-        name: "Decrease Work rate for Vehicle Assembly Building",
+    fireEvent.change(
+      await screen.findByRole("slider", {
+        name: "Work rate for Vehicle Assembly Building",
       }),
+      { target: { value: "0" } },
     );
 
     expect(visibleText(view.container)).toContain(
@@ -145,7 +146,9 @@ describe("KscConstruction work rate and cancel", () => {
   it("says a rate RP-1 has not priced yet rather than inventing a draw", async () => {
     const { view } = mount(construction(), null);
 
-    await screen.findByText("Set rate");
+    await screen.findByRole("slider", {
+      name: "Work rate for Vehicle Assembly Building",
+    });
     expect(visibleText(view.container)).toContain(
       "RP-1 has not priced this rate yet",
     );
@@ -155,7 +158,9 @@ describe("KscConstruction work rate and cancel", () => {
     const user = userEvent.setup();
     const { fixture, view } = mount();
 
-    await screen.findByText("Set rate");
+    await screen.findByRole("slider", {
+      name: "Work rate for Vehicle Assembly Building",
+    });
     expect(visibleText(view.container)).toContain("12,500");
     expect(visibleText(view.container)).toContain(
       "drawn so far, none refunded",
@@ -185,7 +190,9 @@ describe("KscConstruction work rate and cancel", () => {
   it("names no rush premium when nothing was rushed", async () => {
     const { view } = mount(construction({ spentRushCost: 10_000 }));
 
-    await screen.findByText("Set rate");
+    await screen.findByRole("slider", {
+      name: "Work rate for Vehicle Assembly Building",
+    });
     expect(visibleText(view.container)).toContain(
       "drawn so far, none refunded",
     );
@@ -195,7 +202,9 @@ describe("KscConstruction work rate and cancel", () => {
   it("names no rush premium when the share of the price drawn did not arrive", async () => {
     const { view } = mount(construction({ spentCost: null }));
 
-    await screen.findByText("Set rate");
+    await screen.findByRole("slider", {
+      name: "Work rate for Vehicle Assembly Building",
+    });
     expect(visibleText(view.container)).toContain("12,500");
     expect(visibleText(view.container)).not.toContain("rush premium");
   });
@@ -206,7 +215,7 @@ describe("KscConstruction work rate and cancel", () => {
     await screen.findByText("SITE CONSTRUCTION");
     const text = visibleText(view.container);
     expect(text).toContain("Vehicle Assembly Building");
-    expect(text).not.toContain("Set rate");
+    expect(screen.queryByRole("slider")).toBeNull();
     expect(text).not.toContain("Cancel");
   });
 });

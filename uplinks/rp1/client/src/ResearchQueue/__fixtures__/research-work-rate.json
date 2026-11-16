@@ -1,18 +1,17 @@
 {
   "_meta": {
-    "notes": "A career with sixty researchers on RP-1's shipped salary of 750 a year and its first Unlock Credit tier of 0.6, running the queue at 60%. The readout under the stepper is the table rp1.researchRates carries at that step: the pay the Budget tab's Research Teams row would show, the Unlock Credit it earns per day, and when the node at the head finishes. A render cannot step the control, so the comparison against the current rate is held by rate.test.tsx"
+    "notes": "A career with sixty researchers on RP-1's shipped salary of 750 a year and its first Unlock Credit tier of 0.6, running the queue at 60%. The readout under the slider is the table rp1.researchRates carries at that step: the pay the Budget tab's Research Teams row would show, the Unlock Credit it earns per day, and when the node at the head finishes. A render cannot step the control, so the comparison against the current rate is held by rate.test.tsx"
   },
   "_scene": {
     "augment": "rp1-research-queue",
     "size": { "w": 10, "h": 10 },
-    "caption": "The research queue at 60%: what the researchers are paid per day, the Unlock Credit it earns, and when the node being worked finishes, beside the stepper and Set rate",
+    "caption": "The research queue at 60%: what the researchers are paid per day, the Unlock Credit it earns, and when the node being worked finishes, under the work rate slider",
     "paints": [
       "RESEARCH QUEUE",
       "60%",
       "researchers paid",
       "Unlock Credit",
-      "Early Rocketry done",
-      "Set rate"
+      "Early Rocketry done"
     ]
   },
   "_stream": {

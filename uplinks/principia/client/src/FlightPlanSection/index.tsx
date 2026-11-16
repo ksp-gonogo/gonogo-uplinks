@@ -362,7 +362,7 @@ export function FlightPlanSection() {
         {/* Immediately under the badge that says whether the plan integrated,
             because the commonest cause of a failure there is the step limit and
             the remedy is the control in this block. */}
-        <PlanIntegrationBlock plan={plan} />
+        <PlanIntegrationBlock held={planReading.state === "held"} plan={plan} />
 
         {plan.planExists === false ? (
           // A POSITIVE observation of no plan: the plugin was asked and said the

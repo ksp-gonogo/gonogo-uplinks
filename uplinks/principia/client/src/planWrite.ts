@@ -64,9 +64,9 @@ export type PrincipiaPlanWriteHandle =
  * absent when nothing refused the write.</p>
  */
 export function planWriteReceipt(
-  reply: PrincipiaPlanWriteReply,
+  reply: PrincipiaPlanWriteReply | undefined,
 ): PrincipiaPlanWriteReceipt | null {
-  const payload: unknown = reply.payload;
+  const payload: unknown = reply?.payload;
   if (typeof payload !== "object" || payload === null) return null;
   const candidate = payload as Partial<PrincipiaPlanWriteReceipt>;
   if (typeof candidate.outcome !== "number") return null;

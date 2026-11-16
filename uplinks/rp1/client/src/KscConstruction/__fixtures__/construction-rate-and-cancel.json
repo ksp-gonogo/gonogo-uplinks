@@ -6,11 +6,10 @@
       "w": 12,
       "h": 20
     },
-    "caption": "The rate and the cancel on each construction, RP-1's own slider and \"X\". Beside the rate: what it draws per day and when it would be done, because a construction is billed as it builds and a short balance slows it rather than refusing it. Beside the cancel: what has been drawn so far, which RP-1 does not refund on a cancel",
+    "caption": "The rate and the cancel on each construction, RP-1's own slider, sent when the thumb is released, and \"X\". Beside the rate: what it draws per day and when it would be done, because a construction is billed as it builds and a short balance slows it rather than refusing it. Beside the cancel: what has been drawn so far, which RP-1 does not refund on a cancel",
     "paints": [
       "SITE CONSTRUCTION",
       "100%",
-      "Set rate",
       "draws",
       "f/day",
       "done",

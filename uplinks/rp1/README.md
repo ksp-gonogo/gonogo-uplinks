@@ -231,7 +231,7 @@ Start, roll out, roll back and scrap RP-1 vehicle builds.
 | `rp1-finances` | `administration-building.screen-body` | `rp1.available`, `rp1.budget`, `rp1.budgetBreakdown`, `rp1.careerLedger`, `rp1.training`, `rp1.research` | only while `rp1` | 8 |  |
 | `rp1-leader-detail` | `administration-building.screen-body` | `rp1.available`, `rp1.leaders`, `career.status` | only while `rp1` | 2 |  |
 | `rp1-ksc-complexes` | `space-center-status.sections` | – |  | 13 |  |
-| `rp1-ksc-construction` | `space-center-status.sections` | – |  | 6 |  |
+| `rp1-ksc-construction` | `space-center-status.sections` | – |  | 8 |  |
 | `rp1-launch-complex-status` | `launch-director.pad` | – |  | 2 |  |
 | `rp1-program-detail` | `administration-building.screen-body` | `rp1.available`, `rp1.programs`, `rp1.programSlots`, `rp1.programFundingCurves`, `rp1.confidence`, `career.status` | only while `rp1` | 6 |  |
 | `rp1-research-queue` | `research-and-development.sections` | – |  | 2 |  |

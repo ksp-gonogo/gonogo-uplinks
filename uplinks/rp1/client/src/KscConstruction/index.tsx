@@ -21,7 +21,7 @@ import type {
   Rp1ConstructionEntry,
   Rp1ConstructionRateTable,
 } from "../__generated__/contract.js";
-import { current } from "../shared/current.js";
+import { latest } from "../shared/current.js";
 import { FACILITY_LABEL } from "../shared/facilityLabels.js";
 import { ProjectCard, ProjectCardList } from "../shared/ProjectCard.js";
 import { RP1 } from "../uplink.js";
@@ -65,11 +65,12 @@ import "../topics.js";
  * waiting its turn.</para>
  */
 export function KscConstruction() {
-  const available = current(useTelemetry("rp1.available"));
-  const constructions = current(useTelemetry("rp1.constructions"));
-  const centres = current(useTelemetry("rp1.centres"));
-  const rates = current(useTelemetry("rp1.constructionRates"));
-  const budget = current(useTelemetry("rp1.budget"));
+  const available = latest(useTelemetry("rp1.available"));
+  const constructionsReading = useTelemetry("rp1.constructions");
+  const constructions = latest(constructionsReading);
+  const centres = latest(useTelemetry("rp1.centres"));
+  const rates = latest(useTelemetry("rp1.constructionRates"));
+  const budget = latest(useTelemetry("rp1.budget"));
 
   // Unconditional and above the early return: a hook after one would change
   // count on the first frame RP-1 answers.
@@ -127,6 +128,7 @@ export function KscConstruction() {
             <ConstructionRow
               cancel={cancel}
               centreNames={centreNames}
+              held={constructionsReading.state === "held"}
               key={rowKey(row)}
               nameCentre={nameCentres}
               row={row}
@@ -232,7 +234,9 @@ function ConstructionRow({
   table,
   setRate,
   cancel,
+  held,
 }: Readonly<{
+  held: boolean;
   row: Rp1ConstructionEntry;
   nameCentre: boolean;
   centreNames: ReadonlyMap<string, string>;
@@ -281,7 +285,13 @@ function ConstructionRow({
         </Text>
       )}
 
-      <RateControl handle={setRate} label={label} row={row} table={table} />
+      <RateControl
+        handle={setRate}
+        held={held}
+        label={label}
+        row={row}
+        table={table}
+      />
       <CancelControl handle={cancel} label={label} row={row} />
     </ProjectCard>
   );

@@ -19,7 +19,7 @@ import {
   Unit,
 } from "@ksp-gonogo/ui-kit";
 import type { Rp1ResearchEntry } from "../__generated__/contract.js";
-import { current } from "../shared/current.js";
+import { latest } from "../shared/current.js";
 import { RP1 } from "../uplink.js";
 import "../topics.js";
 import {
@@ -42,9 +42,10 @@ import {
  * tech tree declaring no `augmentSlots` of its own turned out not to matter.</para>
  */
 export function ResearchQueue() {
-  const available = current(useTelemetry("rp1.available"));
-  const research = current(useTelemetry("rp1.research"));
-  const rates = current(useTelemetry("rp1.researchRates"));
+  const available = latest(useTelemetry("rp1.available"));
+  const researchReading = useTelemetry("rp1.research");
+  const research = latest(researchReading);
+  const rates = latest(useTelemetry("rp1.researchRates"));
 
   // Unconditional and above the early return: a hook after one would change
   // count on the first frame RP-1 answers.
@@ -71,7 +72,12 @@ export function ResearchQueue() {
   return (
     <Section>
       <SectionTitle>RESEARCH QUEUE</SectionTitle>
-      <ResearchRateControl queue={queue} rates={rates} handle={setRate} />
+      <ResearchRateControl
+        queue={queue}
+        rates={rates}
+        handle={setRate}
+        held={researchReading.state === "held"}
+      />
       <Stack as="ul" gap="related-dense" style={LIST_STYLE}>
         {queue.map((node, index) => (
           <ResearchRow

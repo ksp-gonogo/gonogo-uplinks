@@ -119,7 +119,7 @@ The libration points of a body pair, with your craft's offset.
 
 | Augment | Into | Reads | Presence | Scenes | Notes |
 | --- | --- | --- | --- | --- | --- |
-| `principia-flight-plan` | `maneuver-planner.sections` | – |  | 6 |  |
+| `principia-flight-plan` | `maneuver-planner.sections` | – |  | 8 |  |
 | `principia-plan-slots` | `maneuver-planner.sections` | – |  | 3 |  |
 | `principia-orbit-analysis` | `orbit-view.sections` | – |  | 6 |  |
 | `principia-coast-analysis` | `maneuver-planner.sections` | – |  | 3 |  |

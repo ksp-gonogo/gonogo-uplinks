@@ -1,18 +1,18 @@
 import {
+  fireEvent,
   render,
   screen,
   setupStreamFixture,
+  waitFor,
 } from "@ksp-gonogo/sitrep-sdk/testing";
 import { DelayRailProvider } from "@ksp-gonogo/ui-kit";
 import {
   expectNoA11yViolations,
   visibleText,
 } from "@ksp-gonogo/ui-kit/testing";
-import { userEvent } from "@testing-library/user-event";
 import { describe, expect, it } from "vitest";
 import { ResearchQueue } from "./index.js";
 import { RP1_RESEARCH_SET_RATE_COMMAND } from "./RateControl.js";
-import { getButtonDescribedBy } from "../test/describedButton.js";
 
 function node(overrides: Record<string, unknown> = {}) {
   return {
@@ -68,7 +68,9 @@ describe("ResearchQueue work rate", () => {
   it("shows the pay, the credit and the finish at the current rate, and no affordability verdict", async () => {
     const { view } = mount();
 
-    await screen.findByText("Set rate");
+    const slider = await screen.findByRole("slider", {
+      name: "Research work rate",
+    });
     const text = visibleText(view.container);
     expect(text).toContain("100%");
     expect(text).toContain("researchers paid 2000 f/day");
@@ -76,21 +78,16 @@ describe("ResearchQueue work rate", () => {
     expect(text).toContain("Basic Rocketry done");
     expect(text).not.toMatch(/afford/i);
     expect(text).not.toContain("against now");
-    expect(
-      getButtonDescribedBy("Research is already at 100%"),
-    ).toHaveAttribute("aria-disabled", "true");
+    expect(slider).toHaveValue("1");
     await expectNoA11yViolations(view.container);
   });
 
   it("names what a lower rate saves in pay and costs in credit, and sends that step", async () => {
-    const user = userEvent.setup();
     const { fixture, view } = mount();
 
-    const decrease = await screen.findByRole("button", {
-      name: "Decrease Research work rate",
+    fireEvent.change(await screen.findByRole("slider", { name: "Research work rate" }), {
+      target: { value: "0.9" },
     });
-    await user.click(decrease);
-    await user.click(decrease);
 
     const text = visibleText(view.container);
     expect(text).toContain("90%");
@@ -99,10 +96,13 @@ describe("ResearchQueue work rate", () => {
       "against now: pay 100 f/day less, Unlock Credit 40 f/day less",
     );
 
-    await user.click(
-      screen.getByRole("button", { name: "Set research to 90%" }),
+    await waitFor(() =>
+      expect(
+        fixture.transport.sentCommands.some(
+          (c) => c.command === RP1_RESEARCH_SET_RATE_COMMAND,
+        ),
+      ).toBe(true),
     );
-    await user.click(await screen.findByRole("button", { name: "Set 90%" }));
 
     const sent = fixture.transport.sentCommands.find(
       (c) => c.command === RP1_RESEARCH_SET_RATE_COMMAND,
@@ -111,14 +111,11 @@ describe("ResearchQueue work rate", () => {
   });
 
   it("says a stopped queue still pays researchers and never finishes", async () => {
-    const user = userEvent.setup();
     const { view } = mount(node({ workRate: 0.05 }));
 
-    await user.click(
-      await screen.findByRole("button", {
-        name: "Decrease Research work rate",
-      }),
-    );
+    fireEvent.change(await screen.findByRole("slider", { name: "Research work rate" }), {
+      target: { value: "0" },
+    });
 
     const text = visibleText(view.container);
     expect(text).toContain("stopped: researchers still paid 1000 f/day");
@@ -135,7 +132,7 @@ describe("ResearchQueue work rate", () => {
       steps: [],
     });
 
-    await screen.findByText("Set rate");
+    await screen.findByRole("slider", { name: "Research work rate" });
     expect(visibleText(view.container)).toContain(
       "RP-1 has not priced this rate yet",
     );
@@ -146,7 +143,7 @@ describe("ResearchQueue work rate", () => {
       node({ techId: "orbitalRocketry", techName: "Orbital Rocketry" }),
     );
 
-    await screen.findByText("Set rate");
+    await screen.findByRole("slider", { name: "Research work rate" });
     const text = visibleText(view.container);
     expect(text).toContain("researchers paid 2000 f/day");
     expect(text).not.toContain("done");
@@ -154,7 +151,7 @@ describe("ResearchQueue work rate", () => {
 
   it("offers no rate on an empty queue, where RP-1 draws no slider", async () => {
     const fixture = setupStreamFixture();
-    const view = render(
+    render(
       <fixture.Provider>
         <DelayRailProvider>
           <ResearchQueue />
@@ -165,6 +162,6 @@ describe("ResearchQueue work rate", () => {
     fixture.emit("rp1.research", []);
 
     await screen.findByText(/Researchers are idle/);
-    expect(visibleText(view.container)).not.toContain("Set rate");
+    expect(screen.queryByRole("slider")).toBeNull();
   });
 });

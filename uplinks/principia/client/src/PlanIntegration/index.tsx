@@ -1,4 +1,9 @@
-import { useCommand, value } from "@ksp-gonogo/sitrep-sdk";
+import {
+  useCommand,
+  useUtNow,
+  useValueCommand,
+  value,
+} from "@ksp-gonogo/sitrep-sdk";
 import {
   Badge,
   Button,
@@ -92,12 +97,26 @@ function frozenBecause(plan: PrincipiaPlan): string | null {
   return null;
 }
 
-export function PlanIntegrationBlock({ plan }: { plan: PrincipiaPlan | null }) {
+export function PlanIntegrationBlock({
+  plan,
+  held = false,
+}: {
+  plan: PrincipiaPlan | null;
+  /** The plan reading is the last one heard rather than a current one. */
+  held?: boolean;
+}) {
   const integratorCmd = useCommand("principia.plan.integrator");
   const horizonCmd = useCommand("principia.plan.horizon");
+  const maxSteps = magnitudeOf(plan?.integrator?.maxSteps);
+  const nowUt = useUtNow() ?? 0;
+  // This screen's newest limit, so the stepper follows a press before the centre's queue lists it.
+  const [ownSteps, setOwnSteps] = useState<number | null>(null);
+  const steps = useValueCommand("principia.plan.integrator", {
+    received: maxSteps,
+    own: ownSteps === null ? null : { value: ownSteps, at: value("ut", nowUt) },
+  });
   const horizonAttempt = useAttemptId("horizon");
   const integratorAttempt = useAttemptId("integrator");
-  const [draftSteps, setDraftSteps] = useState<number | null>(null);
   const [draftEndUt, setDraftEndUt] = useState<number | null>(null);
   /*
    * One receipt for both controls, because they are one block writing one plan
@@ -112,17 +131,6 @@ export function PlanIntegrationBlock({ plan }: { plan: PrincipiaPlan | null }) {
     return null;
   }
 
-  const maxSteps = magnitudeOf(plan.integrator?.maxSteps);
-  /*
-   * Null when the plan's own limit has not been read and the operator has not
-   * picked one, the same as POSITION TOL and SPEED TOL below. It used to fall
-   * back to MAX_STEPS_OPTIONS[0], which is 64: the LOWEST value in the set,
-   * three orders of magnitude under Principia's own default, presented as the
-   * plan's current limit with "raise this when the plan stops short" under it.
-   * An operator read a catastrophically under-integrated plan and fixed a
-   * setting nobody had read.
-   */
-  const chosen: number | null = draftSteps ?? maxSteps;
   const desired = magnitudeOf(plan.desiredFinalTimeUt);
   const actual = magnitudeOf(plan.actualFinalTimeUt);
   // The pair is the point: a plan that stopped short of where it was asked to
@@ -299,58 +307,40 @@ export function PlanIntegrationBlock({ plan }: { plan: PrincipiaPlan | null }) {
       <Row as="div">
         <RowName>MAX STEPS</RowName>
         <Cluster justify="end" gap="related-dense" wrap>
-          {/* The Stepper holds the null rather than being replaced by a bare
-              NULL_DISPLAY, so the readout says the limit was not read AND the
-              operator can still step onto a value and send it. Its own doc
-              covers a held value outside the set: both step controls stay live
-              and stepping lands on the nearest end. */}
-          <Stepper<number | null>
+          {/* Each step is sent. The Stepper holds the null rather than being
+              replaced by a bare NULL_DISPLAY, so the readout says the limit was
+              not read and the operator can still step onto a value and send it.
+              A held value outside the set steps to the nearest end. */}
+          <Stepper
             options={MAX_STEPS_OPTIONS}
-            value={chosen}
-            disabled={frozen}
-            onChange={setDraftSteps}
-            label="Max integration steps per segment"
-            format={(steps) =>
-              steps === null ? NULL_DISPLAY : steps.toLocaleString("en-GB")
+            value={steps.commanded}
+            expected={steps.expected}
+            lastSeen={held ? maxSteps : null}
+            lastSeenCaption="last reported"
+            unavailable={
+              frozenReason ??
+              (stepParametersUnverified
+                ? "Principia's step parameters have not survived a round trip this session, so the limit cannot be written"
+                : null)
             }
-          />
-          <Button
-            command={integratorCmd.with(
-              {
+            command={integratorCmd.toArgs(
+              (next: number) => ({
                 vesselId: plan.vesselId ?? undefined,
-                requestId: `${integratorAttempt.requestId}-${plan.vesselId ?? "none"}-${chosen}`,
-                // `undefined`, never a number, for a limit nobody stated: the mod
-                // leaves an omitted step parameter at the plugin's own value. The
-                // control is held shut in that state anyway, so this is the shape
-                // of the args rather than a write that happens.
-                maxSteps: chosen ?? undefined,
-              },
+                requestId: `${integratorAttempt.requestId}-${plan.vesselId ?? "none"}-${next}`,
+                maxSteps: next,
+              }),
               {
                 label: "Set the flight plan's step limit",
+                before: (args) => setOwnSteps(args?.maxSteps ?? null),
                 onConfirmed: (result) => {
                   integratorAttempt.settle();
                   setLastWrite(planWriteReceipt(result));
                 },
               },
             )}
-            variant="ghost"
-            size="sm"
-            confirmLabel="CONFIRM"
-            unavailable={
-              frozenReason ??
-              (stepParametersUnverified
-                ? "Principia's step parameters have not survived a round trip this session, so the limit cannot be written"
-                : chosen === null
-                  ? "No step limit is chosen"
-                  : chosen === maxSteps
-                    ? "The step limit is already set to that"
-                    : null)
-            }
-            aria-label="Set the flight plan's step limit"
-            confirmAriaLabel="Confirm setting the flight plan's step limit"
-          >
-            SET
-          </Button>
+            label="Max integration steps per segment"
+            format={(count) => count.toLocaleString("en-GB")}
+          />
         </Cluster>
       </Row>
       {/* Neither control's success state can see this, and the receipt is the
