@@ -1,0 +1,19 @@
+{
+  "id": "realfuels",
+  "name": "RealFuels",
+  "description": "Integrates RealFuels data into Gonogo.",
+  "author": "jpeps",
+  "repo": "https://github.com/ksp-gonogo/gonogo-uplinks",
+  "mod": {
+    "name": "RealFuels",
+    "builtAgainst": "15.15.0"
+  },
+  "version": "1.0.1",
+  "minAppVersion": "0.0.0",
+  "apiVersion": "7.0.0",
+  "contractMajor": 52,
+  "contractMinor": 2,
+  "bundleUrl": "realfuels/realfuels.client.js",
+  "integrity": "sha256-213dd7f66357897c131cfba05bc2fd21de0dc93b8d4ed4573ef8b127edcc6ab8",
+  "sdkVersion": "1.0.0"
+}
