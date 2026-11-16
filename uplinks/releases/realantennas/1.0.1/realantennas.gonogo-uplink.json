@@ -1,0 +1,19 @@
+{
+  "id": "realantennas",
+  "name": "RealAntennas",
+  "description": "Integrates RealAntennas' model into Gonogo. Antenna data is shown in the CommNet widget.",
+  "author": "jpeps",
+  "repo": "https://github.com/ksp-gonogo/gonogo-uplinks",
+  "mod": {
+    "name": "RealAntennas",
+    "builtAgainst": "2.11.1.0"
+  },
+  "version": "1.0.1",
+  "minAppVersion": "0.0.0",
+  "apiVersion": "7.0.0",
+  "contractMajor": 52,
+  "contractMinor": 2,
+  "bundleUrl": "realantennas/realantennas.client.js",
+  "integrity": "sha256-22e1eb92e9d8fc21aad36bca0859cc59e478aba4d242c72adee2d38efe42a34d",
+  "sdkVersion": "1.0.0"
+}
