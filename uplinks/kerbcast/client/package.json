@@ -27,8 +27,8 @@
     "docs:check": "uplink-tools docs --check"
   },
   "dependencies": {
-    "@ksp-gonogo/kerbcast": "1.12.1",
-    "@ksp-gonogo/kerbcast-react": "1.12.1",
+    "@ksp-gonogo/kerbcast": "1.13.0",
+    "@ksp-gonogo/kerbcast-react": "1.13.0",
     "@ksp-gonogo/ui-kit": "file:../../../vendor/ksp-gonogo-ui-kit-1.0.0-81d6f38a3e63.tgz",
     "styled-components": "^6.6.0"
   },
