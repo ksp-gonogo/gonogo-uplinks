@@ -26,8 +26,20 @@ namespace GonogoKosUplink.Tests
             public bool HasBooted { get; set; }
             public object? BootFilePath { get; set; }
             public int ProcessorMode { get; set; }
+#pragma warning disable CS0169, CS0649 // read only by reflection, as the real field is
+            private SharedObjects? shared;
+#pragma warning restore CS0169, CS0649
         }
 #pragma warning restore IDE1006
+
+        public interface ILogger
+        {
+        }
+
+        public class SharedObjects
+        {
+            public ILogger? Logger { get; set; }
+        }
 
         public interface IInterpreter
         {
@@ -124,6 +136,38 @@ namespace GonogoKosUplink.Tests
         }
 
         [Fact]
+        public void ProbeTypes_FullSet_CanCaptureRunErrors()
+        {
+            Assert.True(KosVersionGuard.ProbeTypes(FullSet).RunErrorCaptureAvailable);
+        }
+
+        [Fact]
+        public void ProbeTypes_NoSharedField_AvailableButNoRunErrorCapture()
+        {
+            var r = KosVersionGuard.ProbeTypes(new[]
+            {
+                typeof(FakesNoShared.kOSProcessor),
+                typeof(Fakes.IInterpreter),
+                typeof(Fakes.TermWindow),
+                typeof(Fakes.ScreenBuffer),
+            });
+            Assert.True(r.IsAvailable);
+            Assert.False(r.RunErrorCaptureAvailable);
+        }
+
+        [Fact]
+        public void SharedObjectsField_WrongFieldType_IsNotBound()
+        {
+            Assert.Null(KosVersionGuard.SharedObjectsField(typeof(FakesNoShared.WrongSharedType.kOSProcessor)));
+        }
+
+        [Fact]
+        public void SharedObjectsField_LoggerWithoutPublicSetter_IsNotBound()
+        {
+            Assert.Null(KosVersionGuard.SharedObjectsField(typeof(FakesNoShared.ReadOnlyLogger.kOSProcessor)));
+        }
+
+        [Fact]
         public void CheckVersion_InRange_Clears()
         {
             Assert.Null(KosVersionGuard.CheckVersion(new Version(1, 6, 0, 1)));
@@ -187,6 +231,51 @@ namespace GonogoKosUplink.Tests
             public bool HasBooted { get; set; }
             public object? BootFilePath { get; set; }
             public int ProcessorMode { get; set; }
+        }
+#pragma warning restore IDE1006
+    }
+
+    // Processor stand-ins whose shared field is absent or the wrong shape.
+    namespace FakesNoShared
+    {
+#pragma warning disable IDE1006
+        public class kOSProcessor
+        {
+            public static List<object> AllInstances() => new List<object>();
+            public object? GetScreen() => null;
+            public object? GetWindow() => null;
+            public object? HardDisk { get; set; }
+            public object? Archive { get; set; }
+            public string Tag { get; set; } = "";
+            public int KOSCoreId { get; set; }
+            public bool HasBooted { get; set; }
+            public object? BootFilePath { get; set; }
+            public int ProcessorMode { get; set; }
+        }
+
+        namespace WrongSharedType
+        {
+            public class kOSProcessor
+            {
+#pragma warning disable CS0169
+                private object? shared;
+#pragma warning restore CS0169
+            }
+        }
+
+        namespace ReadOnlyLogger
+        {
+            public class SharedObjects
+            {
+                public Fakes.ILogger? Logger { get; }
+            }
+
+            public class kOSProcessor
+            {
+#pragma warning disable CS0169
+                private SharedObjects? shared;
+#pragma warning restore CS0169
+            }
         }
 #pragma warning restore IDE1006
     }

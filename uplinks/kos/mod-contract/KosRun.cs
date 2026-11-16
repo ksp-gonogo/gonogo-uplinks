@@ -65,13 +65,16 @@ public class KosRunArgs
 /// moment the mod's <c>[KOSDATA]</c>/<c>[KOSERROR]</c> block-capture pipeline
 /// (<c>KosComputeAccumulator</c>/<c>KosDataParser</c>: the same one that
 /// feeds <c>kos.compute.*</c>) completes a block for that CPU while the
-/// request is still armed.
+/// request is still armed, the moment kOS stops the script on an error, or,
+/// when the CPU returns to its prompt first, the moment that happens
+/// (<see cref="Ended"/>).
 ///
 /// <para>R7 typed-absence: exactly one of <see cref="Fields"/> /
 /// <see cref="Error"/> is non-null, a successful <c>[KOSDATA]</c> parse
-/// carries <see cref="Fields"/> with <see cref="Error"/> null; an explicit
-/// script-author <c>[KOSERROR]</c> carries <see cref="Error"/> with
-/// <see cref="Fields"/> null. Field values keep the exact
+/// carries <see cref="Fields"/> with <see cref="Error"/> null; a kOS error or an
+/// explicit script-author <c>[KOSERROR]</c> carries <see cref="Error"/> with
+/// <see cref="Fields"/> null; a run that printed neither has both null and
+/// <see cref="Ended"/> true. Field values keep the exact
 /// <c>KosDataParser.Coerce</c> shape (bool / double / string) the telnet
 /// path already produces: no re-typing on the wire.</para>
 /// </summary>
@@ -92,7 +95,43 @@ public class KosRunResult
     /// <summary>Parsed <c>[KOSDATA]</c> field map: null on an error result.</summary>
     public Dictionary<string, object?>? Fields { get; set; }
 
-    /// <summary>Explicit <c>[KOSERROR]</c> message: null on a data result.</summary>
+    /// <summary>
+    /// Why the run failed: the message of an error kOS stopped the script on,
+    /// followed by the script and line when kOS can say, or the text of an
+    /// explicit <c>[KOSERROR]</c> block. Null on a data result.
+    /// </summary>
     [SitrepUnit(Units.Text)]
     public string? Error { get; set; }
+
+    /// <summary>
+    /// True when the CPU went back to waiting for a command without printing a
+    /// <c>[KOSDATA]</c> or <c>[KOSERROR]</c> block, so the run finished with
+    /// nothing to report: <see cref="Fields"/> and <see cref="Error"/> are both
+    /// null. False on every result that carries one of them.
+    /// </summary>
+    [SitrepUnit(Units.Flag)]
+    public bool Ended { get; set; }
+}
+
+/// <summary>
+/// Args for the <c>kos.cancel</c> command: abandons the <c>kos.run</c> a caller
+/// stopped waiting for. The CPU is released for the next run, and the program
+/// still running on it is stopped, but only while <see cref="RequestId"/> is
+/// still the run the CPU is armed for, so a late cancel never disturbs a newer
+/// run. Sent by a script trigger when its run times out.
+/// </summary>
+[SitrepContract]
+#if SITREP_CODEGEN
+[TsInterface]
+#endif
+[SitrepCommand("kos.cancel")]
+public class KosCancelArgs
+{
+    /// <summary>Target CPU, identified by its <see cref="KosProcessorInfo.CoreId"/>.</summary>
+    [SitrepUnit(Units.Id)]
+    public int CoreId { get; set; }
+
+    /// <summary>The <see cref="KosRunArgs.RequestId"/> of the run to abandon.</summary>
+    [SitrepUnit(Units.Id)]
+    public string RequestId { get; set; } = "";
 }

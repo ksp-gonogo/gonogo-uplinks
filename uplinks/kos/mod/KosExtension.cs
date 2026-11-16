@@ -108,6 +108,23 @@ namespace Gonogo.KosUplink
         /// processors the scripts were running on, so their results never print.
         /// </summary>
         public void OnTimelineReset(bool saveChanged) => _runManager.Reset();
+
+        /// <summary>
+        /// Whether a CPU's interpreter is back at its prompt with nothing queued
+        /// to type, so a run armed on it has ended. Wired to kOS in
+        /// <c>RegisterKspBindings</c>; null in headless tests that do not need it.
+        /// </summary>
+        internal Func<int, bool>? CpuIsIdle { get; set; }
+
+        /// <summary>Ends armed runs whose CPU has returned to its prompt without printing a block. Driven from the main-thread update.</summary>
+        internal void PollRuns()
+        {
+            var idle = CpuIsIdle;
+            if (idle != null)
+            {
+                _runManager.PollIdle(idle);
+            }
+        }
 #pragma warning disable CS0169 // field is never read in this compilation unit (RegisterKspBindings is the only reader)
         private IDynamicChannelSource? _runSource;
 #pragma warning restore CS0169
@@ -284,6 +301,8 @@ namespace Gonogo.KosUplink
                 new CommandDeclaration { Command = KosChannels.RunCommand, Subject = KosChannels.RunPrefix + "{args.CoreId}", Requires = NeedsProcessor },
                 // kos.files.list: a volume's file list read in-process, answered on
                 // the same per-CPU result channel as kos.run.
+                // kos.cancel: abandons the run a client stopped waiting for.
+                new CommandDeclaration { Command = KosChannels.CancelCommand, Subject = KosChannels.RunPrefix + "{args.CoreId}", Requires = NeedsProcessor },
                 new CommandDeclaration { Command = KosChannels.FilesListCommand, Subject = KosChannels.RunPrefix + "{args.CoreId}", Requires = NeedsProcessor },
             },
             ErrorCodes = ErrorCodeCatalog.Of(typeof(KosErrorCodes)),

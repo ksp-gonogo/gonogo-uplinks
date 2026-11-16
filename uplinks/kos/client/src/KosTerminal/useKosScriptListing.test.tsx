@@ -164,6 +164,7 @@ describe("useKosScriptListing", () => {
       coreId: CORE_ID,
       requestId: late,
       fields: { listing: JSON.stringify([{ name: "late.ks", size: 1, isDir: false }]) },
+      ended: false,
     } as KosRunResult);
     await act(async () => {});
     expect(result.current.paths).toEqual([]);
@@ -186,6 +187,7 @@ describe("useKosScriptListing", () => {
         coreId: CORE_ID,
         requestId: dispatches[index].requestId,
         fields: { listing: JSON.stringify(entries) },
+        ended: false,
       } as KosRunResult);
     reply(1, [{ name: "boot.ks", size: 1, isDir: false }]);
     await waitFor(() => expect(dispatches).toHaveLength(3));

@@ -83,6 +83,10 @@
           "unit": "id"
         },
         {
+          "name": "ended",
+          "unit": "flag"
+        },
+        {
           "name": "error",
           "unit": "text"
         },
@@ -111,6 +115,11 @@
     }
   ],
   "commands": [
+    {
+      "id": "kos.cancel",
+      "args": "KosCancelArgs",
+      "result": "CommandResult"
+    },
     {
       "id": "kos.files.list",
       "args": "KosFilesListArgs",
@@ -143,6 +152,19 @@
     }
   ],
   "commandArgs": [
+    {
+      "name": "KosCancelArgs",
+      "fields": [
+        {
+          "name": "coreId",
+          "unit": "id"
+        },
+        {
+          "name": "requestId",
+          "unit": "id"
+        }
+      ]
+    },
     {
       "name": "KosFilesListArgs",
       "fields": [

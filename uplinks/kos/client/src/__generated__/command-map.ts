@@ -46,6 +46,7 @@
 // declared and handled without a tag would be dispatchable and absent here.
 
 import type {
+  KosCancelArgs,
   KosFilesListArgs,
   KosKeystrokeArgs,
   KosRunArgs,
@@ -58,6 +59,7 @@ import type {
 } from "@ksp-gonogo/sitrep-sdk";
 
 export interface GeneratedCommandArgsMap {
+  "kos.cancel": KosCancelArgs;
   "kos.files.list": KosFilesListArgs;
   "kos.keystroke": KosKeystrokeArgs;
   "kos.run": KosRunArgs;
@@ -67,6 +69,7 @@ export interface GeneratedCommandArgsMap {
 }
 
 export interface GeneratedCommandReplyMap {
+  "kos.cancel": CommandResult;
   "kos.files.list": CommandResult;
   "kos.keystroke": CommandResult;
   "kos.run": CommandResult;
@@ -86,6 +89,7 @@ export interface GeneratedCommandReplyMap {
  * its declared shape, unit hydration first among them, reads this.
  */
 export const GENERATED_COMMAND_REPLY_TYPES = {
+  "kos.cancel": "CommandResult",
   "kos.files.list": "CommandResult",
   "kos.keystroke": "CommandResult",
   "kos.run": "CommandResult",
@@ -140,6 +144,7 @@ export interface GeneratedCommandRail {
  * an in-flight queue entry would be a fiction about the operator's own order.
  */
 export const GENERATED_COMMAND_RAIL = {
+  "kos.cancel": { replies: true, delayed: true },
   "kos.files.list": { replies: true, delayed: true },
   "kos.keystroke": { replies: true, delayed: true },
   "kos.run": { replies: true, delayed: true },
@@ -149,6 +154,7 @@ export const GENERATED_COMMAND_RAIL = {
 } as const satisfies Record<string, GeneratedCommandRail>;
 
 export const GENERATED_COMMAND_IDS = [
+  "kos.cancel",
   "kos.files.list",
   "kos.keystroke",
   "kos.run",

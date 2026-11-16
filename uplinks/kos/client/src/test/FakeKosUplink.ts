@@ -179,6 +179,7 @@ export class FakeKosUplink {
     this.transport.emit(`kos.run.${coreId}`, {
       coreId,
       requestId,
+      ended: false,
       ...partial,
     } satisfies KosRunResult);
   }

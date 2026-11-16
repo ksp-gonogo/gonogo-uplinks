@@ -289,6 +289,48 @@ namespace GonogoKosUplink.Tests
         }
 
         [Fact]
+        public void PollRuns_RunThatPrintsNoBlock_EndsOnceTheCpuIsIdle()
+        {
+            var ext = NewExtension(new RecordingChannelSource(), new CoreIdCounter(), () => true);
+            var runResults = new List<(int coreId, KosRunResult result)>();
+            ext.WireRunForTests((coreId, result) => runResults.Add((coreId, result)));
+            ext.CpuIsIdle = _ => true;
+            Assert.True(ext.ArmRunForTests(42, "req-1"));
+
+            for (var i = 0; i < KosRunManager.IdlePollsToEnd; i++)
+            {
+                ext.PollRuns();
+            }
+
+            var (coreId, result) = Assert.Single(runResults);
+            Assert.Equal(42, coreId);
+            Assert.True(result.Ended);
+            Assert.True(ext.ArmRunForTests(42, "req-2"));
+        }
+
+        [Fact]
+        public void OnPrint_BlockAfterTheRunEnded_DoesNotCompleteTheNextRequest()
+        {
+            var source = new RecordingChannelSource();
+            var ext = NewExtension(source, new CoreIdCounter(), () => true);
+            var runResults = new List<KosRunResult>();
+            ext.WireRunForTests((_, result) => runResults.Add(result));
+            ext.CpuIsIdle = _ => true;
+            ext.ArmRunForTests(42, "req-1");
+            for (var i = 0; i < KosRunManager.IdlePollsToEnd; i++)
+            {
+                ext.PollRuns();
+            }
+            runResults.Clear();
+
+            // The operator's own script prints a block at the terminal.
+            ext.OnPrint(new object(), "[KOSDATA:feed]v=1[/KOSDATA]");
+
+            Assert.Empty(runResults);
+            Assert.Contains(("feed.v", (object?)1.0), source.Published);
+        }
+
+        [Fact]
         public void OnPrint_ArmedRun_ExplicitKosErrorBlock_RoutesAsAnErrorResult()
         {
             var source = new RecordingChannelSource();

@@ -26,12 +26,11 @@ namespace Gonogo.KosUplink
     /// a kOS/Unity type directly, so it is fully unit-testable headlessly
     /// (mirrors <c>KosTerminalManager</c>'s KSP-free/KSP-touching split).</para>
     ///
-    /// <para><b>Known gap (documented, not fixed here):</b> no timeout/
-    /// eviction of a stale armed request (a CPU reboot/unload/crash mid-run
-    /// leaves it armed forever, wedging every later <c>kos.run</c> to that
-    /// CPU). See the migration plan's "Risks" section, a <c>Poll</c>-driven
-    /// expiry (mirroring <c>KosTerminalManager.Poll</c>) is main-tree
-    /// follow-up work.</para>
+    /// <para><b>Ending a run:</b> a run ends when a <c>[KOSDATA]</c> or
+    /// <c>[KOSERROR]</c> block completes (<see cref="Complete"/>), when the
+    /// CPU's interpreter is back at its prompt with nothing queued to type
+    /// (<see cref="PollIdle"/>, for a script that prints no block), or when
+    /// the caller abandons it (<see cref="CancelRun"/>).</para>
     /// </summary>
     public sealed class KosRunManager
     {
@@ -39,6 +38,17 @@ namespace Gonogo.KosUplink
         // dictionary IS "armed", there is no separate flag.
         private readonly Dictionary<int, string> _pending = new Dictionary<int, string>();
         private readonly object _gate = new object();
+
+        /*
+         * Consecutive idle polls seen for each armed CPU. The typed command sits
+         * in kOS's input queue until the interpreter consumes it, so a CPU can
+         * read as idle for a poll or two right after typing; requiring several in
+         * a row keeps that window from ending a run that has not started.
+         */
+        private readonly Dictionary<int, int> _idlePolls = new Dictionary<int, int>();
+
+        /// <summary>Consecutive idle polls that end a run with no block.</summary>
+        internal const int IdlePollsToEnd = 3;
 
         private Action<int, KosRunResult>? _publish;
 
@@ -75,6 +85,7 @@ namespace Gonogo.KosUplink
                     return false;
                 }
                 _pending[coreId] = requestId;
+                _idlePolls.Remove(coreId);
                 return true;
             }
         }
@@ -145,6 +156,7 @@ namespace Gonogo.KosUplink
                     return;
                 }
                 _pending.Remove(coreId);
+                _idlePolls.Remove(coreId);
             }
 
             var result = new KosRunResult
@@ -158,21 +170,115 @@ namespace Gonogo.KosUplink
         }
 
         /// <summary>
+        /// Ends the run armed for <paramref name="coreId"/> with
+        /// <paramref name="message"/> as its error: kOS stopped the script on an
+        /// error before it returned. A no-op when nothing is armed for that CPU,
+        /// since kOS reports errors from the operator's own typed commands the
+        /// same way.
+        /// </summary>
+        public void Fail(int coreId, string message)
+        {
+            string? requestId;
+            lock (_gate)
+            {
+                if (!_pending.TryGetValue(coreId, out requestId))
+                {
+                    return;
+                }
+                _pending.Remove(coreId);
+                _idlePolls.Remove(coreId);
+            }
+            _publish?.Invoke(coreId, new KosRunResult { CoreId = coreId, RequestId = requestId, Error = message });
+        }
+
+        /// <summary>
         /// Disarm <paramref name="coreId"/> Without publishing: for a CPU
         /// going away (reboot/unload) mid-run, so a later unrelated block
         /// from a freshly-booted CPU with the same id isn't mis-attributed
         /// to the abandoned request. Also how <see cref="ArmAndType"/> undoes
-        /// an arm whose typing never reached the CPU. Nothing evicts a request
-        /// whose CPU went away mid-run, that is still the known gap above.
+        /// an arm whose typing never reached the CPU.
         /// </summary>
-        public void Cancel(int coreId) { lock (_gate) { _pending.Remove(coreId); } }
+        public void Cancel(int coreId) { lock (_gate) { _pending.Remove(coreId); _idlePolls.Remove(coreId); } }
+
+        /// <summary>
+        /// Disarms <paramref name="coreId"/> without publishing, but only while
+        /// <paramref name="requestId"/> is still the run it is armed for. Returns
+        /// true when it was, which is also the caller's cue to stop whatever the
+        /// CPU is still running; false when the run had already ended or a newer
+        /// one is armed, so a late cancel never touches someone else's run.
+        /// </summary>
+        public bool CancelRun(int coreId, string requestId)
+        {
+            lock (_gate)
+            {
+                if (!_pending.TryGetValue(coreId, out var armed) || armed != requestId)
+                {
+                    return false;
+                }
+                _pending.Remove(coreId);
+                _idlePolls.Remove(coreId);
+                return true;
+            }
+        }
+
+        /// <summary>
+        /// Ends every armed run whose CPU has been idle for
+        /// <see cref="IdlePollsToEnd"/> consecutive calls, publishing a result
+        /// with no fields and no error and <see cref="KosRunResult.Ended"/> set.
+        /// <paramref name="isIdle"/> answers whether a CPU's interpreter is back
+        /// at its prompt with nothing left to type. Called from the main-thread
+        /// update, so a script that never prints a block still frees its CPU.
+        /// </summary>
+        public void PollIdle(Func<int, bool> isIdle)
+        {
+            List<KeyValuePair<int, string>>? ended = null;
+            lock (_gate)
+            {
+                if (_pending.Count == 0)
+                {
+                    return;
+                }
+                foreach (var kv in _pending)
+                {
+                    if (!isIdle(kv.Key))
+                    {
+                        _idlePolls.Remove(kv.Key);
+                        continue;
+                    }
+                    _idlePolls.TryGetValue(kv.Key, out var seen);
+                    seen++;
+                    if (seen < IdlePollsToEnd)
+                    {
+                        _idlePolls[kv.Key] = seen;
+                        continue;
+                    }
+                    (ended ??= new List<KeyValuePair<int, string>>()).Add(kv);
+                }
+                if (ended != null)
+                {
+                    foreach (var kv in ended)
+                    {
+                        _pending.Remove(kv.Key);
+                        _idlePolls.Remove(kv.Key);
+                    }
+                }
+            }
+            if (ended == null)
+            {
+                return;
+            }
+            foreach (var kv in ended)
+            {
+                _publish?.Invoke(kv.Key, new KosRunResult { CoreId = kv.Key, RequestId = kv.Value, Ended = true });
+            }
+        }
 
         /// <summary>
         /// Disarms every CPU without publishing. A load or revert destroys the
         /// processors a run was typed into, so none of the armed requests can
         /// ever complete.
         /// </summary>
-        public void Reset() { lock (_gate) { _pending.Clear(); } }
+        public void Reset() { lock (_gate) { _pending.Clear(); _idlePolls.Clear(); } }
 
         private static Dictionary<string, object?> ToFieldMap(IReadOnlyDictionary<string, object> fields)
         {

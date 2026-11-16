@@ -25,17 +25,25 @@ namespace Gonogo.KosUplink
         public string? Reason { get; }
         public bool ComputePostfixAvailable { get; }
 
-        private KosGuardResult(bool isAvailable, string? reason, bool computePostfixAvailable)
+        /// <summary>
+        /// Whether each CPU's private <c>kOSProcessor.shared</c> field is there,
+        /// with a <c>Logger</c> that can be replaced, so a script error can end the
+        /// run it stopped. Absent, an errored run ends as one that returned nothing.
+        /// </summary>
+        public bool RunErrorCaptureAvailable { get; }
+
+        private KosGuardResult(bool isAvailable, string? reason, bool computePostfixAvailable, bool runErrorCaptureAvailable)
         {
             IsAvailable = isAvailable;
             Reason = reason;
             ComputePostfixAvailable = computePostfixAvailable;
+            RunErrorCaptureAvailable = runErrorCaptureAvailable;
         }
 
-        public static KosGuardResult Ok(bool computePostfixAvailable) =>
-            new KosGuardResult(true, null, computePostfixAvailable);
+        public static KosGuardResult Ok(bool computePostfixAvailable, bool runErrorCaptureAvailable = false) =>
+            new KosGuardResult(true, null, computePostfixAvailable, runErrorCaptureAvailable);
 
-        public static KosGuardResult Fail(string reason) => new KosGuardResult(false, reason, false);
+        public static KosGuardResult Fail(string reason) => new KosGuardResult(false, reason, false, false);
     }
 
     /// <summary>
@@ -163,7 +171,35 @@ namespace Gonogo.KosUplink
             Type? screenBuffer = allTypes.FirstOrDefault(t => t.Name == "ScreenBuffer");
             bool postfix = screenBuffer != null && HasPrintStringBool(screenBuffer);
 
-            return KosGuardResult.Ok(postfix);
+            return KosGuardResult.Ok(postfix, SharedObjectsField(processor) != null);
+        }
+
+        /// <summary>The private <c>kOSProcessor</c> field holding the CPU's <c>SharedObjects</c>.</summary>
+        public const string SharedFieldName = "shared";
+
+        /// <summary>The simple name of the type <see cref="SharedFieldName"/> is declared as.</summary>
+        public const string SharedFieldTypeName = "SharedObjects";
+
+        /// <summary>
+        /// The <see cref="SharedFieldName"/> field on <paramref name="processor"/>
+        /// when it is declared as <see cref="SharedFieldTypeName"/> and that type
+        /// has a <c>Logger</c> property of type <c>ILogger</c> with a public
+        /// setter; otherwise null. The field is private to kOS, so every part of
+        /// its shape is checked before it is bound.
+        /// </summary>
+        public static FieldInfo? SharedObjectsField(Type processor)
+        {
+            var field = processor.GetField(SharedFieldName, BindingFlags.NonPublic | BindingFlags.Instance);
+            if (field == null || field.FieldType.Name != SharedFieldTypeName)
+            {
+                return null;
+            }
+            var logger = field.FieldType.GetProperty("Logger", BindingFlags.Public | BindingFlags.Instance);
+            if (logger == null || logger.PropertyType.Name != "ILogger" || logger.GetSetMethod() == null)
+            {
+                return null;
+            }
+            return field;
         }
 
         /// <summary>

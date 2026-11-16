@@ -47,6 +47,10 @@
     "°"
   ],
   "types": {
+    "KosCancelArgs": {
+      "coreId": "id",
+      "requestId": "id"
+    },
     "KosComputeStatus": {
       "lastGoodAt": "ut",
       "parseError": "text",
@@ -79,6 +83,7 @@
     },
     "KosRunResult": {
       "coreId": "id",
+      "ended": "flag",
       "error": "text",
       "requestId": "id"
     },

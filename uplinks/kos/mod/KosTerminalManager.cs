@@ -360,10 +360,22 @@ namespace Gonogo.KosUplink
             {
                 return CommandResult.Fail(CommandErrorCode.NotFound);
             }
-            return screen.TypeChars(chars ?? "")
+            return screen.TypeChars(ToKosInput(chars ?? ""))
                 ? CommandResult.Ok()
                 : CommandResult.Fail(CommandErrorCode.ModeUnavailable);
         }
+
+        /// <summary>kOS's break key: the one character that stops the program a CPU is running.</summary>
+        public const char KosBreakKey = '\ue000';
+
+        /// <summary>
+        /// <paramref name="chars"/> as kOS reads terminal input: Ctrl+C (<c>\x03</c>)
+        /// becomes <see cref="KosBreakKey"/>, the conversion kOS's own telnet
+        /// terminal makes. kOS queues a raw <c>\x03</c> behind the running program,
+        /// so without it Ctrl+C could never stop one. Every other character is
+        /// passed on as it is.
+        /// </summary>
+        public static string ToKosInput(string chars) => chars.Replace('\u0003', KosBreakKey);
 
         /// <summary>
         /// Resize a CPU screen held by <paramref name="leaseToken"/>.

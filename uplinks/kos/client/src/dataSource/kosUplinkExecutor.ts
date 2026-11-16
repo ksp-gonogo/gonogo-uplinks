@@ -3,6 +3,7 @@ import { magnitudeOf, safeRandomUuid } from "@ksp-gonogo/sitrep-sdk";
 import type {
   KosProcessorInfo,
   KosFilesListArgs,
+  KosCancelArgs,
   KosRunArgs,
   KosRunResult,
 } from "../__generated__/contract.js";
@@ -34,6 +35,8 @@ import { buildKosRunCommand } from "./kosWrapper.js";
  */
 
 const PROCESSORS_TOPIC = "kos.processors";
+/** How long a call waits for `kos.processors` to name its CPU before refusing, in milliseconds. */
+const DEFAULT_CPU_WAIT_MS = 3000;
 const COMMS_DELAY_TOPIC = "comms.delay";
 
 /**
@@ -218,9 +221,14 @@ class KosUplinkCpuQueue {
       // callers can distinguish a script-author fault from a transport
       // error, same as the telnet path's explicit/implicit error handling.
       call.reject(new KosScriptError(payload.error));
+    } else if (payload.ended === true) {
+      // The CPU went back to its prompt without printing a block: the script
+      // ran and reported nothing, which is a finished run rather than a fault.
+      call.resolve({});
     } else if (payload.fields == null) {
-      // `KosRunResult`'s contract is that exactly one of fields/error is
-      // non-null, so a frame with neither is one we cannot read. Note
+      // Unless `ended` says so, `KosRunResult`'s contract is that exactly one
+      // of fields/error is non-null, so a frame with neither is one we cannot
+      // read. Note
       // `== null`: JsonWriter writes an absent value as JSON null and KEEPS
       // the key, so the strict form would let a null straight through.
       //
@@ -245,6 +253,16 @@ class KosUplinkCpuQueue {
     if (!this.inFlight || this.inFlight.requestId !== requestId) return;
     const { call, waitMs } = this.inFlight;
     this.inFlight = null;
+    // A listing never arms the CPU, so only a run has anything to cancel. The
+    // mod frees the CPU for the next run and stops the program it is still on.
+    if (call.listVolume === undefined) {
+      this.client
+        .dispatch("kos.cancel", {
+          coreId: this.coreId,
+          requestId,
+        } satisfies KosCancelArgs)
+        .result.catch(() => {});
+    }
     call.reject(
       new Error(
         `kos.run: CPU ${this.coreId} did not respond within ${waitMs}ms`,
@@ -274,6 +292,7 @@ class KosUplinkCpuQueue {
  */
 export class KosUplinkExecutor {
   private readonly timeoutMs: number;
+  private readonly cpuWaitMs: number;
   /** The latest one-way delay `comms.delay` reported, in seconds, or `null` while none is known. */
   private oneWaySeconds: number | null = null;
   private delayUnsub: (() => void) | null = null;
@@ -290,8 +309,9 @@ export class KosUplinkExecutor {
     (procs: KosProcessorInfo[]) => void
   >();
 
-  constructor(opts: { timeoutMs?: number } = {}) {
+  constructor(opts: { timeoutMs?: number; cpuWaitMs?: number } = {}) {
     this.timeoutMs = opts.timeoutMs ?? DEFAULT_TIMEOUT_MS;
+    this.cpuWaitMs = opts.cpuWaitMs ?? DEFAULT_CPU_WAIT_MS;
   }
 
   /**
@@ -345,15 +365,14 @@ export class KosUplinkExecutor {
     managed: KosManagedScript | null,
   ): Promise<KosData> {
     this.adoptClient(client);
-    const coreId = this.coreIdByTag.get(cpu);
-    if (coreId === undefined) {
-      return Promise.reject(
-        new Error(
+    return this.resolveCoreId(cpu).then((coreId) => {
+      if (coreId === undefined) {
+        throw new Error(
           `kos.run: no known CPU with tagname "${cpu}", waiting on kos.processors, or the tagname is wrong`,
-        ),
-      );
-    }
-    return this.getOrCreateQueue(coreId).enqueue(script, args, managed);
+        );
+      }
+      return this.getOrCreateQueue(coreId).enqueue(script, args, managed);
+    });
   }
 
   /**
@@ -368,15 +387,39 @@ export class KosUplinkExecutor {
     signal?: AbortSignal,
   ): Promise<KosData> {
     this.adoptClient(client);
-    const coreId = this.coreIdByTag.get(cpu);
-    if (coreId === undefined) {
-      return Promise.reject(
-        new Error(
+    return this.resolveCoreId(cpu).then((coreId) => {
+      if (coreId === undefined) {
+        throw new Error(
           `kos.files.list: no known CPU with tagname "${cpu}", waiting on kos.processors, or the tagname is wrong`,
-        ),
-      );
+        );
+      }
+      return this.getOrCreateQueue(coreId).enqueueListing(volume, signal);
+    });
+  }
+
+  /**
+   * The coreId for `cpu`, waiting up to the CPU wait for a `kos.processors`
+   * snapshot that names it when it is not known yet. A client adopted by the
+   * call itself has no snapshot until the stream replays one, so a refusal
+   * made at once would fail the first press after a page load.
+   */
+  private resolveCoreId(cpu: string): Promise<number | undefined> {
+    const known = this.coreIdByTag.get(cpu);
+    if (known !== undefined || this.cpuWaitMs <= 0) {
+      return Promise.resolve(known);
     }
-    return this.getOrCreateQueue(coreId).enqueueListing(volume, signal);
+    return new Promise((resolve) => {
+      const finish = (): void => {
+        clearTimeout(timer);
+        this.processorsListeners.delete(listener);
+        resolve(this.coreIdByTag.get(cpu));
+      };
+      const listener = (): void => {
+        if (this.coreIdByTag.has(cpu)) finish();
+      };
+      const timer = setTimeout(finish, this.cpuWaitMs);
+      this.processorsListeners.add(listener);
+    });
   }
 
   /** Tear down every subscription and queue, rejecting any in-flight/queued call. */

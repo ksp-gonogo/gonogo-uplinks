@@ -14,6 +14,7 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
+using System.Reflection;
 using System.Threading;
 using kOS.Module;
 using kOS.Safe.Screen;
@@ -29,6 +30,11 @@ namespace Gonogo.KosUplink
         // ~20 Hz terminal downlink on the main thread). KSP/Unity type, so
         // it lives in this half of the partial class.
         private KosMainThreadDispatcherAddon? _boundAddon;
+
+        // kOSProcessor's private SharedObjects field, bound once the version guard
+        // has checked its shape; null when it has not, which leaves runs ending
+        // without kOS's error message.
+        private FieldInfo? _sharedField;
 
         /// <summary>
         /// Implements the seam declared in KosExtension.cs: installs the real
@@ -110,6 +116,12 @@ namespace Gonogo.KosUplink
             // a constant.
             _nowUt = host.NowUt;
 
+            _sharedField = guard.RunErrorCaptureAvailable ? KosVersionGuard.SharedObjectsField(typeof(kOSProcessor)) : null;
+            if (_sharedField == null)
+            {
+                Debug.Log("[Gonogo.KosUplink] kOSProcessor.shared is not the field this Uplink expects, so a script that stops on an error ends its run without the error message");
+            }
+
             if (guard.ComputePostfixAvailable)
             {
                 KosComputeHarmony.Sink = OnPrint;
@@ -167,7 +179,12 @@ namespace Gonogo.KosUplink
             // that drains the dispatcher (headless tests call Poll() directly).
             if (_boundAddon != null)
             {
-                _boundAddon.Poll = _terminalManager.Poll;
+                var terminalPoll = _terminalManager.Poll;
+                _boundAddon.Poll = dt =>
+                {
+                    terminalPoll(dt);
+                    PollRuns();
+                };
             }
 
             host.AddCommandHandler<KosTerminalOpenArgs, CommandResult>(KosChannels.TerminalOpenCommand, TerminalOpen);
@@ -191,9 +208,11 @@ namespace Gonogo.KosUplink
             // hardcoded case for the raw POCO.
             _runManager.SetPublisher((coreId, result) =>
                 _runSource?.Publisher(KosChannels.RunSubTopic(coreId)).Publish(
-                    KosRunResultBuilder.Build(result.CoreId, result.RequestId, result.Fields, result.Error),
+                    KosRunResultBuilder.Build(result.CoreId, result.RequestId, result.Fields, result.Error, result.Ended),
                     host.NowUt()));
+            CpuIsIdle = IsCpuIdle;
             host.AddCommandHandler<KosRunArgs, CommandResult>(KosChannels.RunCommand, Run);
+            host.AddCommandHandler<KosCancelArgs, CommandResult>(KosChannels.CancelCommand, Cancel);
             host.AddCommandHandler<KosFilesListArgs, CommandResult>(KosChannels.FilesListCommand, FilesList);
             _filesPublish = (coreId, requestId, fields, error) =>
                 _runSource?.Publisher(KosChannels.RunSubTopic(coreId)).Publish(
@@ -401,6 +420,8 @@ namespace Gonogo.KosUplink
                     return CommandResult.Fail(KosErrorCodes.CpuBusy);
                 }
 
+                CaptureRunErrors(proc);
+
                 // Arming, typing, and disarming again when there was no window
                 // to type into all live in KosRunManager.ArmAndType, which is
                 // KSP-free and therefore testable: see its doc comment for the
@@ -456,6 +477,141 @@ namespace Gonogo.KosUplink
                 window.ProcessOneInputChar('\r', null, true, true);
             }
             return true;
+        }
+
+        /// <summary>
+        /// Wraps <paramref name="proc"/>'s kOS logger, once per CPU, so an error
+        /// kOS stops a program on ends the run armed on that CPU with kOS's own
+        /// message. kOS builds a new logger whenever it rebuilds the CPU's shared
+        /// objects, so the check runs before every run rather than once at load.
+        /// The wrapper forwards every call unchanged.
+        /// </summary>
+        private void CaptureRunErrors(kOSProcessor proc)
+        {
+            if (_sharedField == null || _loggerProxyFailed)
+            {
+                return;
+            }
+            try
+            {
+                if (!(_sharedField.GetValue(proc) is kOS.SharedObjects shared) || shared.Logger == null)
+                {
+                    return;
+                }
+                if (_loggerProxyFactory == null)
+                {
+                    _loggerProxyFactory = KosForwardingProxy.Factory(
+                        typeof(kOS.Safe.ILogger),
+                        typeof(kOS.Safe.ILogger).GetMethod(nameof(kOS.Safe.ILogger.Log), new[] { typeof(Exception) })!,
+                        out _loggerProxyType);
+                }
+                if (shared.Logger.GetType() == _loggerProxyType)
+                {
+                    return;
+                }
+                var coreId = proc.KOSCoreId;
+                object cpu = shared.Cpu;
+                shared.Logger = (kOS.Safe.ILogger)_loggerProxyFactory(shared.Logger, args =>
+                {
+                    try
+                    {
+                        if (args.Length == 1 && args[0] is Exception e)
+                        {
+                            _runManager.Fail(coreId, DescribeError(e, cpu));
+                        }
+                    }
+                    catch (Exception)
+                    {
+                        // The run bookkeeping must never take kOS's own error reporting down with it.
+                    }
+                });
+            }
+            catch (Exception ex)
+            {
+                _loggerProxyFailed = true;
+                Debug.LogError("[Gonogo.KosUplink] could not watch kOS CPUs for script errors, so a run that stops on an error ends without its message: " + ex);
+            }
+        }
+
+        private Func<object, Action<object?[]>, object>? _loggerProxyFactory;
+        private Type? _loggerProxyType;
+        private bool _loggerProxyFailed;
+
+        /// <summary>
+        /// The error as an operator reads it: kOS's own message, followed by the
+        /// script and line it stopped at when the CPU can say. Read before kOS
+        /// unwinds the program, while the call trace still points at the line.
+        /// </summary>
+        internal static string DescribeError(Exception e, object? cpu)
+        {
+            var message = string.IsNullOrEmpty(e.Message) ? e.GetType().Name : e.Message.Trim();
+            var location = ErrorLocation(cpu);
+            return location == null ? message : message + " (" + location + ")";
+        }
+
+        private static string? ErrorLocation(object? cpu)
+        {
+            if (!(cpu is kOS.Safe.Execution.ICpu kosCpu))
+            {
+                return null;
+            }
+            try
+            {
+                var trace = kosCpu.GetCallTrace();
+                if (trace == null || trace.Count == 0)
+                {
+                    return null;
+                }
+                var opcode = kosCpu.GetOpcodeAt(trace[0]);
+                if (opcode == null || opcode is kOS.Safe.Compilation.OpcodeEOF || opcode.SourcePath == null
+                    || opcode.SourcePath is kOS.Safe.Execution.InternalPath || opcode.SourceLine <= 0)
+                {
+                    return null;
+                }
+                return opcode.SourcePath + " line " + opcode.SourceLine;
+            }
+            catch (Exception)
+            {
+                return null;
+            }
+        }
+
+        /// <summary>
+        /// True when the CPU's interpreter is waiting for a command and kOS's
+        /// input queue holds nothing still to be typed into it.
+        /// </summary>
+        private static bool IsCpuIdle(int coreId)
+        {
+            var proc = FindProcessor(coreId);
+            return proc != null
+                && proc.HasBooted
+                && proc.GetScreen() is IInterpreter interp
+                && interp.IsWaitingForCommand()
+                && proc.GetScreen().CharInputQueue.Count == 0;
+        }
+
+        /// <summary>
+        /// <c>kos.cancel</c> command handler: disarms the named run and, only
+        /// when it was still the run the CPU is armed for, presses kOS's own
+        /// break key (the Ctrl-C of the terminal, which ends the program the
+        /// interpreter is running). A run that has already ended is left alone.
+        /// </summary>
+        private CommandResult Cancel(KosCancelArgs args)
+        {
+            if (args == null || string.IsNullOrEmpty(args.RequestId))
+            {
+                return CommandResult.Fail(CommandErrorCode.NotFound);
+            }
+
+            return RunOnMainThread(() =>
+            {
+                if (_runManager.CancelRun(args.CoreId, args.RequestId)
+                    && FindProcessor(args.CoreId)?.GetScreen() is IInterpreter interp)
+                {
+                    interp.SpecialKey(KosTerminalManager.KosBreakKey);
+                }
+                return CommandResult.Ok();
+            });
         }
 
         private static kOSProcessor? FindProcessor(int coreId)

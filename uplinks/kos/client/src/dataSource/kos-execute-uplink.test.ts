@@ -21,7 +21,7 @@ import type { KosProcessorInfo, KosRunResult } from "../__generated__/contract.j
 import { KosDataSource, kosSource } from "./kos.js";
 
 function makeSource() {
-  return new KosDataSource({ callTimeoutMs: 500, postAttachDrainDelayMs: 0 });
+  return new KosDataSource({ callTimeoutMs: 500, postAttachDrainDelayMs: 0, cpuWaitMs: 0 });
 }
 
 async function waitFor(
@@ -91,6 +91,7 @@ describe("KosDataSource.executeScript: Uplink cutover", () => {
       coreId: 4,
       requestId: runArgs()[0].requestId,
       fields: { ok: true },
+      ended: false,
     } satisfies KosRunResult);
 
     await expect(pending).resolves.toEqual({ ok: true });
@@ -139,14 +140,7 @@ describe("kos.ts module: registerUplinkHandle('kos', ...) registration", () => {
     }>("kos");
     expect(handle).toBeDefined();
 
-    // Prime the CPU list the same way the executeScript-level test above does.
-    handle
-      ?.relay("executeScript", {
-        cpu: "datastream",
-        script: "0:/priming.ks",
-        args: [],
-      })
-      .catch(() => {});
+    // The client is attached above, so the snapshot reaches the executor.
     transport.emit("kos.processors", [
       {
         coreId: 7,
@@ -171,6 +165,7 @@ describe("kos.ts module: registerUplinkHandle('kos', ...) registration", () => {
       coreId: last.coreId,
       requestId: last.requestId,
       fields: { ok: true },
+      ended: false,
     } satisfies KosRunResult);
 
     await expect(pending).resolves.toEqual({ ok: true });

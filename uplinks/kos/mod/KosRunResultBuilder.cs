@@ -25,16 +25,18 @@ namespace Gonogo.KosUplink
         /// is non-null (R7 typed-absence; see
         /// <see cref="Sitrep.Contract.KosRunResult"/>'s own doc comment); both
         /// are written as JSON <c>null</c> when absent, never omitted or
-        /// defaulted to an empty object/string.
+        /// defaulted to an empty object/string. <paramref name="ended"/> marks
+        /// the run that printed neither, where both are null.
         /// </summary>
         public static Dictionary<string, object?> Build(
-            int coreId, string requestId, Dictionary<string, object?>? fields, string? error) =>
+            int coreId, string requestId, Dictionary<string, object?>? fields, string? error, bool ended = false) =>
             new Dictionary<string, object?>
             {
                 ["coreId"] = coreId,
                 ["requestId"] = requestId ?? "",
                 ["fields"] = fields,
                 ["error"] = error,
+                ["ended"] = ended,
             };
     }
 }

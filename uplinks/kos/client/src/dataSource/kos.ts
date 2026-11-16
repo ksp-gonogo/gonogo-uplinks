@@ -41,6 +41,8 @@ interface KosDataSourceOptions {
    * settle delay.
    */
   postAttachDrainDelayMs?: number;
+  /** How long a call waits for `kos.processors` to name its CPU before refusing. */
+  cpuWaitMs?: number;
 }
 
 /**
@@ -76,6 +78,7 @@ export class KosDataSource {
     this.callTimeoutMs = opts.callTimeoutMs ?? DEFAULT_CALL_TIMEOUT_MS;
     this.uplinkExecutor = new KosUplinkExecutor({
       timeoutMs: this.callTimeoutMs,
+      cpuWaitMs: opts.cpuWaitMs,
     });
   }
 

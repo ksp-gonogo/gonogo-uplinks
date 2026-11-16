@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using Gonogo.KosUplink;
 using Sitrep.Contract;
@@ -262,6 +263,196 @@ namespace GonogoKosUplink.Tests
 
             Assert.False(mgr.HasAnyArmed());
             Assert.True(mgr.ArmAndType(7, "c", () => true).Success);
+        }
+
+        private static void Idle(KosRunManager mgr, Func<int, bool> isIdle, int polls)
+        {
+            for (var i = 0; i < polls; i++)
+            {
+                mgr.PollIdle(isIdle);
+            }
+        }
+
+        [Fact]
+        public void PollIdle_RunThatPrintsNothing_PublishesAnEndedResultAndFreesTheCpu()
+        {
+            var mgr = new KosRunManager();
+            var published = new List<(int coreId, KosRunResult result)>();
+            mgr.SetPublisher((coreId, result) => published.Add((coreId, result)));
+            Assert.True(mgr.ArmAndType(7, "req-1", () => true).Success);
+
+            Idle(mgr, _ => true, KosRunManager.IdlePollsToEnd);
+
+            var (coreId, result) = Assert.Single(published);
+            Assert.Equal(7, coreId);
+            Assert.Equal("req-1", result.RequestId);
+            Assert.True(result.Ended);
+            Assert.Null(result.Fields);
+            Assert.Null(result.Error);
+            Assert.False(mgr.IsArmed(7));
+            Assert.True(mgr.ArmAndType(7, "req-2", () => true).Success);
+        }
+
+        [Fact]
+        public void PollIdle_BusyCpu_StaysArmed()
+        {
+            var mgr = new KosRunManager();
+            var published = new List<KosRunResult>();
+            mgr.SetPublisher((_, result) => published.Add(result));
+            mgr.TryArm(7, "req-1");
+
+            Idle(mgr, _ => false, KosRunManager.IdlePollsToEnd * 3);
+
+            Assert.Empty(published);
+            Assert.True(mgr.IsArmed(7));
+        }
+
+        [Fact]
+        public void PollIdle_AnIdleReadingBetweenBusyOnesDoesNotEndTheRun()
+        {
+            var mgr = new KosRunManager();
+            var published = new List<KosRunResult>();
+            mgr.SetPublisher((_, result) => published.Add(result));
+            mgr.TryArm(7, "req-1");
+
+            // The typed command is still in kOS's queue for a poll or two.
+            mgr.PollIdle(_ => true);
+            mgr.PollIdle(_ => false);
+            mgr.PollIdle(_ => true);
+            mgr.PollIdle(_ => true);
+
+            Assert.Empty(published);
+            Assert.True(mgr.IsArmed(7));
+        }
+
+        [Fact]
+        public void PollIdle_OnlyEndsTheCpuThatIsIdle()
+        {
+            var mgr = new KosRunManager();
+            var published = new List<(int coreId, KosRunResult result)>();
+            mgr.SetPublisher((coreId, result) => published.Add((coreId, result)));
+            mgr.TryArm(7, "req-1");
+            mgr.TryArm(9, "req-2");
+
+            Idle(mgr, core => core == 9, KosRunManager.IdlePollsToEnd);
+
+            Assert.Equal(9, Assert.Single(published).coreId);
+            Assert.True(mgr.IsArmed(7));
+            Assert.False(mgr.IsArmed(9));
+        }
+
+        [Fact]
+        public void CancelRun_DisarmsTheNamedRunWithoutPublishing()
+        {
+            var mgr = new KosRunManager();
+            var published = new List<KosRunResult>();
+            mgr.SetPublisher((_, result) => published.Add(result));
+            mgr.TryArm(7, "req-1");
+
+            Assert.True(mgr.CancelRun(7, "req-1"));
+
+            Assert.False(mgr.IsArmed(7));
+            Assert.Empty(published);
+            Assert.True(mgr.TryArm(7, "req-2"));
+        }
+
+        [Fact]
+        public void CancelRun_ForARunThatIsNotTheArmedOne_ChangesNothing()
+        {
+            var mgr = new KosRunManager();
+            mgr.TryArm(7, "req-2");
+
+            Assert.False(mgr.CancelRun(7, "req-1"));
+            Assert.False(mgr.CancelRun(8, "req-2"));
+
+            Assert.True(mgr.IsArmed(7));
+        }
+
+        [Fact]
+        public void CancelRun_AfterTheRunAlreadyEnded_ReportsNothingToStop()
+        {
+            var mgr = new KosRunManager();
+            mgr.SetPublisher((_, _) => { });
+            mgr.TryArm(7, "req-1");
+            Idle(mgr, _ => true, KosRunManager.IdlePollsToEnd);
+
+            Assert.False(mgr.CancelRun(7, "req-1"));
+        }
+
+        [Fact]
+        public void StrayBlock_WithNothingArmed_CompletesNothing()
+        {
+            var mgr = new KosRunManager();
+            var published = new List<KosRunResult>();
+            mgr.SetPublisher((_, result) => published.Add(result));
+            mgr.TryArm(7, "req-1");
+            Idle(mgr, _ => true, KosRunManager.IdlePollsToEnd);
+            published.Clear();
+
+            mgr.Complete(7, new KosComputeBlock("default", new Dictionary<string, object> { ["v"] = 1.0 }));
+
+            Assert.Empty(published);
+            Assert.False(mgr.IsArmed(7));
+        }
+
+        [Fact]
+        public void StrayBlock_AfterACancel_DoesNotCompleteTheNextRequestEarly()
+        {
+            var mgr = new KosRunManager();
+            var published = new List<KosRunResult>();
+            mgr.SetPublisher((_, result) => published.Add(result));
+            mgr.TryArm(7, "req-1");
+            mgr.CancelRun(7, "req-1");
+
+            mgr.Complete(7, new KosComputeBlock("default", new Dictionary<string, object> { ["v"] = 1.0 }));
+            mgr.TryArm(7, "req-2");
+
+            Assert.Empty(published);
+            Assert.True(mgr.IsArmed(7));
+        }
+
+        [Fact]
+        public void Fail_WhileArmed_PublishesTheErrorAndDisarms()
+        {
+            var mgr = new KosRunManager();
+            var published = new List<KosRunResult>();
+            mgr.SetPublisher((_, result) => published.Add(result));
+            mgr.TryArm(7, "req-1");
+
+            mgr.Fail(7, "Undefined Variable Name 'x'.");
+
+            var result = Assert.Single(published);
+            Assert.Equal("req-1", result.RequestId);
+            Assert.Equal("Undefined Variable Name 'x'.", result.Error);
+            Assert.Null(result.Fields);
+            Assert.False(result.Ended);
+            Assert.False(mgr.IsArmed(7));
+        }
+
+        [Fact]
+        public void Fail_WithNothingArmed_PublishesNothing()
+        {
+            var mgr = new KosRunManager();
+            var published = new List<KosRunResult>();
+            mgr.SetPublisher((_, result) => published.Add(result));
+
+            mgr.Fail(7, "Syntax error");
+
+            Assert.Empty(published);
+        }
+
+        [Fact]
+        public void Fail_ThenIdle_DoesNotPublishASecondResult()
+        {
+            var mgr = new KosRunManager();
+            var published = new List<KosRunResult>();
+            mgr.SetPublisher((_, result) => published.Add(result));
+            mgr.TryArm(7, "req-1");
+
+            mgr.Fail(7, "boom");
+            Idle(mgr, _ => true, KosRunManager.IdlePollsToEnd);
+
+            Assert.Single(published);
         }
     }
 }

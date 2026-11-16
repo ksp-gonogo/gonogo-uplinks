@@ -81,7 +81,7 @@ The live terminal of a kOS CPU.
 | Payload | Fields |
 | --- | --- |
 | `KosComputeStatus` | `lastGoodAt` ut, `parseError` text, `paused` flag, `running` flag, `scriptError` text |
-| `KosRunResult` | `coreId` id, `error` text, `requestId` id |
+| `KosRunResult` | `coreId` id, `ended` flag, `error` text, `requestId` id |
 | `KosTerminalFrame` | `chunk` text, `coreId` id, `fullRepaint` flag |
 
 </details>
@@ -91,6 +91,7 @@ The live terminal of a kOS CPU.
 
 | Command | Args | Result |
 | --- | --- | --- |
+| `kos.cancel` | `KosCancelArgs` | `CommandResult` |
 | `kos.files.list` | `KosFilesListArgs` | `CommandResult` |
 | `kos.keystroke` | `KosKeystrokeArgs` | `CommandResult` |
 | `kos.run` | `KosRunArgs` | `CommandResult` |
@@ -100,6 +101,7 @@ The live terminal of a kOS CPU.
 
 | Args | Fields |
 | --- | --- |
+| `KosCancelArgs` | `coreId` id, `requestId` id |
 | `KosFilesListArgs` | `coreId` id, `requestId` id, `volume` text |
 | `KosKeystrokeArgs` | `chars` text, `coreId` id, `leaseToken` id |
 | `KosRunArgs` | `command` text, `coreId` id, `requestId` id |

@@ -87,6 +87,10 @@ export type UnitsByField = Readonly<Record<string, SitrepUnit>>;
  * payload shapes that no Topic names directly.
  */
 export const GENERATED_TYPE_UNITS: Readonly<Record<string, UnitsByField>> = {
+  "KosCancelArgs": {
+    coreId: "id",
+    requestId: "id",
+  },
   "KosComputeStatus": {
     lastGoodAt: "ut",
     parseError: "text",
@@ -119,6 +123,7 @@ export const GENERATED_TYPE_UNITS: Readonly<Record<string, UnitsByField>> = {
   },
   "KosRunResult": {
     coreId: "id",
+    ended: "flag",
     error: "text",
     requestId: "id",
   },

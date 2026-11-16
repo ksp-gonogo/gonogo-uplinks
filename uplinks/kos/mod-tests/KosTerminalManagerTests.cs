@@ -212,6 +212,28 @@ namespace GonogoKosUplink.Tests
         }
 
         [Fact]
+        public void Keystroke_CtrlC_ReachesKosAsItsBreakKey()
+        {
+            var h = new Harness();
+            h.Manager.Open(7, "tokenA");
+
+            Assert.True(h.Manager.Keystroke(7, "tokenA", "\u0003").Success);
+
+            Assert.Equal(new[] { "\ue000" }, h.Screens[7].Typed);
+        }
+
+        [Fact]
+        public void Keystroke_OtherInput_IsPassedOnUnchanged()
+        {
+            var h = new Harness();
+            h.Manager.Open(7, "tokenA");
+
+            h.Manager.Keystroke(7, "tokenA", "PRINT 1.\r\b\u001b[A");
+
+            Assert.Equal(new[] { "PRINT 1.\r\b\u001b[A" }, h.Screens[7].Typed);
+        }
+
+        [Fact]
         public void Keystroke_WhenScreenRefusesInput_IsModeUnavailable()
         {
             var h = new Harness();

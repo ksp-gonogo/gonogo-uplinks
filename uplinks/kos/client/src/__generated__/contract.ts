@@ -147,13 +147,15 @@ export interface KosRunArgs
 * mod's `[KOSDATA]`/`[KOSERROR]` block-capture pipeline
 * (`KosComputeAccumulator`/`KosDataParser`: the same one that feeds
 * `kos.compute.*`) completes a block for that CPU while the request is still
-* armed.
+* armed, the moment kOS stops the script on an error, or, when the CPU returns
+* to its prompt first, the moment that happens (`KosRunResult.ended`).
 *
 * R7 typed-absence: exactly one of `KosRunResult.fields` /
 * `KosRunResult.error` is non-null, a successful `[KOSDATA]` parse carries
-* `KosRunResult.fields` with `KosRunResult.error` null; an explicit
-* script-author `[KOSERROR]` carries `KosRunResult.error` with
-* `KosRunResult.fields` null. Field values keep the exact
+* `KosRunResult.fields` with `KosRunResult.error` null; a kOS error or an
+* explicit script-author `[KOSERROR]` carries `KosRunResult.error` with
+* `KosRunResult.fields` null; a run that printed neither has both null and
+* `KosRunResult.ended` true. Field values keep the exact
 * `KosDataParser.Coerce` shape (bool / double / string) the telnet path
 * already produces: no re-typing on the wire.
 */
@@ -165,8 +167,33 @@ export interface KosRunResult
 	requestId: string;
 	/** Parsed `[KOSDATA]` field map: null on an error result. */
 	fields?: { [key: string]: any } | null;
-	/** Explicit `[KOSERROR]` message: null on a data result. */
+	/**
+	* Why the run failed: the message of an error kOS stopped the script on,
+	* followed by the script and line when kOS can say, or the text of an explicit
+	* `[KOSERROR]` block. Null on a data result.
+	*/
 	error?: string | null;
+	/**
+	* True when the CPU went back to waiting for a command without printing a
+	* `[KOSDATA]` or `[KOSERROR]` block, so the run finished with nothing to
+	* report: `KosRunResult.fields` and `KosRunResult.error` are both null. False
+	* on every result that carries one of them.
+	*/
+	ended: boolean;
+}
+/**
+* Args for the `kos.cancel` command: abandons the `kos.run` a caller stopped
+* waiting for. The CPU is released for the next run, and the program still
+* running on it is stopped, but only while `KosCancelArgs.requestId` is still
+* the run the CPU is armed for, so a late cancel never disturbs a newer run.
+* Sent by a script trigger when its run times out.
+*/
+export interface KosCancelArgs
+{
+	/** Target CPU, identified by its `KosProcessorInfo.coreId`. */
+	coreId: number;
+	/** The `KosRunArgs.requestId` of the run to abandon. */
+	requestId: string;
 }
 /**
 * One frame of interactive-terminal output for a single kOS CPU, delivered on

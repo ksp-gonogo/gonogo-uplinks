@@ -109,6 +109,9 @@ namespace Gonogo.KosUplink
         /// </summary>
         public const string RunCommand = "kos.run";
 
+        /// <summary>Command: abandon a <see cref="RunCommand"/> the caller stopped waiting for (<see cref="Sitrep.Contract.KosCancelArgs"/>).</summary>
+        public const string CancelCommand = "kos.cancel";
+
         /// <summary>Command: list a CPU volume's files without typing into its terminal (<see cref="Sitrep.Contract.KosFilesListArgs"/>); the answer rides <see cref="RunPrefix"/>.</summary>
         public const string FilesListCommand = "kos.files.list";
 

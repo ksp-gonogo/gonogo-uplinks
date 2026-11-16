@@ -63,7 +63,7 @@ namespace GonogoKosUplink.Tests
                 nameof(KosTerminalFrame), nameof(KosTerminalOpenArgs),
                 nameof(KosKeystrokeArgs), nameof(KosTerminalResizeArgs),
                 nameof(KosTerminalCloseArgs),
-                nameof(KosRunArgs), nameof(KosRunResult),
+                nameof(KosRunArgs), nameof(KosRunResult), nameof(KosCancelArgs),
                 nameof(KosFilesListArgs));
 
         /// <summary>

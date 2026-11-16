@@ -7,7 +7,7 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 import type { GeneratedCommandArgsMap } from "../__generated__/command-map.js";
 import type { KosProcessorInfo, KosRunResult } from "../__generated__/contract.js";
 import { isKosScriptError } from "../shared/KosScriptError.js";
-import { recordDispatch } from "../test/recordedCommands.js";
+import { recordDispatch, sentCommands } from "../test/recordedCommands.js";
 import { KosUplinkExecutor } from "./kosUplinkExecutor.js";
 import { buildKosWrapper } from "./kosWrapper.js";
 
@@ -52,10 +52,9 @@ function captureDispatches(transport: StubTransport): DispatchedCommand[] {
 }
 
 /**
- * Subscribes `executor` to `client`'s `kos.processors` via a throwaway
- * `run()` call (swallowed, it always rejects, nothing is known yet), then
+ * Adopts `client` so `executor` subscribes to its `kos.processors`, then
  * publishes `processors`. After this, any `run()` against a tagname in
- * `processors` resolves its coreId synchronously.
+ * `processors` resolves its coreId at once.
  */
 function primeProcessors(
   executor: KosUplinkExecutor,
@@ -63,7 +62,7 @@ function primeProcessors(
   transport: StubTransport,
   processors: KosProcessorInfo[],
 ): void {
-  executor.run(client, "__priming__", "", [], null).catch(() => {});
+  executor.adopt(client);
   transport.emit("kos.processors", processors);
 }
 
@@ -106,6 +105,7 @@ describe("KosUplinkExecutor", () => {
       coreId: 7,
       requestId: commands[0].args.requestId,
       fields: { v: 1, ok: true },
+      ended: false,
     } satisfies KosRunResult);
 
     await expect(pending).resolves.toEqual({ v: 1, ok: true });
@@ -141,6 +141,7 @@ describe("KosUplinkExecutor", () => {
       coreId: 3,
       requestId: commands[0].args.requestId,
       fields: {},
+      ended: false,
     } satisfies KosRunResult);
     await pending;
   });
@@ -163,6 +164,7 @@ describe("KosUplinkExecutor", () => {
       coreId: 4,
       requestId: commands[0].args.requestId,
       fields: {},
+      ended: false,
     } satisfies KosRunResult);
 
     await expect(pending).resolves.toEqual({});
@@ -203,7 +205,7 @@ describe("KosUplinkExecutor", () => {
 
   it("rejects immediately with a clear error when the tagname doesn't resolve to a known coreId", async () => {
     const { client } = makeClient();
-    const executor = new KosUplinkExecutor();
+    const executor = new KosUplinkExecutor({ cpuWaitMs: 0 });
 
     await expect(
       executor.run(client, "no-such-cpu", "0:/foo.ks", [], null),
@@ -230,6 +232,7 @@ describe("KosUplinkExecutor", () => {
       coreId: 1,
       requestId: commands[0].args.requestId,
       fields: { step: 1 },
+      ended: false,
     } satisfies KosRunResult);
     await first;
 
@@ -240,6 +243,7 @@ describe("KosUplinkExecutor", () => {
       coreId: 1,
       requestId: commands[1].args.requestId,
       fields: { step: 2 },
+      ended: false,
     } satisfies KosRunResult);
     await second;
   });
@@ -266,11 +270,13 @@ describe("KosUplinkExecutor", () => {
       coreId: 1,
       requestId: forA?.args.requestId ?? "",
       fields: {},
+      ended: false,
     } satisfies KosRunResult);
     transport.emit("kos.run.2", {
       coreId: 2,
       requestId: forB?.args.requestId ?? "",
       fields: {},
+      ended: false,
     } satisfies KosRunResult);
     await Promise.all([a, b]);
   });
@@ -308,6 +314,7 @@ describe("KosUplinkExecutor", () => {
       coreId: 1,
       requestId: commands[0].args.requestId,
       error: "engine flameout",
+      ended: false,
     } satisfies KosRunResult);
 
     let caught: unknown;
@@ -338,6 +345,80 @@ describe("KosUplinkExecutor", () => {
     await assertion;
   });
 
+  it("resolves with an empty object when the mod reports the run ended without a block", async () => {
+    const { transport, client } = makeClient();
+    const commands = captureDispatches(transport);
+    const executor = new KosUplinkExecutor();
+    primeProcessors(executor, client, transport, [
+      { coreId: 6, tag: "cpu-a", hasBooted: true, processorMode: "READY" },
+    ]);
+    const pending = executor.run(client, "cpu-a", "0:/quiet.ks", [], null);
+    await waitFor(() => commands.length === 1);
+
+    transport.emit("kos.run.6", {
+      coreId: 6,
+      requestId: commands[0].args.requestId,
+      fields: null,
+      error: null,
+      ended: true,
+    });
+
+    await expect(pending).resolves.toEqual({});
+  });
+
+  it("sends a kos.cancel for its own run when the run times out", async () => {
+    vi.useFakeTimers();
+    const { transport, client } = makeClient();
+    const sent: { command: string; args: unknown }[] = [];
+    transport.setCommandHandler((command, args) => {
+      sent.push({ command, args });
+      return { success: true };
+    });
+    const executor = new KosUplinkExecutor({ timeoutMs: 1000 });
+    primeProcessors(executor, client, transport, [
+      { coreId: 1, tag: "cpu-a", hasBooted: true, processorMode: "READY" },
+    ]);
+
+    const pending = executor.run(client, "cpu-a", "0:/a.ks", [], null);
+    const assertion = expect(pending).rejects.toThrow(/did not respond/i);
+    await vi.advanceTimersByTimeAsync(1000);
+    await assertion;
+
+    const run = sentCommands(sent, "kos.run");
+    const cancel = sentCommands(sent, "kos.cancel");
+    expect(run).toHaveLength(1);
+    expect(cancel).toHaveLength(1);
+    expect(cancel[0].args).toEqual({
+      coreId: 1,
+      requestId: run[0].args.requestId,
+    });
+  });
+
+  it("sends no kos.cancel for a run that finished", async () => {
+    const { transport, client } = makeClient();
+    const sent: { command: string; args: unknown }[] = [];
+    transport.setCommandHandler((command, args) => {
+      sent.push({ command, args });
+      return { success: true };
+    });
+    const executor = new KosUplinkExecutor();
+    primeProcessors(executor, client, transport, [
+      { coreId: 2, tag: "cpu-a", hasBooted: true, processorMode: "READY" },
+    ]);
+    const pending = executor.run(client, "cpu-a", "0:/a.ks", [], null);
+    await waitFor(() => sentCommands(sent, "kos.run").length === 1);
+
+    transport.emit("kos.run.2", {
+      coreId: 2,
+      requestId: sentCommands(sent, "kos.run")[0].args.requestId,
+      fields: { v: 1 },
+      ended: false,
+    } satisfies KosRunResult);
+    await pending;
+
+    expect(sentCommands(sent, "kos.cancel")).toHaveLength(0);
+  });
+
   it("waits out the round trip of a delayed craft before giving up", async () => {
     vi.useFakeTimers();
     const { transport, client } = makeClient();
@@ -366,6 +447,7 @@ describe("KosUplinkExecutor", () => {
       coreId: 1,
       requestId: commands[0].args.requestId,
       fields: { ok: true },
+      ended: false,
     } satisfies KosRunResult);
     await expect(pending).resolves.toEqual({ ok: true });
   });
@@ -400,6 +482,7 @@ describe("KosUplinkExecutor", () => {
       coreId: 1,
       requestId: "some-other-requestId",
       fields: { v: 1 },
+      ended: false,
     } satisfies KosRunResult);
 
     let settled = false;
@@ -419,6 +502,7 @@ describe("KosUplinkExecutor", () => {
       coreId: 1,
       requestId: commands[0].args.requestId,
       fields: {},
+      ended: false,
     } satisfies KosRunResult);
     await pending;
   });
@@ -444,7 +528,7 @@ describe("KosUplinkExecutor", () => {
   it("re-adopting a different TelemetryClient tears down the old subscriptions/queues", async () => {
     const { transport: t1, client: c1 } = makeClient();
     const commands1 = captureDispatches(t1);
-    const executor = new KosUplinkExecutor();
+    const executor = new KosUplinkExecutor({ cpuWaitMs: 0 });
     primeProcessors(executor, c1, t1, [
       { coreId: 1, tag: "cpu-a", hasBooted: true, processorMode: "READY" },
     ]);
@@ -482,6 +566,7 @@ describe("KosUplinkExecutor", () => {
       coreId: 9,
       requestId: commands2[0].args.requestId,
       fields: {},
+      ended: false,
     } satisfies KosRunResult);
     await fresh;
   });
@@ -508,6 +593,7 @@ describe("KosUplinkExecutor", () => {
       coreId: 4,
       requestId: commands[1].args.requestId,
       fields: {},
+      ended: false,
     } satisfies KosRunResult);
     await run;
   });
@@ -532,9 +618,46 @@ describe("KosUplinkExecutor", () => {
       coreId: 4,
       requestId: commands[0].args.requestId,
       fields: {},
+      ended: false,
     } satisfies KosRunResult);
     await first;
     await new Promise((r) => setTimeout(r, 5));
     expect(commands).toHaveLength(1);
+  });
+
+  it("waits for the first kos.processors snapshot instead of refusing a tag it has not been told yet", async () => {
+    const { transport, client } = makeClient();
+    const commands = captureDispatches(transport);
+    const executor = new KosUplinkExecutor();
+
+    const pending = executor.run(client, "cpu-a", "0:/a.ks", [], null);
+    await new Promise((r) => setTimeout(r, 5));
+    expect(commands).toHaveLength(0);
+
+    transport.emit("kos.processors", [
+      { coreId: 1, tag: "cpu-a", hasBooted: true, processorMode: "READY" },
+    ]);
+    await waitFor(() => commands.length === 1);
+    expect(commands[0].args.coreId).toBe(1);
+
+    transport.emit("kos.run.1", {
+      coreId: 1,
+      requestId: commands[0].args.requestId,
+      fields: {},
+      ended: false,
+    } satisfies KosRunResult);
+    await pending;
+  });
+
+  it("refuses a tag no snapshot names once the CPU wait has passed", async () => {
+    const { transport, client } = makeClient();
+    const executor = new KosUplinkExecutor({ cpuWaitMs: 30 });
+
+    const pending = executor.run(client, "cpu-a", "0:/a.ks", [], null);
+    transport.emit("kos.processors", [
+      { coreId: 2, tag: "cpu-b", hasBooted: true, processorMode: "READY" },
+    ]);
+
+    await expect(pending).rejects.toThrow(/no known CPU with tagname "cpu-a"/);
   });
 });

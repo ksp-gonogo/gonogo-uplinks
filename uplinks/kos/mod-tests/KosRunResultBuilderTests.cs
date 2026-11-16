@@ -35,11 +35,21 @@ namespace GonogoKosUplink.Tests
         }
 
         [Fact]
+        public void EndedResult_CarriesNeitherFieldsNorErrorAndSaysSo()
+        {
+            var entry = KosRunResultBuilder.Build(7, "req-1", null, null, ended: true);
+
+            Assert.Null(entry["fields"]);
+            Assert.Null(entry["error"]);
+            Assert.Equal(true, entry["ended"]);
+        }
+
+        [Fact]
         public void EmitsExactlyTheContractsFieldSet()
         {
             var entry = KosRunResultBuilder.Build(7, "req-1", null, "x");
 
-            var expected = new[] { "coreId", "requestId", "fields", "error" };
+            var expected = new[] { "coreId", "requestId", "fields", "error", "ended" };
             Assert.Equal(expected.Length, entry.Count);
             foreach (var key in expected)
             {
