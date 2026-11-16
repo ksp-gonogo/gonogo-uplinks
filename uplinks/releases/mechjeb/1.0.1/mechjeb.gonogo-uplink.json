@@ -1,0 +1,19 @@
+{
+  "id": "mechjeb",
+  "name": "MechJeb",
+  "description": "Integrates MechJeb controls into the dashboard.",
+  "author": "jpeps",
+  "repo": "https://github.com/ksp-gonogo/gonogo-uplinks",
+  "mod": {
+    "name": "MechJeb2",
+    "builtAgainst": "2.15.3.0"
+  },
+  "version": "1.0.1",
+  "minAppVersion": "0.0.0",
+  "apiVersion": "7.0.0",
+  "contractMajor": 52,
+  "contractMinor": 2,
+  "bundleUrl": "mechjeb/mechjeb.client.js",
+  "integrity": "sha256-78aad09a1f0280e5cca2e8ba4f9bdbdbb0d64965c559e4811944b9748c9bb979",
+  "sdkVersion": "1.0.0"
+}
