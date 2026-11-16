@@ -3,57 +3,57 @@
   "engine": "chromium",
   "assets": {
     "camera-feed-fixed--default.png": {
-      "hash": "75b3553ffc1bc61e",
+      "hash": "a179c4e62bd0f9bc",
       "elements": 49,
       "text": "de169916"
     },
     "camera-feed-fixed--min.png": {
-      "hash": "6731ed613428baff",
+      "hash": "1b4f677503094458",
       "elements": 49,
       "text": "de169916"
     },
     "camera-feed-fixed--mobile-9x8.png": {
-      "hash": "75b3553ffc1bc61e",
+      "hash": "a179c4e62bd0f9bc",
       "elements": 49,
       "text": "de169916"
     },
     "camera-feed-other-craft--default.png": {
-      "hash": "957123817ab84d8b",
+      "hash": "109988b90f4d75a6",
       "elements": 75,
       "text": "497abb31"
     },
     "camera-feed-other-craft-no-link--default.png": {
-      "hash": "5fd42febffa50c4e",
+      "hash": "5bc181a12191c231",
       "elements": 60,
       "text": "6157281a"
     },
     "camera-feed-other-craft-unplaced--default.png": {
-      "hash": "800f358c1db40e3b",
+      "hash": "d8b312f07eb3c900",
       "elements": 60,
       "text": "6157281a"
     },
     "camera-feed-steerable--default.png": {
-      "hash": "6fb468e62fc519c2",
+      "hash": "138a4b2c18fc03a8",
       "elements": 76,
       "text": "77896017"
     },
     "camera-feed-steerable--min.png": {
-      "hash": "40ffe390d8103109",
+      "hash": "a16b171db4f65c6a",
       "elements": 76,
       "text": "77896017"
     },
     "camera-feed-steerable--mobile-9x8.png": {
-      "hash": "6fb468e62fc519c2",
+      "hash": "138a4b2c18fc03a8",
       "elements": 76,
       "text": "77896017"
     },
     "camera-feed-steerable-locked--default.png": {
-      "hash": "a08b018bc9772c0f",
+      "hash": "67a420940a90093e",
       "elements": 49,
       "text": "3a9044cd"
     },
     "camera-feed-stick-hold--default.gif": {
-      "hash": "7a79ba0f9c0d3dc0",
+      "hash": "5259551e09f35b22",
       "elements": 76,
       "text": "2dc9c080"
     },
