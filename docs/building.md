@@ -122,7 +122,7 @@ Each Uplink in a release passes or fails alone. Its prepare leg and its own legs
 A release is a tag, `<uplink id>-v<version>`, on a commit on main. `release.yml` builds that Uplink, publishes its client to the `releases` branch and attaches the plugin zip to a GitHub release.
 
 - **A candidate** has a version ending `-rc.<n>`, such as `kos-v1.0.0-rc.1`. Its GitHub release is a prerelease, and nothing is uploaded to SpaceDock, so nothing reaches CKAN. Candidates are `1.0.0-rc.N`, the version the full release will be.
-- **A full release** has a plain `X.Y.Z` version. It is refused unless the repository variable `ALLOW_FULL_RELEASE` is `true`, which only the operator sets. It then also goes to SpaceDock, which forwards it to CKAN.
+- **A full release** has a plain `X.Y.Z` version. It also goes to SpaceDock, which forwards it to CKAN.
 - **A dry run** is the `release` workflow dispatched by hand on main with a `tag`. It resolves the tag, runs the whole build, copies the client into a scratch folder and prints what it would publish, including the SpaceDock mod and file it would upload. It pushes nothing, never logs in and sends nothing to SpaceDock.
 
 An Uplink's version is written in `client/package.json`, `UPLINK_VERSION` in `client/src/uplink.ts` and the version folder of `client.url` in `uplink.json`, and `release` refuses while they disagree. `node tooling/resolve-release-tag.mjs <tag>` says whether a tag matches.
