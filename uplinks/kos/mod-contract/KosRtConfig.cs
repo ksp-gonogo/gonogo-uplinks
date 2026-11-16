@@ -98,6 +98,10 @@ public static class KosRtConfig
             typeof(KosCancelArgs),
             // kos.files.list: a volume's file list read without the terminal
             typeof(KosFilesListArgs),
+            typeof(KosFilesReadArgs),
+            typeof(KosFilesWriteArgs),
+            typeof(KosFilesDeleteArgs),
+            typeof(KosFilesRenameArgs),
         };
 
         builder.ExportAsInterfaces(wireTypes, c => c.AutoI(false).WithPublicProperties());

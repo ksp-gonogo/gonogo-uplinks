@@ -91,9 +91,38 @@ export const GENERATED_TYPE_UNITS: Readonly<Record<string, UnitsByField>> = {
     coreId: "id",
     requestId: "id",
   },
+  "KosFilesDeleteArgs": {
+    coreId: "id",
+    expectedHash: "id",
+    path: "text",
+    requestId: "id",
+    volume: "text",
+  },
   "KosFilesListArgs": {
     coreId: "id",
     requestId: "id",
+    volume: "text",
+  },
+  "KosFilesReadArgs": {
+    coreId: "id",
+    path: "text",
+    requestId: "id",
+    volume: "text",
+  },
+  "KosFilesRenameArgs": {
+    coreId: "id",
+    expectedHash: "id",
+    newPath: "text",
+    path: "text",
+    requestId: "id",
+    volume: "text",
+  },
+  "KosFilesWriteArgs": {
+    coreId: "id",
+    expectedHash: "id",
+    path: "text",
+    requestId: "id",
+    text: "text",
     volume: "text",
   },
   "KosKeystrokeArgs": {

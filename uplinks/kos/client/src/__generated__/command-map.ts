@@ -47,7 +47,11 @@
 
 import type {
   KosCancelArgs,
+  KosFilesDeleteArgs,
   KosFilesListArgs,
+  KosFilesReadArgs,
+  KosFilesRenameArgs,
+  KosFilesWriteArgs,
   KosKeystrokeArgs,
   KosRunArgs,
   KosTerminalCloseArgs,
@@ -60,7 +64,11 @@ import type {
 
 export interface GeneratedCommandArgsMap {
   "kos.cancel": KosCancelArgs;
+  "kos.files.delete": KosFilesDeleteArgs;
   "kos.files.list": KosFilesListArgs;
+  "kos.files.read": KosFilesReadArgs;
+  "kos.files.rename": KosFilesRenameArgs;
+  "kos.files.write": KosFilesWriteArgs;
   "kos.keystroke": KosKeystrokeArgs;
   "kos.run": KosRunArgs;
   "kos.terminal.close": KosTerminalCloseArgs;
@@ -70,7 +78,11 @@ export interface GeneratedCommandArgsMap {
 
 export interface GeneratedCommandReplyMap {
   "kos.cancel": CommandResult;
+  "kos.files.delete": CommandResult;
   "kos.files.list": CommandResult;
+  "kos.files.read": CommandResult;
+  "kos.files.rename": CommandResult;
+  "kos.files.write": CommandResult;
   "kos.keystroke": CommandResult;
   "kos.run": CommandResult;
   "kos.terminal.close": CommandResult;
@@ -90,7 +102,11 @@ export interface GeneratedCommandReplyMap {
  */
 export const GENERATED_COMMAND_REPLY_TYPES = {
   "kos.cancel": "CommandResult",
+  "kos.files.delete": "CommandResult",
   "kos.files.list": "CommandResult",
+  "kos.files.read": "CommandResult",
+  "kos.files.rename": "CommandResult",
+  "kos.files.write": "CommandResult",
   "kos.keystroke": "CommandResult",
   "kos.run": "CommandResult",
   "kos.terminal.close": "CommandResult",
@@ -145,7 +161,11 @@ export interface GeneratedCommandRail {
  */
 export const GENERATED_COMMAND_RAIL = {
   "kos.cancel": { replies: true, delayed: true },
+  "kos.files.delete": { replies: true, delayed: true },
   "kos.files.list": { replies: true, delayed: true },
+  "kos.files.read": { replies: true, delayed: true },
+  "kos.files.rename": { replies: true, delayed: true },
+  "kos.files.write": { replies: true, delayed: true },
   "kos.keystroke": { replies: true, delayed: true },
   "kos.run": { replies: true, delayed: true },
   "kos.terminal.close": { replies: true, delayed: true },
@@ -155,7 +175,11 @@ export const GENERATED_COMMAND_RAIL = {
 
 export const GENERATED_COMMAND_IDS = [
   "kos.cancel",
+  "kos.files.delete",
   "kos.files.list",
+  "kos.files.read",
+  "kos.files.rename",
+  "kos.files.write",
   "kos.keystroke",
   "kos.run",
   "kos.terminal.close",

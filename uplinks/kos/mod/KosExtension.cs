@@ -257,6 +257,13 @@ namespace Gonogo.KosUplink
                 // kos.cancel: abandons the run a client stopped waiting for.
                 new CommandDeclaration { Command = KosChannels.CancelCommand, Subject = KosChannels.RunPrefix + "{args.CoreId}", Requires = NeedsProcessor },
                 new CommandDeclaration { Command = KosChannels.FilesListCommand, Subject = KosChannels.RunPrefix + "{args.CoreId}", Requires = NeedsProcessor },
+                // kos.files.read/write/delete/rename: one file's text, read and
+                // saved through the CPU's own volumes like the listing, and
+                // answered on the same channel.
+                new CommandDeclaration { Command = KosChannels.FilesReadCommand, Subject = KosChannels.RunPrefix + "{args.CoreId}", Requires = NeedsProcessor },
+                new CommandDeclaration { Command = KosChannels.FilesWriteCommand, Subject = KosChannels.RunPrefix + "{args.CoreId}", Requires = NeedsProcessor },
+                new CommandDeclaration { Command = KosChannels.FilesDeleteCommand, Subject = KosChannels.RunPrefix + "{args.CoreId}", Requires = NeedsProcessor },
+                new CommandDeclaration { Command = KosChannels.FilesRenameCommand, Subject = KosChannels.RunPrefix + "{args.CoreId}", Requires = NeedsProcessor },
             },
             ErrorCodes = ErrorCodeCatalog.Of(typeof(KosErrorCodes)),
             Namespaces = new[]

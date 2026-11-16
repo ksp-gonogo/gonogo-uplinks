@@ -96,8 +96,28 @@
       "result": "CommandResult"
     },
     {
+      "id": "kos.files.delete",
+      "args": "KosFilesDeleteArgs",
+      "result": "CommandResult"
+    },
+    {
       "id": "kos.files.list",
       "args": "KosFilesListArgs",
+      "result": "CommandResult"
+    },
+    {
+      "id": "kos.files.read",
+      "args": "KosFilesReadArgs",
+      "result": "CommandResult"
+    },
+    {
+      "id": "kos.files.rename",
+      "args": "KosFilesRenameArgs",
+      "result": "CommandResult"
+    },
+    {
+      "id": "kos.files.write",
+      "args": "KosFilesWriteArgs",
       "result": "CommandResult"
     },
     {
@@ -141,6 +161,31 @@
       ]
     },
     {
+      "name": "KosFilesDeleteArgs",
+      "fields": [
+        {
+          "name": "coreId",
+          "unit": "id"
+        },
+        {
+          "name": "expectedHash",
+          "unit": "id"
+        },
+        {
+          "name": "path",
+          "unit": "text"
+        },
+        {
+          "name": "requestId",
+          "unit": "id"
+        },
+        {
+          "name": "volume",
+          "unit": "text"
+        }
+      ]
+    },
+    {
       "name": "KosFilesListArgs",
       "fields": [
         {
@@ -150,6 +195,85 @@
         {
           "name": "requestId",
           "unit": "id"
+        },
+        {
+          "name": "volume",
+          "unit": "text"
+        }
+      ]
+    },
+    {
+      "name": "KosFilesReadArgs",
+      "fields": [
+        {
+          "name": "coreId",
+          "unit": "id"
+        },
+        {
+          "name": "path",
+          "unit": "text"
+        },
+        {
+          "name": "requestId",
+          "unit": "id"
+        },
+        {
+          "name": "volume",
+          "unit": "text"
+        }
+      ]
+    },
+    {
+      "name": "KosFilesRenameArgs",
+      "fields": [
+        {
+          "name": "coreId",
+          "unit": "id"
+        },
+        {
+          "name": "expectedHash",
+          "unit": "id"
+        },
+        {
+          "name": "newPath",
+          "unit": "text"
+        },
+        {
+          "name": "path",
+          "unit": "text"
+        },
+        {
+          "name": "requestId",
+          "unit": "id"
+        },
+        {
+          "name": "volume",
+          "unit": "text"
+        }
+      ]
+    },
+    {
+      "name": "KosFilesWriteArgs",
+      "fields": [
+        {
+          "name": "coreId",
+          "unit": "id"
+        },
+        {
+          "name": "expectedHash",
+          "unit": "id"
+        },
+        {
+          "name": "path",
+          "unit": "text"
+        },
+        {
+          "name": "requestId",
+          "unit": "id"
+        },
+        {
+          "name": "text",
+          "unit": "text"
         },
         {
           "name": "volume",
@@ -324,16 +448,76 @@
   },
   "errorCodes": [
     {
+      "id": "kos.badPath",
+      "refines": "range",
+      "sentence": "that is not a file path this command accepts",
+      "meaning": "The file path is not one a file command accepts: it must be relative to the volume's root, made of letters, digits, `_`, `-` and `.`, with no `..`, no empty segment and no segment starting with `.`."
+    },
+    {
       "id": "kos.cpuBusy",
       "refines": "notClearToProceed",
       "sentence": "the CPU is busy and not at its prompt",
       "meaning": "The CPU is booting, running a program, or already running a script for another request, so it is not at a prompt that can take one."
     },
     {
+      "id": "kos.driveFull",
+      "refines": "limitReached",
+      "sentence": "the CPU's drive has no room for the file",
+      "meaning": "The CPU's own drive has no room for the file a write would save."
+    },
+    {
+      "id": "kos.fileChanged",
+      "refines": "wrongState",
+      "sentence": "the file has changed since it was read",
+      "meaning": "The file has changed since the hash the command named was read, or has gone. Nothing was written; read the file again before saving over it."
+    },
+    {
+      "id": "kos.fileExists",
+      "refines": "wrongState",
+      "sentence": "a file already has that name",
+      "meaning": "A file already has the name a new file or a rename would use."
+    },
+    {
+      "id": "kos.fileNotFound",
+      "refines": "notFound",
+      "sentence": "there is no file at that path",
+      "meaning": "There is no file at the path a read, delete or rename named."
+    },
+    {
+      "id": "kos.fileTooLarge",
+      "refines": "limitReached",
+      "sentence": "the file is larger than a file command carries",
+      "meaning": "The file, or the text sent to be written, is larger than a file command carries."
+    },
+    {
+      "id": "kos.fileType",
+      "refines": "range",
+      "sentence": "the file is not a .ks, .ksm, .txt or .json file",
+      "meaning": "Only `.ks`, `.ksm`, `.txt` and `.json` files can be reached by a file command."
+    },
+    {
+      "id": "kos.hashRequired",
+      "refines": "range",
+      "sentence": "a delete or rename needs the hash the file was read with",
+      "meaning": "A delete or rename names the hash the last read of the file answered with, and this one named none."
+    },
+    {
       "id": "kos.noRoom",
       "refines": "limitReached",
       "sentence": "the CPU's drive has no room for the script",
       "meaning": "The CPU's own drive has no room for the copy of the script a run asked for."
+    },
+    {
+      "id": "kos.notAFile",
+      "refines": "wrongState",
+      "sentence": "that path is a directory, not a file",
+      "meaning": "The path names a directory, and file commands act on files only."
+    },
+    {
+      "id": "kos.notText",
+      "refines": "wrongState",
+      "sentence": "the file is binary, not text",
+      "meaning": "The file is not UTF-8 text, so it cannot be read or written as text. A compiled `.ksm` file is always refused this way."
     },
     {
       "id": "kos.runUnsupported",

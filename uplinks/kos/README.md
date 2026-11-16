@@ -91,7 +91,11 @@ The live terminal of a kOS CPU.
 | Command | Args | Result |
 | --- | --- | --- |
 | `kos.cancel` | `KosCancelArgs` | `CommandResult` |
+| `kos.files.delete` | `KosFilesDeleteArgs` | `CommandResult` |
 | `kos.files.list` | `KosFilesListArgs` | `CommandResult` |
+| `kos.files.read` | `KosFilesReadArgs` | `CommandResult` |
+| `kos.files.rename` | `KosFilesRenameArgs` | `CommandResult` |
+| `kos.files.write` | `KosFilesWriteArgs` | `CommandResult` |
 | `kos.keystroke` | `KosKeystrokeArgs` | `CommandResult` |
 | `kos.run` | `KosRunArgs` | `CommandResult` |
 | `kos.terminal.close` | `KosTerminalCloseArgs` | `CommandResult` |
@@ -101,7 +105,11 @@ The live terminal of a kOS CPU.
 | Args | Fields |
 | --- | --- |
 | `KosCancelArgs` | `coreId` id, `requestId` id |
+| `KosFilesDeleteArgs` | `coreId` id, `expectedHash` id, `path` text, `requestId` id, `volume` text |
 | `KosFilesListArgs` | `coreId` id, `requestId` id, `volume` text |
+| `KosFilesReadArgs` | `coreId` id, `path` text, `requestId` id, `volume` text |
+| `KosFilesRenameArgs` | `coreId` id, `expectedHash` id, `newPath` text, `path` text, `requestId` id, `volume` text |
+| `KosFilesWriteArgs` | `coreId` id, `expectedHash` id, `path` text, `requestId` id, `text` text, `volume` text |
 | `KosKeystrokeArgs` | `chars` text, `coreId` id, `leaseToken` id |
 | `KosRunArgs` | `copyToLocal` flag, `coreId` id, `path` text, `requestId` id |
 | `KosTerminalCloseArgs` | `coreId` id, `leaseToken` id |
@@ -120,6 +128,16 @@ The live terminal of a kOS CPU.
 | `kos.scriptNotFound` | `notFound` | there is no script at that path | There is no script at the path a run named, on the volume the path names. |
 | `kos.noRoom` | `limitReached` | the CPU's drive has no room for the script | The CPU's own drive has no room for the copy of the script a run asked for. |
 | `kos.runUnsupported` | `capabilityMismatch` | this kOS version cannot start a script from here | The installed kOS does not let a script be started from outside its terminal. |
+| `kos.badPath` | `range` | that is not a file path this command accepts | The file path is not one a file command accepts: it must be relative to the volume's root, made of letters, digits, `_`, `-` and `.`, with no `..`, no empty segment and no segment starting with `.`. |
+| `kos.fileType` | `range` | the file is not a .ks, .ksm, .txt or .json file | Only `.ks`, `.ksm`, `.txt` and `.json` files can be reached by a file command. |
+| `kos.notText` | `wrongState` | the file is binary, not text | The file is not UTF-8 text, so it cannot be read or written as text. A compiled `.ksm` file is always refused this way. |
+| `kos.fileTooLarge` | `limitReached` | the file is larger than a file command carries | The file, or the text sent to be written, is larger than a file command carries. |
+| `kos.driveFull` | `limitReached` | the CPU's drive has no room for the file | The CPU's own drive has no room for the file a write would save. |
+| `kos.fileChanged` | `wrongState` | the file has changed since it was read | The file has changed since the hash the command named was read, or has gone. Nothing was written; read the file again before saving over it. |
+| `kos.fileExists` | `wrongState` | a file already has that name | A file already has the name a new file or a rename would use. |
+| `kos.fileNotFound` | `notFound` | there is no file at that path | There is no file at the path a read, delete or rename named. |
+| `kos.notAFile` | `wrongState` | that path is a directory, not a file | The path names a directory, and file commands act on files only. |
+| `kos.hashRequired` | `range` | a delete or rename needs the hash the file was read with | A delete or rename names the hash the last read of the file answered with, and this one named none. |
 
 </details>
 

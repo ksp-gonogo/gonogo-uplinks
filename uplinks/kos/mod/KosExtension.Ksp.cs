@@ -200,6 +200,10 @@ namespace Gonogo.KosUplink
             host.AddCommandHandler<KosRunArgs, CommandResult>(KosChannels.RunCommand, Run);
             host.AddCommandHandler<KosCancelArgs, CommandResult>(KosChannels.CancelCommand, Cancel);
             host.AddCommandHandler<KosFilesListArgs, CommandResult>(KosChannels.FilesListCommand, FilesList);
+            host.AddCommandHandler<KosFilesReadArgs, CommandResult>(KosChannels.FilesReadCommand, FilesRead);
+            host.AddCommandHandler<KosFilesWriteArgs, CommandResult>(KosChannels.FilesWriteCommand, FilesWrite);
+            host.AddCommandHandler<KosFilesDeleteArgs, CommandResult>(KosChannels.FilesDeleteCommand, FilesDelete);
+            host.AddCommandHandler<KosFilesRenameArgs, CommandResult>(KosChannels.FilesRenameCommand, FilesRename);
             _filesPublish = (coreId, requestId, fields, error) =>
                 _runSource?.Publisher(KosChannels.RunSubTopic(coreId)).Publish(
                     KosRunResultBuilder.Build(coreId, requestId, fields, error),
@@ -268,6 +272,80 @@ namespace Gonogo.KosUplink
                 }
                 return CommandResult.Ok();
             });
+        }
+
+        private CommandResult FilesRead(KosFilesReadArgs args) =>
+            args == null || string.IsNullOrEmpty(args.RequestId)
+                ? CommandResult.Fail(CommandErrorCode.NotFound)
+                : KosFileRules.VolumeRefusal(args.Volume)
+                    ?? RunOnMainThread(() => FileCommand(KosChannels.FilesReadCommand, args.CoreId, args.RequestId, args.Volume, args.Path, null, null, null));
+
+        private CommandResult FilesWrite(KosFilesWriteArgs args) =>
+            args == null || string.IsNullOrEmpty(args.RequestId)
+                ? CommandResult.Fail(CommandErrorCode.NotFound)
+                : KosFileRules.VolumeRefusal(args.Volume)
+                    ?? RunOnMainThread(() => FileCommand(KosChannels.FilesWriteCommand, args.CoreId, args.RequestId, args.Volume, args.Path, args.Text, null, args.ExpectedHash));
+
+        private CommandResult FilesDelete(KosFilesDeleteArgs args) =>
+            args == null || string.IsNullOrEmpty(args.RequestId)
+                ? CommandResult.Fail(CommandErrorCode.NotFound)
+                : KosFileRules.VolumeRefusal(args.Volume)
+                    ?? RunOnMainThread(() => FileCommand(KosChannels.FilesDeleteCommand, args.CoreId, args.RequestId, args.Volume, args.Path, null, null, args.ExpectedHash));
+
+        private CommandResult FilesRename(KosFilesRenameArgs args) =>
+            args == null || string.IsNullOrEmpty(args.RequestId)
+                ? CommandResult.Fail(CommandErrorCode.NotFound)
+                : KosFileRules.VolumeRefusal(args.Volume)
+                    ?? RunOnMainThread(() => FileCommand(KosChannels.FilesRenameCommand, args.CoreId, args.RequestId, args.Volume, args.Path, null, args.NewPath, args.ExpectedHash));
+
+        /// <summary>
+        /// The main-thread body of every <c>kos.files.*</c> command but the
+        /// listing: finds the CPU and the volume, refuses the Archive exactly as
+        /// the listing does when the craft has no link home, and answers on
+        /// <c>kos.run.&lt;coreId&gt;</c>. A refusal is the command's reply and
+        /// publishes nothing.
+        /// </summary>
+        private CommandResult FileCommand(
+            string command, int coreId, string requestId, string volumeName, string path, string? text, string? newPath, string? expectedHash)
+        {
+            var proc = FindProcessor(coreId);
+            if (proc == null)
+            {
+                return CommandResult.Fail(CommandErrorCode.NotFound);
+            }
+            var unreachable = KosFileListing.Refusal(volumeName, ArchiveReachable(proc));
+            if (unreachable != null)
+            {
+                return unreachable;
+            }
+            Volume? volume = volumeName == KosFileListing.ArchiveVolume ? (Volume)proc.Archive : proc.HardDisk;
+            if (volume == null)
+            {
+                return CommandResult.Fail(CommandErrorCode.NotFound, "this CPU has no drive");
+            }
+
+            KosFileOutcome outcome;
+            switch (command)
+            {
+                case KosChannels.FilesReadCommand:
+                    outcome = KosFileOps.Read(volume, volumeName, path);
+                    break;
+                case KosChannels.FilesWriteCommand:
+                    outcome = KosFileOps.Write(volume, volumeName, path, text, expectedHash);
+                    break;
+                case KosChannels.FilesDeleteCommand:
+                    outcome = KosFileOps.Delete(volume, volumeName, path, expectedHash);
+                    break;
+                default:
+                    outcome = KosFileOps.Rename(volume, volumeName, path, newPath, expectedHash);
+                    break;
+            }
+            if (outcome.Refusal != null)
+            {
+                return outcome.Refusal;
+            }
+            _filesPublish?.Invoke(coreId, requestId, outcome.Fields, outcome.Error);
+            return CommandResult.Ok();
         }
 
         /// <summary>Current CPU <c>KOSCoreId</c>s (main thread): the terminal manager's discovery set.</summary>

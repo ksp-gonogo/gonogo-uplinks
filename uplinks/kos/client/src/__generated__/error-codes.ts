@@ -35,6 +35,53 @@ export const KosErrorCodes = {
    * terminal.
    */
   RunUnsupported: "kos.runUnsupported",
+  /**
+   * The file path is not one a file command accepts: it must be relative to the
+   * volume's root, made of letters, digits, `_`, `-` and `.`, with no `..`, no
+   * empty segment and no segment starting with `.`.
+   */
+  BadPath: "kos.badPath",
+  /**
+   * Only `.ks`, `.ksm`, `.txt` and `.json` files can be reached by a file
+   * command.
+   */
+  FileType: "kos.fileType",
+  /**
+   * The file is not UTF-8 text, so it cannot be read or written as text. A
+   * compiled `.ksm` file is always refused this way.
+   */
+  NotText: "kos.notText",
+  /**
+   * The file, or the text sent to be written, is larger than a file command
+   * carries.
+   */
+  FileTooLarge: "kos.fileTooLarge",
+  /**
+   * The CPU's own drive has no room for the file a write would save.
+   */
+  DriveFull: "kos.driveFull",
+  /**
+   * The file has changed since the hash the command named was read, or has gone.
+   * Nothing was written; read the file again before saving over it.
+   */
+  FileChanged: "kos.fileChanged",
+  /**
+   * A file already has the name a new file or a rename would use.
+   */
+  FileExists: "kos.fileExists",
+  /**
+   * There is no file at the path a read, delete or rename named.
+   */
+  FileNotFound: "kos.fileNotFound",
+  /**
+   * The path names a directory, and file commands act on files only.
+   */
+  NotAFile: "kos.notAFile",
+  /**
+   * A delete or rename names the hash the last read of the file answered with,
+   * and this one named none.
+   */
+  HashRequired: "kos.hashRequired",
 } as const;
 export type KosErrorCodes = (typeof KosErrorCodes)[keyof typeof KosErrorCodes];
 
@@ -83,5 +130,85 @@ export const KOS_ERROR_CODES: readonly UplinkErrorCodeDeclaration[] = [
     origin: null,
     sentence: "this kOS version cannot start a script from here",
     meaning: "The installed kOS does not let a script be started from outside its terminal.",
+  },
+  {
+    id: "kos.badPath",
+    kind: "refusal",
+    refines: "range",
+    origin: null,
+    sentence: "that is not a file path this command accepts",
+    meaning: "The file path is not one a file command accepts: it must be relative to the volume's root, made of letters, digits, `_`, `-` and `.`, with no `..`, no empty segment and no segment starting with `.`.",
+  },
+  {
+    id: "kos.fileType",
+    kind: "refusal",
+    refines: "range",
+    origin: null,
+    sentence: "the file is not a .ks, .ksm, .txt or .json file",
+    meaning: "Only `.ks`, `.ksm`, `.txt` and `.json` files can be reached by a file command.",
+  },
+  {
+    id: "kos.notText",
+    kind: "refusal",
+    refines: "wrongState",
+    origin: null,
+    sentence: "the file is binary, not text",
+    meaning: "The file is not UTF-8 text, so it cannot be read or written as text. A compiled `.ksm` file is always refused this way.",
+  },
+  {
+    id: "kos.fileTooLarge",
+    kind: "refusal",
+    refines: "limitReached",
+    origin: null,
+    sentence: "the file is larger than a file command carries",
+    meaning: "The file, or the text sent to be written, is larger than a file command carries.",
+  },
+  {
+    id: "kos.driveFull",
+    kind: "refusal",
+    refines: "limitReached",
+    origin: null,
+    sentence: "the CPU's drive has no room for the file",
+    meaning: "The CPU's own drive has no room for the file a write would save.",
+  },
+  {
+    id: "kos.fileChanged",
+    kind: "refusal",
+    refines: "wrongState",
+    origin: null,
+    sentence: "the file has changed since it was read",
+    meaning: "The file has changed since the hash the command named was read, or has gone. Nothing was written; read the file again before saving over it.",
+  },
+  {
+    id: "kos.fileExists",
+    kind: "refusal",
+    refines: "wrongState",
+    origin: null,
+    sentence: "a file already has that name",
+    meaning: "A file already has the name a new file or a rename would use.",
+  },
+  {
+    id: "kos.fileNotFound",
+    kind: "refusal",
+    refines: "notFound",
+    origin: null,
+    sentence: "there is no file at that path",
+    meaning: "There is no file at the path a read, delete or rename named.",
+  },
+  {
+    id: "kos.notAFile",
+    kind: "refusal",
+    refines: "wrongState",
+    origin: null,
+    sentence: "that path is a directory, not a file",
+    meaning: "The path names a directory, and file commands act on files only.",
+  },
+  {
+    id: "kos.hashRequired",
+    kind: "refusal",
+    refines: "range",
+    origin: null,
+    sentence: "a delete or rename needs the hash the file was read with",
+    meaning: "A delete or rename names the hash the last read of the file answered with, and this one named none.",
   },
 ];

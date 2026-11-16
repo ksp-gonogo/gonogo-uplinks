@@ -59,7 +59,8 @@ namespace GonogoKosUplink.Tests
                 nameof(KosKeystrokeArgs), nameof(KosTerminalResizeArgs),
                 nameof(KosTerminalCloseArgs),
                 nameof(KosRunArgs), nameof(KosRunResult), nameof(KosCancelArgs),
-                nameof(KosFilesListArgs));
+                nameof(KosFilesListArgs), nameof(KosFilesReadArgs), nameof(KosFilesWriteArgs),
+                nameof(KosFilesDeleteArgs), nameof(KosFilesRenameArgs));
 
         /// <summary>
         /// <see cref="KosRunResult.Fields"/> and <see cref="KosRunArgs.Args"/> are

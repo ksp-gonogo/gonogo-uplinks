@@ -6,7 +6,27 @@ import {
 } from "@ksp-gonogo/sitrep-sdk";
 import type { KosProcessorInfo } from "../__generated__/contract.js";
 import type { KosData, KosScriptArg } from "../shared/kos-data.js";
+import {
+  deleteAnswer,
+  type KosFileCall,
+  type KosFileDeleted,
+  type KosFileRenamed,
+  type KosFileText,
+  type KosFileWritten,
+  type KosVolume,
+  readAnswer,
+  renameAnswer,
+  writeAnswer,
+} from "./kosFiles.js";
 import { KosUplinkExecutor } from "./kosUplinkExecutor.js";
+
+export type {
+  KosFileDeleted,
+  KosFileRenamed,
+  KosFileText,
+  KosFileWritten,
+  KosVolume,
+};
 
 export type { KosScriptArg };
 
@@ -152,6 +172,114 @@ export class KosDataSource {
       );
     }
     return this.uplinkExecutor.listFiles(client, cpu, volume, signal);
+  }
+
+  /**
+   * Read one file's text from `volume` of the named CPU, with the content hash
+   * {@link writeFile}, {@link deleteFile} and {@link renameFile} name to be sure
+   * it has not changed since. Read through kOS's own volumes, without typing
+   * anything into the CPU's terminal, and queued with {@link executeScript}'s
+   * calls to the same CPU. A refusal (no file there, a path outside the rules,
+   * a binary or oversized file, the Archive with no link home) rejects with
+   * the stream's command error, whose `reason` names it.
+   */
+  readFile(
+    cpu: string,
+    volume: KosVolume,
+    path: string,
+    signal?: AbortSignal,
+  ): Promise<KosFileText> {
+    return this.fileCommand(
+      cpu,
+      { command: "kos.files.read", args: { volume, path } },
+      signal,
+    ).then(readAnswer);
+  }
+
+  /**
+   * Save `text` as one file on `volume` of the named CPU. `expectedHash` is the
+   * hash {@link readFile} last answered for it, or null to create a new file.
+   * Refused, with nothing written, when the file has changed since that read
+   * (reason `kos.fileChanged`), when a new file's name is taken
+   * (`kos.fileExists`), or when it does not fit on the CPU's own drive
+   * (`kos.driveFull`).
+   */
+  writeFile(
+    cpu: string,
+    volume: KosVolume,
+    path: string,
+    text: string,
+    expectedHash: string | null,
+    signal?: AbortSignal,
+  ): Promise<KosFileWritten> {
+    return this.fileCommand(
+      cpu,
+      {
+        command: "kos.files.write",
+        args: { volume, path, text, expectedHash: expectedHash ?? undefined },
+      },
+      signal,
+    ).then(writeAnswer);
+  }
+
+  /**
+   * Delete one file on `volume` of the named CPU, refused (reason
+   * `kos.fileChanged`) when it has changed since the read that answered
+   * `expectedHash`.
+   */
+  deleteFile(
+    cpu: string,
+    volume: KosVolume,
+    path: string,
+    expectedHash: string,
+    signal?: AbortSignal,
+  ): Promise<KosFileDeleted> {
+    return this.fileCommand(
+      cpu,
+      { command: "kos.files.delete", args: { volume, path, expectedHash } },
+      signal,
+    ).then(deleteAnswer);
+  }
+
+  /**
+   * Rename or move one file within `volume` of the named CPU, refused when it
+   * has changed since the read that answered `expectedHash`
+   * (`kos.fileChanged`) or when a file already has `newPath`
+   * (`kos.fileExists`).
+   */
+  renameFile(
+    cpu: string,
+    volume: KosVolume,
+    path: string,
+    newPath: string,
+    expectedHash: string,
+    signal?: AbortSignal,
+  ): Promise<KosFileRenamed> {
+    return this.fileCommand(
+      cpu,
+      {
+        command: "kos.files.rename",
+        args: { volume, path, newPath, expectedHash },
+      },
+      signal,
+    ).then(renameAnswer);
+  }
+
+  private fileCommand(
+    cpu: string,
+    call: KosFileCall,
+    signal?: AbortSignal,
+  ): Promise<KosData> {
+    KOS_DISPATCH_BUDGET.record();
+    const client = getActiveTelemetryClient();
+    if (!client) {
+      return Promise.reject(
+        new Error(
+          `kOS Uplink not connected: no telemetry stream is mounted, so ${call.command} has no transport to dispatch on.`,
+        ),
+      );
+    }
+    return this.uplinkExecutor.file(client, cpu, call, signal);
   }
 
   // Host-side relay handle for station peer-relayed calls (see

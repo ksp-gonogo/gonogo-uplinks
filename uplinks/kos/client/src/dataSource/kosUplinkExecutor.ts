@@ -2,13 +2,13 @@ import type { CommandResult, TelemetryClient } from "@ksp-gonogo/sitrep-sdk";
 import { magnitudeOf, safeRandomUuid } from "@ksp-gonogo/sitrep-sdk";
 import type {
   KosProcessorInfo,
-  KosFilesListArgs,
   KosCancelArgs,
   KosRunArgs,
   KosRunResult,
 } from "../__generated__/contract.js";
 import { KosScriptError } from "../shared/KosScriptError.js";
 import type { KosData, KosScriptArg } from "../shared/kos-data.js";
+import type { KosFileCall } from "./kosFiles.js";
 
 /**
  * `KosDataSource.executeScript`'s Uplink implementation: dispatches the
@@ -45,8 +45,8 @@ const DEFAULT_TIMEOUT_MS = 30_000;
 interface QueuedRun {
   script: string;
   args: KosScriptArg[];
-  /** Set for a file listing, which the game reads without typing anything. */
-  listVolume?: string;
+  /** Set for a file command, which the game answers without typing anything. */
+  file?: KosFileCall;
   /** Aborting it drops the call, see `KosUplinkCpuQueue.cancel`. */
   signal?: AbortSignal;
   resolve: (data: KosData) => void;
@@ -90,17 +90,17 @@ class KosUplinkCpuQueue {
     });
   }
 
-  /** Queue a listing of `volume`'s files behind any run already waiting. */
-  enqueueListing(volume: string, signal?: AbortSignal): Promise<KosData> {
+  /** Queue a file command behind any run already waiting. */
+  enqueueFile(file: KosFileCall, signal?: AbortSignal): Promise<KosData> {
     return new Promise<KosData>((resolve, reject) => {
       if (signal?.aborted) {
-        reject(new Error("kos.files.list: cancelled"));
+        reject(cancelled(file));
         return;
       }
       const call: QueuedRun = {
         script: "",
         args: [],
-        listVolume: volume,
+        file,
         signal,
         resolve,
         reject,
@@ -118,7 +118,7 @@ class KosUplinkCpuQueue {
    * flight stops holding the CPU's queue (a late result for it is ignored).
    */
   private cancel(call: QueuedRun): void {
-    const error = new Error("kos.files.list: cancelled");
+    const error = cancelled(call.file);
     const queued = this.queue.indexOf(call);
     if (queued !== -1) {
       this.queue.splice(queued, 1);
@@ -149,7 +149,7 @@ class KosUplinkCpuQueue {
     let next = this.queue.shift();
     // A call cancelled while it waited is rejected, never sent.
     while (next?.signal?.aborted) {
-      next.reject(new Error("kos.files.list: cancelled"));
+      next.reject(cancelled(next.file));
       next = this.queue.shift();
     }
     if (!next) return;
@@ -160,8 +160,9 @@ class KosUplinkCpuQueue {
     }, waitMs);
     this.inFlight = { requestId, call: next, timer, waitMs };
 
+    const command = next.file?.command ?? "kos.run";
     const { result } =
-      next.listVolume === undefined
+      next.file === undefined
         ? this.client.dispatch("kos.run", {
             coreId: this.coreId,
             requestId,
@@ -169,11 +170,11 @@ class KosUplinkCpuQueue {
             args: next.args,
             copyToLocal: false,
           } satisfies KosRunArgs)
-        : this.client.dispatch("kos.files.list", {
+        : this.client.dispatch(next.file.command, {
             coreId: this.coreId,
             requestId,
-            volume: next.listVolume,
-          } satisfies KosFilesListArgs);
+            ...next.file.args,
+          });
 
     result
       .then((ack) => {
@@ -182,7 +183,7 @@ class KosUplinkCpuQueue {
           this.settleFailure(
             requestId,
             new Error(
-              `${next.listVolume === undefined ? "kos.run" : "kos.files.list"}: command rejected for CPU ${this.coreId} (errorCode ${r.errorCode})`,
+              `${command}: command rejected for CPU ${this.coreId} (errorCode ${r.errorCode})`,
             ),
           );
         }
@@ -207,7 +208,10 @@ class KosUplinkCpuQueue {
     const { call, timer } = this.inFlight;
     clearTimeout(timer);
     this.inFlight = null;
-    if (payload.error != null) {
+    if (payload.error != null && call.file !== undefined) {
+      // A file command runs no script, so its error is never a script fault.
+      call.reject(new Error(`${call.file.command}: ${payload.error}`));
+    } else if (payload.error != null) {
       // kOS stopped the script on an error: KosScriptError so callers can
       // tell a script fault from a transport error.
       call.reject(new KosScriptError(payload.error));
@@ -237,9 +241,9 @@ class KosUplinkCpuQueue {
     if (!this.inFlight || this.inFlight.requestId !== requestId) return;
     const { call, waitMs } = this.inFlight;
     this.inFlight = null;
-    // A listing never arms the CPU, so only a run has anything to cancel. The
-    // mod frees the CPU for the next run and stops the program it is still on.
-    if (call.listVolume === undefined) {
+    // A file command never arms the CPU, so only a run has anything to cancel.
+    // The mod frees the CPU for the next run and stops the program it is still on.
+    if (call.file === undefined) {
       this.client
         .dispatch("kos.cancel", {
           coreId: this.coreId,
@@ -249,7 +253,7 @@ class KosUplinkCpuQueue {
     }
     call.reject(
       new Error(
-        `kos.run: CPU ${this.coreId} did not respond within ${waitMs}ms`,
+        `${call.file?.command ?? "kos.run"}: CPU ${this.coreId} did not respond within ${waitMs}ms`,
       ),
     );
     this.drain();
@@ -369,14 +373,35 @@ export class KosUplinkExecutor {
     volume: string,
     signal?: AbortSignal,
   ): Promise<KosData> {
+    return this.file(
+      client,
+      cpu,
+      { command: "kos.files.list", args: { volume } },
+      signal,
+    );
+  }
+
+  /**
+   * Send one `kos.files.*` command to the CPU named `cpu` and resolve with the
+   * fields its correlated `kos.run.<coreId>` answer carries. Shares the per-CPU
+   * queue with {@link run}. A refusal rejects with the stream's own command
+   * error, whose `reason` names the refusal (such as `kos.fileChanged`) and
+   * whose `detail` says what to do about it.
+   */
+  file(
+    client: TelemetryClient,
+    cpu: string,
+    call: KosFileCall,
+    signal?: AbortSignal,
+  ): Promise<KosData> {
     this.adoptClient(client);
     return this.resolveCoreId(cpu).then((coreId) => {
       if (coreId === undefined) {
         throw new Error(
-          `kos.files.list: no known CPU with tagname "${cpu}", waiting on kos.processors, or the tagname is wrong`,
+          `${call.command}: no known CPU with tagname "${cpu}", waiting on kos.processors, or the tagname is wrong`,
         );
       }
-      return this.getOrCreateQueue(coreId).enqueueListing(volume, signal);
+      return this.getOrCreateQueue(coreId).enqueueFile(call, signal);
     });
   }
 
@@ -470,6 +495,10 @@ export class KosUplinkExecutor {
     this.queues.set(coreId, queue);
     return queue;
   }
+}
+
+function cancelled(file: KosFileCall | undefined): Error {
+  return new Error(`${file?.command ?? "kos.run"}: cancelled`);
 }
 
 /**

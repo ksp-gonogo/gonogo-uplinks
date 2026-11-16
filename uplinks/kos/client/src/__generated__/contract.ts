@@ -70,6 +70,122 @@ export interface KosFilesListArgs
 	volume: string;
 }
 /**
+* Args for the `kos.files.read` command: asks for the text of one file on one
+* of a CPU's volumes, read through kOS's own volume objects without typing
+* anything into its terminal. The answer arrives on the `kos.run.<coreId>`
+* channel as a `KosRunResult` whose `KosRunResult.requestId` echoes
+* `KosFilesReadArgs.requestId`, with the fields `op` (`read`), `volume`,
+* `path`, `text` (the file's UTF-8 text, line endings as `\n`), `hash` (the
+* file's content hash, the value `KosFilesWriteArgs.expectedHash` takes) and
+* `size` (in bytes).
+*
+* A file name is accepted only inside the volume named: a path relative to the
+* volume's root, segments of letters, digits, `_`, `-` and `.`, never `..`,
+* ending in `.ks`, `.ksm`, `.txt` or `.json`. A compiled `.ksm` file is binary
+* and is refused, as is any file that is not UTF-8 text or is larger than the
+* size cap. The Archive is refused when the craft has no link home, as
+* `KosFilesListArgs` is.
+*/
+export interface KosFilesReadArgs
+{
+	/** Target CPU, identified by its `KosProcessorInfo.coreId`. */
+	coreId: number;
+	/** Caller-generated correlation token, echoed on the matching `KosRunResult`. */
+	requestId: string;
+	/**
+	* The volume the file is on: `0:` for the Archive, `1:` for the CPU's own
+	* drive.
+	*/
+	volume: string;
+	/** The file's path inside the volume, such as `lib/launch.ks`. */
+	path: string;
+}
+/**
+* Args for the `kos.files.write` command: saves text as one file on one of a
+* CPU's volumes, through kOS's own volume objects. It is compare-and-set: the
+* write is refused, and nothing is written, when the file's content hash is no
+* longer `KosFilesWriteArgs.expectedHash`, so a file changed by another
+* screen, the in-game editor, a running script or a text editor since it was
+* read is never overwritten. On success the answer arrives on
+* `kos.run.<coreId>` with the fields `op` (`write`), `volume`, `path`, `hash`
+* (the hash of what was written) and `size`.
+*
+* The path rules and size cap are those of `KosFilesReadArgs`; a `.ksm` file
+* cannot be written as text. A write that does not fit on the CPU's own drive
+* is refused.
+*/
+export interface KosFilesWriteArgs
+{
+	/** Target CPU, identified by its `KosProcessorInfo.coreId`. */
+	coreId: number;
+	/** Caller-generated correlation token, echoed on the matching `KosRunResult`. */
+	requestId: string;
+	/**
+	* The volume the file is on: `0:` for the Archive, `1:` for the CPU's own
+	* drive.
+	*/
+	volume: string;
+	/** The file's path inside the volume, such as `lib/launch.ks`. */
+	path: string;
+	/** The file's new text. A `\r\n` line ending is saved as `\n`. */
+	text: string;
+	/**
+	* The `hash` the last read of this file answered with, or null to create a
+	* file, which is then refused if one already has that name.
+	*/
+	expectedHash?: string;
+}
+/**
+* Args for the `kos.files.delete` command: deletes one file on one of a CPU's
+* volumes, compare-and-set like `KosFilesWriteArgs`, so it is refused when the
+* file has changed since it was read. On success the answer arrives on
+* `kos.run.<coreId>` with the fields `op` (`delete`), `volume` and `path`. The
+* path rules are those of `KosFilesReadArgs`.
+*/
+export interface KosFilesDeleteArgs
+{
+	/** Target CPU, identified by its `KosProcessorInfo.coreId`. */
+	coreId: number;
+	/** Caller-generated correlation token, echoed on the matching `KosRunResult`. */
+	requestId: string;
+	/**
+	* The volume the file is on: `0:` for the Archive, `1:` for the CPU's own
+	* drive.
+	*/
+	volume: string;
+	/** The file's path inside the volume, such as `lib/launch.ks`. */
+	path: string;
+	/** The `hash` the last read of this file answered with. Required. */
+	expectedHash: string;
+}
+/**
+* Args for the `kos.files.rename` command: renames or moves one file within
+* one of a CPU's volumes, compare-and-set like `KosFilesWriteArgs`, so it is
+* refused when the file has changed since it was read, and refused when a file
+* already has the new name. On success the answer arrives on
+* `kos.run.<coreId>` with the fields `op` (`rename`), `volume`, `path` (the
+* old path), `newPath` and `hash`. Both paths follow the rules of
+* `KosFilesReadArgs`.
+*/
+export interface KosFilesRenameArgs
+{
+	/** Target CPU, identified by its `KosProcessorInfo.coreId`. */
+	coreId: number;
+	/** Caller-generated correlation token, echoed on the matching `KosRunResult`. */
+	requestId: string;
+	/**
+	* The volume both paths are on: `0:` for the Archive, `1:` for the CPU's own
+	* drive.
+	*/
+	volume: string;
+	/** The file's current path inside the volume. */
+	path: string;
+	/** The path the file moves to, inside the same volume. */
+	newPath: string;
+	/** The `hash` the last read of this file answered with. Required. */
+	expectedHash: string;
+}
+/**
 * Args for the `kos.run` command: runs the script at `KosRunArgs.path` on one
 * CPU with `KosRunArgs.args` as its parameters, the way `RUNPATH(path,
 * args...)` typed at that CPU's terminal would. The mod starts the program

@@ -82,6 +82,18 @@ namespace Gonogo.KosUplink
         /// <summary>Command: list a CPU volume's files without typing into its terminal (<see cref="Sitrep.Contract.KosFilesListArgs"/>); the answer rides <see cref="RunPrefix"/>.</summary>
         public const string FilesListCommand = "kos.files.list";
 
+        /// <summary>Command: read one file's text and content hash (<see cref="Sitrep.Contract.KosFilesReadArgs"/>); the answer rides <see cref="RunPrefix"/>.</summary>
+        public const string FilesReadCommand = "kos.files.read";
+
+        /// <summary>Command: save one file's text, compare-and-set on its hash (<see cref="Sitrep.Contract.KosFilesWriteArgs"/>); the answer rides <see cref="RunPrefix"/>.</summary>
+        public const string FilesWriteCommand = "kos.files.write";
+
+        /// <summary>Command: delete one file, compare-and-set on its hash (<see cref="Sitrep.Contract.KosFilesDeleteArgs"/>); the answer rides <see cref="RunPrefix"/>.</summary>
+        public const string FilesDeleteCommand = "kos.files.delete";
+
+        /// <summary>Command: rename one file within its volume, compare-and-set on its hash (<see cref="Sitrep.Contract.KosFilesRenameArgs"/>); the answer rides <see cref="RunPrefix"/>.</summary>
+        public const string FilesRenameCommand = "kos.files.rename";
+
         /// <summary>
         /// Dynamic namespace prefix for the <c>kos.run</c> result channel:
         /// <c>kos.run.&lt;coreId&gt;</c> (<c>Delivery.ReliableOrdered</c>,
