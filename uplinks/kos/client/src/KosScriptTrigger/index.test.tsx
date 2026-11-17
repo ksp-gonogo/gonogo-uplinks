@@ -69,6 +69,40 @@ describe("KosScriptTrigger", () => {
     expect(invocation.args).toEqual([42]);
   });
 
+  it("draws a returned list and vector through the whole pipeline", async () => {
+    const { fake } = renderWidget();
+    fake.setCpus([{ number: 7, tagname: "lander" }]);
+    fake.registerScript("0:/report.ks", () => ({
+      fields: {
+        engines: {
+          kind: "list",
+          type: "List",
+          omitted: 0,
+          items: ["LV-T45", "LV-909"],
+        },
+        v: { kind: "vector", x: 1, y: 2, z: 3, magnitude: 3.7417 },
+      },
+    }));
+    await waitFor(() => expect(screen.getByText("lander")).toBeInTheDocument());
+    fireEvent.change(screen.getByLabelText("Script path"), {
+      target: { value: "0:/report.ks" },
+    });
+    fireEvent.click(screen.getByRole("button", { name: "Run" }));
+
+    await waitFor(() => expect(screen.getByText("OK")).toBeInTheDocument());
+    expect(screen.getByText("[1]")).toBeInTheDocument();
+    expect(screen.getByText("LV-909")).toBeInTheDocument();
+    expect(screen.getByText("3.7417")).toBeInTheDocument();
+  });
+
+  it("says no run has happened before the first press", async () => {
+    const { fake } = renderWidget();
+    fake.setCpus([{ number: 7, tagname: "lander" }]);
+    await waitFor(() => expect(screen.getByText("lander")).toBeInTheDocument());
+
+    expect(screen.getByText("No run yet")).toBeInTheDocument();
+  });
+
   it("runs the script once when Run is pressed twice before the screen redraws", async () => {
     const { fake } = renderWidget();
     fake.setCpus([{ number: 7, tagname: "lander" }]);
@@ -149,13 +183,13 @@ describe("KosScriptTrigger", () => {
   });
 
   /*
-   * The round-trip chip beside Run had no coverage at all: no match for
+   * The round-trip chip had no coverage at all: no match for
    * `comms.delay`, `round-trip` or `oneWay` anywhere in this file. It reads a
    * WRAPPED `Value<"s">`, and nothing here would have noticed the widget
    * reaching for the wrong field of it, or quoting the one-way figure where
    * the operator waits out two.
    */
-  it("quotes the DOUBLED round-trip beside Run when a one-way delay is being published", async () => {
+  it("quotes the DOUBLED round-trip in the result header when a one-way delay is being published", async () => {
     const { fake } = renderWidget();
     fake.setCpus([{ number: 7, tagname: "lander" }]);
     await waitFor(() => expect(screen.getByText("lander")).toBeInTheDocument());

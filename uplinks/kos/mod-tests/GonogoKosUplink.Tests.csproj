@@ -70,6 +70,10 @@
          headlessly. -->
     <Compile Include="..\mod\KosTerminalFrameBuilder.cs" />
     <Compile Include="..\mod\KosRunResultBuilder.cs" />
+    <!-- KosReturnShapes/KosQuaternion: the wire shapes and the euler maths
+         behind ADDONS:GONOGO:RETURN, free of kOS and Unity types. -->
+    <Compile Include="..\mod\KosReturnShapes.cs" />
+    <Compile Include="..\mod\KosQuaternion.cs" />
     <Compile Include="..\mod\KosFileListing.cs" />
     <Compile Include="..\mod\KosFileRules.cs" />
     <Compile Include="..\mod\KosForwardingProxy.cs" />
@@ -122,6 +126,18 @@
     </Reference>
     <Reference Include="kOS">
       <HintPath>$(KspGameData)\kOS\Plugins\kOS.dll</HintPath>
+    </Reference>
+    <!-- kOS's Vector, Direction and GeoCoordinates carry the game's types in
+         their signatures, and the runtime loads them to type-test a value. Only
+         managed fields are read, never a native call. -->
+    <Reference Include="UnityEngine.CoreModule">
+      <HintPath>$(KspManaged)\UnityEngine.CoreModule.dll</HintPath>
+    </Reference>
+    <Reference Include="Assembly-CSharp">
+      <HintPath>$(KspManaged)\Assembly-CSharp.dll</HintPath>
+    </Reference>
+    <Reference Include="Assembly-CSharp-firstpass">
+      <HintPath>$(KspManaged)\Assembly-CSharp-firstpass.dll</HintPath>
     </Reference>
     <Compile Include="..\mod\ScreenDiffMapper.cs" />
     <Compile Include="..\mod\KosReturnFields.cs" />

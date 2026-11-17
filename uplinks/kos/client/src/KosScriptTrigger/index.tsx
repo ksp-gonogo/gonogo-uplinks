@@ -12,6 +12,7 @@ import {
   Badge,
   Button,
   ConfigForm,
+  EmptyState,
   Field,
   FieldHint,
   FieldLabel,
@@ -35,6 +36,7 @@ import { isKosScriptError } from "../shared/KosScriptError.js";
 import type { KosData } from "../shared/kos-data.js";
 import { KOS } from "../uplink.js";
 import { parseScriptArgs } from "./args.js";
+import { ResultFields } from "./ResultFields.js";
 
 interface KosScriptTriggerConfig {
   /**
@@ -267,72 +269,64 @@ function KosScriptTriggerComponent({
             >
               {run.status === "running" ? "Running..." : "Run"}
             </Button>
-            {/*
-              Three rungs, because a missing reading and a measured zero are
-              different facts. No reading at all (no comms model publishing,
-              or no measurable ControlPath) draws nothing, there is nothing to
-              quote. A measured zero says the link is instant and says so, so
-              the operator can tell "the round-trip is nil" from "we could not
-              tell you". Anything above zero quotes the doubled figure.
-            */}
-            {oneWay !== null && (
-              <RoundTrip aria-label="Signal round-trip">
-                {oneWay.isPositive() ? (
-                  <>
-                    round-trip ~
-                    <Unit value={oneWay.times(2)} scale="never" decimals={1} />
-                  </>
-                ) : (
-                  "round-trip instant"
-                )}
-              </RoundTrip>
-            )}
           </FormActions>
         </Section>,
         <Section key="result" full>
           <ResultRegion role="status" aria-live="polite">
-            {run.status === "running" && (
-              <Running>
-                <Spinner size={14} />
-                <span>
-                  Running on {run.cpu}, awaiting the round-trip result...
-                </span>
-              </Running>
+            {(run.status !== "idle" || oneWay !== null) && (
+              <ResultHead>
+                <ResultState>
+                  {run.status === "running" && (
+                    <>
+                      <Spinner size={14} />
+                      <Badge size="sm">Running</Badge>
+                    </>
+                  )}
+                  {run.status === "ok" && (
+                    <Badge size="sm" tone="go">
+                      OK
+                    </Badge>
+                  )}
+                  {run.status === "error" && (
+                    <Badge size="sm" tone="nogo">
+                      {run.scriptFault ? "Script error" : "Dispatch error"}
+                    </Badge>
+                  )}
+                  {run.status !== "idle" && <Faint>on {run.cpu}</Faint>}
+                </ResultState>
+                {/*
+                Three rungs, because a missing reading and a measured zero are
+                different facts. No reading at all (no comms model publishing,
+                or no measurable ControlPath) draws nothing, there is nothing to
+                quote. A measured zero says the link is instant and says so, so
+                the operator can tell "the round-trip is nil" from "we could not
+                tell you". Anything above zero quotes the doubled figure.
+              */}
+                {oneWay !== null && (
+                  <RoundTrip aria-label="Signal round-trip">
+                    {oneWay.isPositive() ? (
+                      <>
+                        round-trip ~
+                        <Unit
+                          value={oneWay.times(2)}
+                          scale="never"
+                          decimals={1}
+                        />
+                      </>
+                    ) : (
+                      "round-trip instant"
+                    )}
+                  </RoundTrip>
+                )}
+              </ResultHead>
             )}
-            {run.status === "ok" && (
-              <Result>
-                <Badge tone="go">OK</Badge>
-                <ResultFields data={run.data} />
-              </Result>
-            )}
-            {run.status === "error" && (
-              <Result>
-                <Badge tone="nogo">
-                  {run.scriptFault ? "Script error" : "Dispatch error"}
-                </Badge>
-                <ErrorText>{run.message}</ErrorText>
-              </Result>
-            )}
+            {run.status === "idle" && <EmptyState>No run yet</EmptyState>}
+            {run.status === "ok" && <ResultFields data={run.data} />}
+            {run.status === "error" && <ErrorText>{run.message}</ErrorText>}
           </ResultRegion>
         </Section>,
       ]}
     />
-  );
-}
-
-function ResultFields({ data }: { data: KosData }) {
-  const entries = Object.entries(data);
-  if (entries.length === 0)
-    return <FieldsEmpty>No fields returned.</FieldsEmpty>;
-  return (
-    <Fields>
-      {entries.map(([key, val]) => (
-        <FieldRowLine key={key}>
-          <FieldKey>{key}</FieldKey>
-          <FieldValue>{String(val)}</FieldValue>
-        </FieldRowLine>
-      ))}
-    </Fields>
   );
 }
 
@@ -387,6 +381,18 @@ function KosScriptTriggerConfigComponent({
           Pre-fills the path field. The operator can still edit it.
         </FieldHint>
       </Field>
+
+      <Field>
+        <FieldLabel as="span">Returning a result</FieldLabel>
+        <FieldHint>
+          A script hands its result back with{" "}
+          <Code>ADDONS:GONOGO:RETURN(value)</Code>. A LEXICON shows one row per
+          key; any other value shows as one row named value. Numbers, booleans
+          and strings show as they are. LIST, nested LEXICON, VECTOR, DIRECTION,
+          TIMESPAN, TIMESTAMP, GEOPOSITION, PART and VESSEL keep their
+          structure, and anything else shows as the text kOS prints for it.
+        </FieldHint>
+      </Field>
     </ConfigForm>
   );
 }
@@ -413,6 +419,11 @@ registerComponent<KosScriptTriggerConfig>({
 
 export { KosScriptTriggerComponent };
 
+const Code = styled.code`
+  font-family: var(--font-family-mono, monospace);
+  color: var(--color-text-primary);
+`;
+
 const NoCpuNotice = styled.div`
   font-size: var(--font-size-compact);
   color: var(--color-text-muted);
@@ -430,46 +441,31 @@ const RoundTrip = styled.span`
 `;
 
 const ResultRegion = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: var(--gap-related);
   min-height: 0;
+  padding: var(--gap-related);
+  background: var(--color-surface-sunken);
+  border: 1px solid var(--color-border-subtle);
 `;
 
-const Running = styled.div`
+const ResultHead = styled.div`
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--gap-related);
+  min-height: var(--control-height, 24px);
+`;
+
+const ResultState = styled.div`
   display: flex;
   align-items: center;
   gap: var(--gap-related);
-  font-size: var(--font-size-compact);
-  color: var(--color-text-muted);
 `;
 
-const Result = styled.div`
-  display: flex;
-  flex-direction: column;
-  gap: var(--gap-related);
-`;
-
-const Fields = styled.div`
-  display: flex;
-  flex-direction: column;
-  gap: var(--gap-related);
-`;
-
-const FieldRowLine = styled.div`
-  display: flex;
-  gap: var(--gap-related);
-  font-family: monospace;
-  font-size: var(--font-size-compact);
-`;
-
-const FieldKey = styled.span`
-  color: var(--color-text-muted);
-`;
-
-const FieldValue = styled.span`
-  color: var(--color-text-primary);
-  word-break: break-all;
-`;
-
-const FieldsEmpty = styled.div`
+const Faint = styled.span`
   font-size: var(--font-size-compact);
   color: var(--color-text-muted);
 `;

@@ -234,13 +234,13 @@ export interface KosRunArgs
 * dynamic channel (`Delivery.ReliableOrdered`, `DelayRole.Delayed`: same
 * posture as `KosTerminalFrame`: this is vessel telemetry riding gonogo's
 * reveal clock). Published exactly once per armed request: when the script
-* hands back a lexicon with `ADDONS:GONOGO:RETURN(lexicon)`, when kOS stops
-* the script on an error, or when the program ends having handed nothing back
+* hands a value back with `ADDONS:GONOGO:RETURN(value)`, when kOS stops the
+* script on an error, or when the program ends having handed nothing back
 * (`KosRunResult.ended`).
 *
 * Exactly one of `KosRunResult.fields` / `KosRunResult.error` is non-null, or
-* neither with `KosRunResult.ended` true. Field values are a number, a boolean
-* or a string; any other kOS value arrives as its kOS text.
+* neither with `KosRunResult.ended` true. See `KosRunResult.fields` for what a
+* field value is.
 */
 export interface KosRunResult
 {
@@ -249,8 +249,20 @@ export interface KosRunResult
 	/** Echoes the triggering `KosRunArgs.requestId`. */
 	requestId: string;
 	/**
-	* The lexicon the script passed to `ADDONS:GONOGO:RETURN`, keyed by its keys'
-	* text: null on an error or ended result.
+	* What the script passed to `ADDONS:GONOGO:RETURN`: null on an error or ended
+	* result. A lexicon becomes one field per key, keyed by the key's text; any
+	* other value is the single field `value`.
+	*
+	* A field value is a number, a boolean or a string as itself, or an object
+	* whose `kind` names its shape. `list` (`type`, `items`, `omitted`) covers
+	* LIST, UNIQUESET, QUEUE and STACK, with `omitted` counting items cut off
+	* after the first 500. `lexicon` (`entries` of `key` and `value`, `omitted`)
+	* keeps the order and the key text. `vector` carries `x`, `y`, `z` and
+	* `magnitude`; `direction` the `pitch`, `yaw` and `roll` in degrees;
+	* `timespan` and `timestamp` the `seconds`; `geo` the `latitude` and
+	* `longitude` in degrees; `part` and `vessel` the `name` and `id`. Every other
+	* kOS value is `other`, with its kOS `type` name and the `text` kOS prints for
+	* it. Values nested more than eight deep arrive as `other`.
 	*/
 	fields?: { [key: string]: any } | null;
 	/**

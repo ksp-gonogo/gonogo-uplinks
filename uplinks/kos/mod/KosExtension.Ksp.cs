@@ -115,6 +115,7 @@ namespace Gonogo.KosUplink
                 Debug.Log("[Gonogo.KosUplink] this kOS lacks what a native run needs, so kos.run is refused: " + string.Join(", ", missing));
             }
             KosGonogoAddon.Sink = (coreId, fields) => OnScriptReturn(coreId, fields);
+            KosReturnFields.ReferenceReader = KosReturnReferences.Read;
             try
             {
                 KosGonogoAddon.Register();

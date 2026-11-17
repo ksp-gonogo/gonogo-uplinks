@@ -70,14 +70,13 @@ public class KosRunArgs
 /// (<c>Delivery.ReliableOrdered</c>, <c>DelayRole.Delayed</c>: same posture
 /// as <see cref="KosTerminalFrame"/>: this is vessel telemetry riding
 /// gonogo's reveal clock). Published exactly once per armed request: when the
-/// script hands back a lexicon with <c>ADDONS:GONOGO:RETURN(lexicon)</c>,
+/// script hands a value back with <c>ADDONS:GONOGO:RETURN(value)</c>,
 /// when kOS stops the script on an error, or when the program ends having
 /// handed nothing back (<see cref="Ended"/>).
 ///
 /// <para>Exactly one of <see cref="Fields"/> / <see cref="Error"/> is
-/// non-null, or neither with <see cref="Ended"/> true. Field values are a
-/// number, a boolean or a string; any other kOS value arrives as its kOS
-/// text.</para>
+/// non-null, or neither with <see cref="Ended"/> true. See <see cref="Fields"/>
+/// for what a field value is.</para>
 /// </summary>
 [SitrepContract]
 #if SITREP_CODEGEN
@@ -93,7 +92,25 @@ public class KosRunResult
     [SitrepUnit(Units.Id)]
     public string RequestId { get; set; } = "";
 
-    /// <summary>The lexicon the script passed to <c>ADDONS:GONOGO:RETURN</c>, keyed by its keys' text: null on an error or ended result.</summary>
+    /// <summary>
+    /// What the script passed to <c>ADDONS:GONOGO:RETURN</c>: null on an error or
+    /// ended result. A lexicon becomes one field per key, keyed by the key's
+    /// text; any other value is the single field <c>value</c>.
+    ///
+    /// <para>A field value is a number, a boolean or a string as itself, or an
+    /// object whose <c>kind</c> names its shape. <c>list</c> (<c>type</c>,
+    /// <c>items</c>, <c>omitted</c>) covers LIST, UNIQUESET, QUEUE and STACK, with
+    /// <c>omitted</c> counting items cut off after the first 500. <c>lexicon</c>
+    /// (<c>entries</c> of <c>key</c> and <c>value</c>, <c>omitted</c>) keeps the
+    /// order and the key text. <c>vector</c> carries <c>x</c>, <c>y</c>, <c>z</c>
+    /// and <c>magnitude</c>; <c>direction</c> the <c>pitch</c>, <c>yaw</c> and
+    /// <c>roll</c> in degrees; <c>timespan</c> and <c>timestamp</c> the
+    /// <c>seconds</c>; <c>geo</c> the <c>latitude</c> and <c>longitude</c> in
+    /// degrees; <c>part</c> and <c>vessel</c> the <c>name</c> and <c>id</c>.
+    /// Every other kOS value is <c>other</c>, with its kOS <c>type</c> name and
+    /// the <c>text</c> kOS prints for it. Values nested more than eight deep
+    /// arrive as <c>other</c>.</para>
+    /// </summary>
     public Dictionary<string, object?>? Fields { get; set; }
 
     /// <summary>

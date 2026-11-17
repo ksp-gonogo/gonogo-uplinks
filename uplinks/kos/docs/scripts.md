@@ -22,7 +22,7 @@ In the terminal, Copy local & run (Ctrl+L) copies the script onto the CPU's own 
 
 ## Handing values back
 
-A script hands values back to the Script Trigger with `ADDONS:GONOGO:RETURN`, passing a lexicon:
+A script hands values back to the Script Trigger with `ADDONS:GONOGO:RETURN`. A lexicon gives one row per key:
 
 ```
 PARAMETER a, b.
@@ -30,7 +30,7 @@ LOCAL total IS a + b.
 ADDONS:GONOGO:RETURN(LEXICON("sum", total, "ok", TRUE, "craft", SHIP:NAME)).
 ```
 
-The Script Trigger shows each key with its value as soon as the call is made. A number, a boolean or a string shows as itself; any other kOS value (a list, a vector) shows as the text kOS prints for it. Passing anything but a lexicon stops the script with an error.
+The Script Trigger shows each key with its value as soon as the call is made. Any other value shows as one row named `value`. A number, a boolean or a string shows as itself. A list, a unique set, a queue, a stack, a nested lexicon, a vector, a direction, a timespan, a timestamp, a geoposition, a part and a vessel keep their structure, and anything else shows as the text kOS prints for it. A collection keeps its first 500 items, and nesting deeper than eight levels shows as text.
 
 The run ends at the first `RETURN`. A script can keep running after it, but the Script Trigger has already shown its result, and a second run on that CPU is refused until the program finishes.
 
