@@ -80,7 +80,8 @@ The live terminal of a kOS CPU.
 
 | Payload | Fields |
 | --- | --- |
-| `KosRunResult` | `coreId` id, `ended` flag, `error` text, `requestId` id |
+| `KosLogEntry` | `coreId` id, `requestId` id, `seq` n/a |
+| `KosRunResult` | `coreId` id, `dropped` n/a, `ended` flag, `error` text, `logged` n/a, `requestId` id |
 | `KosTerminalFrame` | `chunk` text, `coreId` id, `fullRepaint` flag |
 
 </details>

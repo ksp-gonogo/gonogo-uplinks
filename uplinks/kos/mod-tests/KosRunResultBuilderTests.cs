@@ -49,7 +49,7 @@ namespace GonogoKosUplink.Tests
         {
             var entry = KosRunResultBuilder.Build(7, "req-1", null, "x");
 
-            var expected = new[] { "coreId", "requestId", "fields", "error", "ended" };
+            var expected = new[] { "coreId", "requestId", "fields", "error", "ended", "logged", "dropped" };
             Assert.Equal(expected.Length, entry.Count);
             foreach (var key in expected)
             {

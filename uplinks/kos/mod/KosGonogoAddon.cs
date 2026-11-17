@@ -30,6 +30,9 @@ namespace Gonogo.KosUplink
         /// <summary>Where a returned lexicon goes: the CPU's <c>KOSCoreId</c> and the field map.</summary>
         internal static Action<int, Dictionary<string, object?>>? Sink;
 
+        /// <summary>Where a logged value goes: the CPU's <c>KOSCoreId</c> and the value in its wire shape.</summary>
+        internal static Action<int, object?>? LogSink;
+
         /// <summary>
         /// Builds the addon class and registers it with kOS, so every CPU created
         /// afterwards has <c>ADDONS:GONOGO</c>. Throws when this kOS lacks a member
@@ -51,7 +54,11 @@ namespace Gonogo.KosUplink
                 addonBase,
                 typeof(SharedObjects),
                 addSuffix,
-                new[] { new KeyValuePair<string, MethodInfo>("RETURN", typeof(KosGonogoAddon).GetMethod(nameof(ReturnSuffix))!) },
+                new[]
+                {
+                    new KeyValuePair<string, MethodInfo>("RETURN", typeof(KosGonogoAddon).GetMethod(nameof(ReturnSuffix))!),
+                    new KeyValuePair<string, MethodInfo>("LOG", typeof(KosGonogoAddon).GetMethod(nameof(LogSuffix))!),
+                },
                 new[] { new KeyValuePair<MethodInfo, MethodInfo>(available, typeof(KosGonogoAddon).GetMethod(nameof(Available))!) },
                 new[] { nomenclature });
 
@@ -63,8 +70,20 @@ namespace Gonogo.KosUplink
         public static object ReturnSuffix(object shared) =>
             new OneArgsSuffix<Structure>(value => Return(shared, value), "Hands a LEXICON back to the dashboard that started this script.");
 
+        /// <summary>The <c>LOG</c> suffix: hands a value to the dashboard and lets the script carry on.</summary>
+        public static object LogSuffix(object shared) =>
+            new OneArgsSuffix<Structure>(value => Log(shared, value), "Hands a value to the dashboard that started this script, without ending the run.");
+
         /// <summary>The addon's <c>AVAILABLE</c>: always true.</summary>
         public static object Available() => BooleanValue.True;
+
+        private static void Log(object shared, Structure value)
+        {
+            if (shared is SharedObjects objects && objects.Processor is kOSProcessor processor)
+            {
+                LogSink?.Invoke(processor.KOSCoreId, KosReturnFields.ValueOf(value));
+            }
+        }
 
         private static void Return(object shared, Structure value)
         {

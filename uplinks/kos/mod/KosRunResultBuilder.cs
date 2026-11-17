@@ -29,7 +29,7 @@ namespace Gonogo.KosUplink
         /// the run that printed neither, where both are null.
         /// </summary>
         public static Dictionary<string, object?> Build(
-            int coreId, string requestId, Dictionary<string, object?>? fields, string? error, bool ended = false) =>
+            int coreId, string requestId, Dictionary<string, object?>? fields, string? error, bool ended = false, int logged = 0, int dropped = 0) =>
             new Dictionary<string, object?>
             {
                 ["coreId"] = coreId,
@@ -37,6 +37,18 @@ namespace Gonogo.KosUplink
                 ["fields"] = fields,
                 ["error"] = error,
                 ["ended"] = ended,
+                ["logged"] = logged,
+                ["dropped"] = dropped,
+            };
+
+        /// <summary>The wire shape of one <see cref="Sitrep.Contract.KosLogEntry"/>.</summary>
+        public static Dictionary<string, object?> BuildLog(int coreId, string requestId, int seq, object? value) =>
+            new Dictionary<string, object?>
+            {
+                ["coreId"] = coreId,
+                ["requestId"] = requestId ?? "",
+                ["seq"] = seq,
+                ["value"] = value,
             };
     }
 }

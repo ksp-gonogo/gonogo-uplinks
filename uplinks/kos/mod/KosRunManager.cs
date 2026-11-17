@@ -39,6 +39,78 @@ namespace Gonogo.KosUplink
         internal const int IdlePollsToEnd = 3;
 
         private Action<int, KosRunResult>? _publish;
+        private Action<int, KosLogEntry>? _publishLog;
+
+        /// <summary>Log entries a run may send per second; calls past it are dropped and counted.</summary>
+        public const double LogPerSecond = 10;
+
+        /// <summary>One second's worth of entries, so a script that logs a few values back to back loses none.</summary>
+        public const int LogBurst = 10;
+
+        /// <summary>The state of one run's log: entries sent and dropped, and the rate bucket.</summary>
+        private sealed class LogState
+        {
+            public int Sent;
+            public int Dropped;
+            public double Tokens = LogBurst;
+            public long LastMs;
+        }
+
+        private readonly Dictionary<int, LogState> _logs = new Dictionary<int, LogState>();
+
+        /// <summary>Milliseconds on a monotonic clock; tests replace it to step time.</summary>
+        internal Func<long> ClockMs { get; set; } = () => System.Diagnostics.Stopwatch.GetTimestamp() * 1000 / System.Diagnostics.Stopwatch.Frequency;
+
+        /// <summary>Wire the sink for log entries, the way <see cref="SetPublisher"/> wires results.</summary>
+        public void SetLogPublisher(Action<int, KosLogEntry> publish) => _publishLog = publish;
+
+        /// <summary>
+        /// A running script handed <paramref name="value"/> to <c>ADDONS:GONOGO:LOG</c>.
+        /// Published on the CPU's log channel, tagged with the armed request and
+        /// the next sequence number, without ending the run. Returns false when
+        /// no run is armed there, or when the rate limit dropped the
+        /// entry (counted, and reported on the run's result).
+        /// </summary>
+        public bool Log(int coreId, object? value)
+        {
+            KosLogEntry entry;
+            lock (_gate)
+            {
+                if (!_pending.TryGetValue(coreId, out var requestId))
+                {
+                    return false;
+                }
+                if (!_logs.TryGetValue(coreId, out var state))
+                {
+                    state = new LogState { LastMs = ClockMs() };
+                    _logs[coreId] = state;
+                }
+                var now = ClockMs();
+                state.Tokens = Math.Min(LogBurst, state.Tokens + (now - state.LastMs) / 1000.0 * LogPerSecond);
+                state.LastMs = now;
+                if (state.Tokens < 1)
+                {
+                    state.Dropped++;
+                    return false;
+                }
+                state.Tokens -= 1;
+                entry = new KosLogEntry { CoreId = coreId, RequestId = requestId, Seq = state.Sent, Value = value };
+                state.Sent++;
+            }
+            _publishLog?.Invoke(coreId, entry);
+            return true;
+        }
+
+        /// <summary>Removes the run's log state and returns what it sent and dropped; call under <see cref="_gate"/>.</summary>
+        private (int logged, int dropped) TakeLog(int coreId)
+        {
+            if (!_logs.TryGetValue(coreId, out var state))
+            {
+                return (0, 0);
+            }
+            _logs.Remove(coreId);
+            return (state.Sent, state.Dropped);
+        }
 
         /// <summary>
         /// Wire the publish sink: called once from
@@ -74,6 +146,7 @@ namespace Gonogo.KosUplink
                 }
                 _pending[coreId] = requestId;
                 _idlePolls.Remove(coreId);
+                _logs.Remove(coreId);
                 return true;
             }
         }
@@ -130,6 +203,7 @@ namespace Gonogo.KosUplink
         public bool Complete(int coreId, Dictionary<string, object?> fields)
         {
             string? requestId;
+            (int logged, int dropped) log;
             lock (_gate)
             {
                 if (!_pending.TryGetValue(coreId, out requestId))
@@ -138,8 +212,9 @@ namespace Gonogo.KosUplink
                 }
                 _pending.Remove(coreId);
                 _idlePolls.Remove(coreId);
+                log = TakeLog(coreId);
             }
-            _publish?.Invoke(coreId, new KosRunResult { CoreId = coreId, RequestId = requestId, Fields = fields });
+            _publish?.Invoke(coreId, new KosRunResult { CoreId = coreId, RequestId = requestId, Fields = fields, Logged = log.logged, Dropped = log.dropped });
             return true;
         }
 
@@ -153,6 +228,7 @@ namespace Gonogo.KosUplink
         public void Fail(int coreId, string message)
         {
             string? requestId;
+            (int logged, int dropped) log;
             lock (_gate)
             {
                 if (!_pending.TryGetValue(coreId, out requestId))
@@ -161,8 +237,9 @@ namespace Gonogo.KosUplink
                 }
                 _pending.Remove(coreId);
                 _idlePolls.Remove(coreId);
+                log = TakeLog(coreId);
             }
-            _publish?.Invoke(coreId, new KosRunResult { CoreId = coreId, RequestId = requestId, Error = message });
+            _publish?.Invoke(coreId, new KosRunResult { CoreId = coreId, RequestId = requestId, Error = message, Logged = log.logged, Dropped = log.dropped });
         }
 
         /// <summary>
@@ -172,7 +249,7 @@ namespace Gonogo.KosUplink
         /// to the abandoned request. Also how <see cref="ArmAndStart"/> undoes
         /// an arm whose start was refused.
         /// </summary>
-        public void Cancel(int coreId) { lock (_gate) { _pending.Remove(coreId); _idlePolls.Remove(coreId); } }
+        public void Cancel(int coreId) { lock (_gate) { _pending.Remove(coreId); _idlePolls.Remove(coreId); _logs.Remove(coreId); } }
 
         /// <summary>
         /// Disarms <paramref name="coreId"/> without publishing, but only while
@@ -191,6 +268,7 @@ namespace Gonogo.KosUplink
                 }
                 _pending.Remove(coreId);
                 _idlePolls.Remove(coreId);
+                _logs.Remove(coreId);
                 return true;
             }
         }
@@ -206,6 +284,7 @@ namespace Gonogo.KosUplink
         public void PollIdle(Func<int, bool> isIdle)
         {
             List<KeyValuePair<int, string>>? ended = null;
+            var counts = new Dictionary<int, (int logged, int dropped)>();
             lock (_gate)
             {
                 if (_pending.Count == 0)
@@ -234,6 +313,7 @@ namespace Gonogo.KosUplink
                     {
                         _pending.Remove(kv.Key);
                         _idlePolls.Remove(kv.Key);
+                        counts[kv.Key] = TakeLog(kv.Key);
                     }
                 }
             }
@@ -243,7 +323,7 @@ namespace Gonogo.KosUplink
             }
             foreach (var kv in ended)
             {
-                _publish?.Invoke(kv.Key, new KosRunResult { CoreId = kv.Key, RequestId = kv.Value, Ended = true });
+                _publish?.Invoke(kv.Key, new KosRunResult { CoreId = kv.Key, RequestId = kv.Value, Ended = true, Logged = counts[kv.Key].logged, Dropped = counts[kv.Key].dropped });
             }
         }
 
@@ -252,6 +332,6 @@ namespace Gonogo.KosUplink
         /// processors a run was started on, so none of the armed requests can
         /// ever complete.
         /// </summary>
-        public void Reset() { lock (_gate) { _pending.Clear(); _idlePolls.Clear(); } }
+        public void Reset() { lock (_gate) { _pending.Clear(); _idlePolls.Clear(); _logs.Clear(); } }
     }
 }

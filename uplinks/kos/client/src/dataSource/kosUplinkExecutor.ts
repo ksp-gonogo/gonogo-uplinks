@@ -1,9 +1,14 @@
 import type { CommandResult, TelemetryClient } from "@ksp-gonogo/sitrep-sdk";
-import { magnitudeOf, safeRandomUuid } from "@ksp-gonogo/sitrep-sdk";
+import {
+  createPerfBudget,
+  magnitudeOf,
+  safeRandomUuid,
+} from "@ksp-gonogo/sitrep-sdk";
 import type {
   KosProcessorInfo,
   KosCancelArgs,
   KosRunArgs,
+  KosLogEntry,
   KosRunResult,
 } from "../__generated__/contract.js";
 import { KosScriptError } from "../shared/KosScriptError.js";
@@ -42,9 +47,52 @@ const COMMS_DELAY_TOPIC = "comms.delay";
  */
 const DEFAULT_TIMEOUT_MS = 30_000;
 
+/**
+ * What a caller can ask to hear while a script runs. `onLog` gets each value
+ * the script hands to `ADDONS:GONOGO:LOG`, in the order they arrive; entries
+ * carry their own `seq`, because a log entry rides its own channel and can
+ * land after the run's result. `onLogged` gets the run's own count of entries
+ * sent and dropped once its result arrives.
+ */
+export interface KosRunListeners {
+  onLog?: (entry: KosLogEntry) => void;
+  onLogged?: (counts: { logged: number; dropped: number }) => void;
+}
+
+/** The log of the run most recently sent: kept after its result until every entry it announced has arrived. */
+interface LogSession {
+  requestId: string;
+  listeners: KosRunListeners;
+  received: number;
+  expected: number | null;
+  /** Ends the session when the announced entries do not all arrive. */
+  graceTimer: ReturnType<typeof setTimeout> | null;
+}
+
+/**
+ * Soft cap on log entries received per second across every CPU. The mod lets
+ * one run send 10 a second, so a steady 50 means several CPUs at the limit or
+ * a stream the mod's own limit is not holding.
+ */
+const KOS_LOG_BUDGET = createPerfBudget({
+  name: "KosUplinkExecutor kos.log entries/sec",
+  threshold: 50,
+  windowMs: 1000,
+  unit: "entries",
+});
+
+/**
+ * How long after a run's result the executor keeps listening for log entries
+ * the result announced and that have not arrived. Entries ride the same delayed
+ * clock as the result, so one still missing after this is lost, and holding
+ * the listener until the next run would hand it to nobody.
+ */
+export const LOG_GRACE_MS = 10_000;
+
 interface QueuedRun {
   script: string;
   args: KosScriptArg[];
+  listeners?: KosRunListeners;
   /** Set for a file command, which the game answers without typing anything. */
   file?: KosFileCall;
   /** Aborting it drops the call, see `KosUplinkCpuQueue.cancel`. */
@@ -70,7 +118,9 @@ interface InFlightRun {
 class KosUplinkCpuQueue {
   private queue: QueuedRun[] = [];
   private inFlight: InFlightRun | null = null;
+  private logSession: LogSession | null = null;
   private readonly unsubscribe: () => void;
+  private readonly unsubscribeLog: () => void;
 
   constructor(
     private readonly client: TelemetryClient,
@@ -81,11 +131,19 @@ class KosUplinkCpuQueue {
       const result = asRunResult(payload);
       if (result) this.handleResult(result);
     });
+    this.unsubscribeLog = client.subscribe(`kos.log.${coreId}`, (payload) => {
+      const entry = asLogEntry(payload);
+      if (entry) this.handleLog(entry);
+    });
   }
 
-  enqueue(script: string, args: KosScriptArg[]): Promise<KosData> {
+  enqueue(
+    script: string,
+    args: KosScriptArg[],
+    listeners?: KosRunListeners,
+  ): Promise<KosData> {
     return new Promise<KosData>((resolve, reject) => {
-      this.queue.push({ script, args, resolve, reject });
+      this.queue.push({ script, args, listeners, resolve, reject });
       this.drain();
     });
   }
@@ -135,6 +193,8 @@ class KosUplinkCpuQueue {
   /** Reject every queued/in-flight call and drop the channel subscription. */
   dispose(reason: string): void {
     this.unsubscribe();
+    this.unsubscribeLog();
+    this.endLogSession();
     if (this.inFlight) {
       clearTimeout(this.inFlight.timer);
       this.inFlight.call.reject(new Error(reason));
@@ -159,6 +219,16 @@ class KosUplinkCpuQueue {
       this.onTimeout(requestId);
     }, waitMs);
     this.inFlight = { requestId, call: next, timer, waitMs };
+    this.endLogSession();
+    this.logSession = next.listeners?.onLog || next.listeners?.onLogged
+      ? {
+          requestId,
+          listeners: next.listeners,
+          received: 0,
+          expected: null,
+          graceTimer: null,
+        }
+      : null;
 
     const command = next.file?.command ?? "kos.run";
     const { result } =
@@ -198,7 +268,44 @@ class KosUplinkCpuQueue {
       });
   }
 
+  /*
+   * A log entry settles nothing. It is handed to the run's listener whether the
+   * run is still in flight or has already answered, because the two ride
+   * separate channels and nothing orders one against the other.
+   */
+  private handleLog(entry: KosLogEntry): void {
+    const session = this.logSession;
+    if (!session || session.requestId !== entry.requestId) return;
+    KOS_LOG_BUDGET.record();
+    session.received++;
+    session.listeners.onLog?.(entry);
+    if (session.expected !== null && session.received >= session.expected) {
+      this.endLogSession();
+    }
+  }
+
+  private endLogSession(): void {
+    if (this.logSession?.graceTimer) clearTimeout(this.logSession.graceTimer);
+    this.logSession = null;
+  }
+
   private handleResult(payload: KosRunResult): void {
+    const session = this.logSession;
+    if (session && session.requestId === payload.requestId) {
+      const logged = typeof payload.logged === "number" ? payload.logged : 0;
+      session.expected = logged;
+      session.listeners.onLogged?.({
+        logged,
+        dropped: typeof payload.dropped === "number" ? payload.dropped : 0,
+      });
+      if (session.received >= logged) {
+        this.endLogSession();
+      } else {
+        session.graceTimer = setTimeout(() => {
+          if (this.logSession === session) this.logSession = null;
+        }, LOG_GRACE_MS);
+      }
+    }
     // Correlate by requestId: a foreign/stale id (a duplicate, the sticky
     // replay of some earlier call, or a result meant for a call we already
     // timed out) must not settle the CURRENT in-flight call.
@@ -350,6 +457,7 @@ export class KosUplinkExecutor {
     cpu: string,
     script: string,
     args: KosScriptArg[],
+    listeners?: KosRunListeners,
   ): Promise<KosData> {
     this.adoptClient(client);
     return this.resolveCoreId(cpu).then((coreId) => {
@@ -358,7 +466,7 @@ export class KosUplinkExecutor {
           `kos.run: no known CPU with tagname "${cpu}", waiting on kos.processors, or the tagname is wrong`,
         );
       }
-      return this.getOrCreateQueue(coreId).enqueue(script, args);
+      return this.getOrCreateQueue(coreId).enqueue(script, args, listeners);
     });
   }
 
@@ -518,6 +626,18 @@ function asOneWaySeconds(payload: unknown): number | null {
  * no request to correlate against: an uncorrelated frame settles nothing, so it
  * is dropped rather than read.
  */
+function asLogEntry(payload: unknown): KosLogEntry | null {
+  if (
+    typeof payload !== "object" ||
+    payload === null ||
+    typeof Reflect.get(payload, "requestId") !== "string" ||
+    typeof Reflect.get(payload, "seq") !== "number"
+  ) {
+    return null;
+  }
+  return payload as KosLogEntry;
+}
+
 function asRunResult(payload: unknown): KosRunResult | null {
   if (
     typeof payload !== "object" ||

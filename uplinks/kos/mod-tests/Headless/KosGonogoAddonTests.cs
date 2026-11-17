@@ -53,6 +53,7 @@ namespace GonogoKosUplink.Tests.Headless
 
             Assert.True(addon.Available());
             Assert.NotNull(addon.GetSuffix("RETURN"));
+            Assert.NotNull(addon.GetSuffix("LOG"));
         }
     }
 }

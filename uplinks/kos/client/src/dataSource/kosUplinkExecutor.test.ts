@@ -107,6 +107,8 @@ describe("KosUplinkExecutor", () => {
       requestId: commands[0].args.requestId,
       fields: { v: 1, ok: true },
       ended: false,
+      logged: 0,
+      dropped: 0,
     } satisfies KosRunResult);
 
     await expect(pending).resolves.toEqual({ v: 1, ok: true });
@@ -131,6 +133,8 @@ describe("KosUplinkExecutor", () => {
       requestId: commands[0].args.requestId,
       fields: {},
       ended: false,
+      logged: 0,
+      dropped: 0,
     } satisfies KosRunResult);
 
     await expect(pending).resolves.toEqual({});
@@ -199,6 +203,8 @@ describe("KosUplinkExecutor", () => {
       requestId: commands[0].args.requestId,
       fields: { step: 1 },
       ended: false,
+      logged: 0,
+      dropped: 0,
     } satisfies KosRunResult);
     await first;
 
@@ -210,6 +216,8 @@ describe("KosUplinkExecutor", () => {
       requestId: commands[1].args.requestId,
       fields: { step: 2 },
       ended: false,
+      logged: 0,
+      dropped: 0,
     } satisfies KosRunResult);
     await second;
   });
@@ -237,12 +245,16 @@ describe("KosUplinkExecutor", () => {
       requestId: forA?.args.requestId ?? "",
       fields: {},
       ended: false,
+      logged: 0,
+      dropped: 0,
     } satisfies KosRunResult);
     transport.emit("kos.run.2", {
       coreId: 2,
       requestId: forB?.args.requestId ?? "",
       fields: {},
       ended: false,
+      logged: 0,
+      dropped: 0,
     } satisfies KosRunResult);
     await Promise.all([a, b]);
   });
@@ -281,6 +293,8 @@ describe("KosUplinkExecutor", () => {
       requestId: commands[0].args.requestId,
       error: "engine flameout",
       ended: false,
+      logged: 0,
+      dropped: 0,
     } satisfies KosRunResult);
 
     let caught: unknown;
@@ -379,6 +393,8 @@ describe("KosUplinkExecutor", () => {
       requestId: sentCommands(sent, "kos.run")[0].args.requestId,
       fields: { v: 1 },
       ended: false,
+      logged: 0,
+      dropped: 0,
     } satisfies KosRunResult);
     await pending;
 
@@ -414,6 +430,8 @@ describe("KosUplinkExecutor", () => {
       requestId: commands[0].args.requestId,
       fields: { ok: true },
       ended: false,
+      logged: 0,
+      dropped: 0,
     } satisfies KosRunResult);
     await expect(pending).resolves.toEqual({ ok: true });
   });
@@ -449,6 +467,8 @@ describe("KosUplinkExecutor", () => {
       requestId: "some-other-requestId",
       fields: { v: 1 },
       ended: false,
+      logged: 0,
+      dropped: 0,
     } satisfies KosRunResult);
 
     let settled = false;
@@ -469,6 +489,8 @@ describe("KosUplinkExecutor", () => {
       requestId: commands[0].args.requestId,
       fields: {},
       ended: false,
+      logged: 0,
+      dropped: 0,
     } satisfies KosRunResult);
     await pending;
   });
@@ -533,6 +555,8 @@ describe("KosUplinkExecutor", () => {
       requestId: commands2[0].args.requestId,
       fields: {},
       ended: false,
+      logged: 0,
+      dropped: 0,
     } satisfies KosRunResult);
     await fresh;
   });
@@ -560,6 +584,8 @@ describe("KosUplinkExecutor", () => {
       requestId: commands[1].args.requestId,
       fields: {},
       ended: false,
+      logged: 0,
+      dropped: 0,
     } satisfies KosRunResult);
     await run;
   });
@@ -585,6 +611,8 @@ describe("KosUplinkExecutor", () => {
       requestId: commands[0].args.requestId,
       fields: {},
       ended: false,
+      logged: 0,
+      dropped: 0,
     } satisfies KosRunResult);
     await first;
     await new Promise((r) => setTimeout(r, 5));
@@ -611,6 +639,8 @@ describe("KosUplinkExecutor", () => {
       requestId: commands[0].args.requestId,
       fields: {},
       ended: false,
+      logged: 0,
+      dropped: 0,
     } satisfies KosRunResult);
     await pending;
   });

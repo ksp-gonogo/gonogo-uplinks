@@ -45,6 +45,9 @@ namespace Gonogo.KosUplink
             return fields;
         }
 
+        /// <summary>The wire value for any value a script hands to LOG: its own shape, never wrapped under a field name.</summary>
+        public static object? ValueOf(object? value) => Convert(value as Structure, 1);
+
         private static string KeyText(Structure key) => key is StringValue s ? s.ToString() : key.ToString();
 
         private static string TypeName(Structure value)

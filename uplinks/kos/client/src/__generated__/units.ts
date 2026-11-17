@@ -130,6 +130,11 @@ export const GENERATED_TYPE_UNITS: Readonly<Record<string, UnitsByField>> = {
     coreId: "id",
     leaseToken: "id",
   },
+  "KosLogEntry": {
+    coreId: "id",
+    requestId: "id",
+    seq: "n/a",
+  },
   "KosProcessorInfo": {
     bootFilePath: "text",
     coreId: "id",
@@ -146,8 +151,10 @@ export const GENERATED_TYPE_UNITS: Readonly<Record<string, UnitsByField>> = {
   },
   "KosRunResult": {
     coreId: "id",
+    dropped: "n/a",
     ended: "flag",
     error: "text",
+    logged: "n/a",
     requestId: "id",
   },
   "KosTerminalCloseArgs": {

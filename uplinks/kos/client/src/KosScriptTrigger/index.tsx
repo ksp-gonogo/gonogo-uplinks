@@ -30,12 +30,16 @@ import { useEffect, useId, useMemo, useRef, useState } from "react";
 // nodenext the default import binds to the CJS namespace and `styled.div` is a
 // type error. The named export binds in both modes.
 import { styled } from "styled-components";
-import type { KosProcessorInfo } from "../__generated__/contract.js";
+import type {
+  KosLogEntry,
+  KosProcessorInfo,
+} from "../__generated__/contract.js";
 import { kosSource } from "../dataSource/kos.js";
 import { isKosScriptError } from "../shared/KosScriptError.js";
 import type { KosData } from "../shared/kos-data.js";
 import { KOS } from "../uplink.js";
 import { parseScriptArgs } from "./args.js";
+import { LogStream, withEntry } from "./LogStream.js";
 import { ResultFields } from "./ResultFields.js";
 
 interface KosScriptTriggerConfig {
@@ -125,6 +129,8 @@ function KosScriptTriggerComponent({
   const [scriptPath, setScriptPath] = useState(config?.scriptPath ?? "");
   const [argsText, setArgsText] = useState("");
   const [run, setRun] = useState<RunState>({ status: "idle" });
+  const [logs, setLogs] = useState<KosLogEntry[]>([]);
+  const [dropped, setDropped] = useState(0);
 
   // Guards against a stale dispatch (an earlier run that resolves after a
   // newer one was started) clobbering the latest result, and against a
@@ -175,7 +181,19 @@ function KosScriptTriggerComponent({
     const args = parseScriptArgs(argsText);
     const id = ++runIdRef.current;
     setRun({ status: "running", cpu });
-    kosSource.executeScript(cpu, trimmedPath, args).then(
+    setLogs([]);
+    setDropped(0);
+    const live = () => mountedRef.current && runIdRef.current === id;
+    kosSource
+      .executeScript(cpu, trimmedPath, args, {
+        onLog: (entry) => {
+          if (live()) setLogs((held) => withEntry(held, entry));
+        },
+        onLogged: (counts) => {
+          if (live()) setDropped(counts.dropped);
+        },
+      })
+      .then(
       (data) => {
         runningRef.current = false;
         if (!mountedRef.current || runIdRef.current !== id) return;
@@ -320,6 +338,7 @@ function KosScriptTriggerComponent({
                 )}
               </ResultHead>
             )}
+            <LogStream entries={logs} dropped={dropped} />
             {run.status === "idle" && <EmptyState>No run yet</EmptyState>}
             {run.status === "ok" && <ResultFields data={run.data} />}
             {run.status === "error" && <ErrorText>{run.message}</ErrorText>}
@@ -391,6 +410,11 @@ function KosScriptTriggerConfigComponent({
           and strings show as they are. LIST, nested LEXICON, VECTOR, DIRECTION,
           TIMESPAN, TIMESTAMP, GEOPOSITION, PART and VESSEL keep their
           structure, and anything else shows as the text kOS prints for it.
+        </FieldHint>
+        <FieldHint>
+          <Code>ADDONS:GONOGO:LOG(value)</Code> hands a value back while the
+          script runs, without ending it. The widget shows the latest value and
+          the last 10 as lines. Past 10 a second, values are dropped and counted.
         </FieldHint>
       </Field>
     </ConfigForm>

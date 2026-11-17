@@ -51,11 +51,32 @@
   "nestedPayloads": [],
   "otherPayloads": [
     {
+      "name": "KosLogEntry",
+      "fields": [
+        {
+          "name": "coreId",
+          "unit": "id"
+        },
+        {
+          "name": "requestId",
+          "unit": "id"
+        },
+        {
+          "name": "seq",
+          "unit": "n/a"
+        }
+      ]
+    },
+    {
       "name": "KosRunResult",
       "fields": [
         {
           "name": "coreId",
           "unit": "id"
+        },
+        {
+          "name": "dropped",
+          "unit": "n/a"
         },
         {
           "name": "ended",
@@ -64,6 +85,10 @@
         {
           "name": "error",
           "unit": "text"
+        },
+        {
+          "name": "logged",
+          "unit": "n/a"
         },
         {
           "name": "requestId",

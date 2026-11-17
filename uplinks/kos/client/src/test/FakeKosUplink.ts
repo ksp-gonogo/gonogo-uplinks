@@ -30,6 +30,7 @@ import {
   setActiveTelemetryClientForTests,
 } from "@ksp-gonogo/sitrep-sdk/testing";
 import type {
+  KosLogEntry,
   KosProcessorInfo,
   KosRunResult,
 } from "../__generated__/contract.js";
@@ -51,8 +52,16 @@ export interface FakeKosInvocation {
 /** What a fake script does: hand back fields, stop on an error, or finish with nothing. */
 export type FakeKosOutcome = { fields: KosData } | { error: string } | { ended: true };
 
+/** What a fake script can do while it runs: hand a value to `ADDONS:GONOGO:LOG`. */
+export interface FakeKosRunContext {
+  log(value: unknown): void;
+  /** Counts a call the mod's rate cap would have dropped, so the result reports it. */
+  drop(count?: number): void;
+}
+
 export type FakeKosScriptHandler = (
   invocation: FakeKosInvocation,
+  run: FakeKosRunContext,
 ) => FakeKosOutcome | Promise<FakeKosOutcome>;
 
 export class FakeKosUplink {
@@ -132,8 +141,23 @@ export class FakeKosUplink {
     if (!handler) {
       return { success: false, errorCode: "notFound", reason: "kos.scriptNotFound" };
     }
-    void Promise.resolve(handler(invocation)).then((outcome) => {
-      this.respond(coreId, requestId, outcome);
+    let logged = 0;
+    let dropped = 0;
+    const context: FakeKosRunContext = {
+      log: (value) => {
+        this.transport.emit(`kos.log.${coreId}`, {
+          coreId,
+          requestId,
+          seq: logged++,
+          value,
+        } satisfies KosLogEntry);
+      },
+      drop: (count = 1) => {
+        dropped += count;
+      },
+    };
+    void Promise.resolve(handler(invocation, context)).then((outcome) => {
+      this.respond(coreId, requestId, outcome, logged, dropped);
     });
     return { success: true };
   }
@@ -142,6 +166,8 @@ export class FakeKosUplink {
     coreId: number,
     requestId: string,
     outcome: FakeKosOutcome,
+    logged = 0,
+    dropped = 0,
   ): void {
     this.transport.emit(`kos.run.${coreId}`, {
       coreId,
@@ -149,6 +175,8 @@ export class FakeKosUplink {
       fields: "fields" in outcome ? outcome.fields : null,
       error: "error" in outcome ? outcome.error : null,
       ended: "ended" in outcome,
+      logged,
+      dropped,
     } satisfies KosRunResult);
   }
 }

@@ -95,6 +95,28 @@ describe("KosScriptTrigger", () => {
     expect(screen.getByText("3.7417")).toBeInTheDocument();
   });
 
+  it("shows the latest logged value and a short history while the run goes on", async () => {
+    const { fake } = renderWidget();
+    fake.setCpus([{ number: 7, tagname: "lander" }]);
+    fake.registerScript("0:/watch.ks", (_inv, run) => {
+      run.log(100);
+      run.log(200);
+      run.log({ kind: "vector", x: 1, y: 2, z: 3, magnitude: 3.7417 });
+      return { fields: { done: true } };
+    });
+    await waitFor(() => expect(screen.getByText("lander")).toBeInTheDocument());
+    fireEvent.change(screen.getByLabelText("Script path"), {
+      target: { value: "0:/watch.ks" },
+    });
+    fireEvent.click(screen.getByRole("button", { name: "Run" }));
+
+    await waitFor(() => expect(screen.getByText("OK")).toBeInTheDocument());
+    expect(screen.getByText("3 values")).toBeInTheDocument();
+    expect(screen.getByText("#0")).toBeInTheDocument();
+    expect(screen.getByText("#2")).toBeInTheDocument();
+    expect(screen.getByText("done")).toBeInTheDocument();
+  });
+
   it("says no run has happened before the first press", async () => {
     const { fake } = renderWidget();
     fake.setCpus([{ number: 7, tagname: "lander" }]);

@@ -55,6 +55,8 @@ function setup(reply: (command: string) => unknown = () => ({ success: true })) 
       fields,
       error,
       ended: false,
+      logged: 0,
+      dropped: 0,
     } satisfies KosRunResult);
   };
   return { source, sent, answer, transport };
@@ -206,6 +208,8 @@ describe("KosDataSource file commands", () => {
       fields: { op: "read", volume: "0:", path: "a.ks", text: "theirs", hash: "z", size: 6 },
       error: null,
       ended: false,
+      logged: 0,
+      dropped: 0,
     } satisfies KosRunResult);
     answer(0, { op: "read", volume: "0:", path: "a.ks", text: "mine", hash: "y", size: 4 });
 

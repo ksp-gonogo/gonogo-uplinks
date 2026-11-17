@@ -122,7 +122,7 @@ function omittedRow(omitted: number): ReactNode {
   return omitted > 0 ? <Faint>+{omitted} more</Faint> : null;
 }
 
-function ValueView({ value }: { value: KosDataValue }): ReactNode {
+export function ValueView({ value }: { value: KosDataValue }): ReactNode {
   if (value === null) return <NullValue />;
   if (typeof value === "number") return <Num>{formatNumber(value)}</Num>;
   if (typeof value === "boolean") {
@@ -287,3 +287,31 @@ const FigureGroup = styled.div`
   flex-wrap: wrap;
   column-gap: var(--gap-related);
 `;
+
+/** A value in one line, for a history row: a scalar as itself, anything with structure by its kind and size. */
+export function summarize(value: KosDataValue): string {
+  if (value === null) return "null";
+  if (typeof value === "number") return formatNumber(value);
+  if (typeof value === "boolean") return value ? "TRUE" : "FALSE";
+  if (typeof value === "string") return value === "" ? '""' : value;
+  switch (value.kind) {
+    case "list":
+      return `${value.type.toUpperCase()} of ${value.items.length + value.omitted}`;
+    case "lexicon":
+      return `LEXICON of ${value.entries.length + value.omitted}`;
+    case "vector":
+      return `V(${formatNumber(value.x)}, ${formatNumber(value.y)}, ${formatNumber(value.z)})`;
+    case "direction":
+      return `R(${formatNumber(value.pitch)}, ${formatNumber(value.yaw)}, ${formatNumber(value.roll)})`;
+    case "geo":
+      return `LATLNG(${formatNumber(value.latitude)}, ${formatNumber(value.longitude)})`;
+    case "timespan":
+    case "timestamp":
+      return `${value.kind.toUpperCase()}(${formatNumber(value.seconds)})`;
+    case "part":
+    case "vessel":
+      return `${value.kind.toUpperCase()} ${value.name}`;
+    default:
+      return value.text;
+  }
+}

@@ -93,6 +93,8 @@ describe("KosDataSource.executeScript: Uplink cutover", () => {
       requestId: runArgs()[0].requestId,
       fields: { ok: true },
       ended: false,
+      logged: 0,
+      dropped: 0,
     } satisfies KosRunResult);
 
     await expect(pending).resolves.toEqual({ ok: true });
@@ -167,6 +169,8 @@ describe("kos.ts module: registerUplinkHandle('kos', ...) registration", () => {
       requestId: last.requestId,
       fields: { ok: true },
       ended: false,
+      logged: 0,
+      dropped: 0,
     } satisfies KosRunResult);
 
     await expect(pending).resolves.toEqual({ ok: true });

@@ -36,6 +36,8 @@ The run ends at the first `RETURN`. A script can keep running after it, but the 
 
 `ADDONS:GONOGO:RETURN` called from a script nobody started from a dashboard does nothing, so the same script can be run by hand at the terminal. `ADDONS:HASADDON("GONOGO")` is true wherever the kOS Uplink is installed.
 
+`ADDONS:GONOGO:LOG(value)` hands a value to the Script Trigger while the script runs, without ending it. It takes anything `RETURN` does.
+
 ## What the Script Trigger shows
 
 | It shows | Because |

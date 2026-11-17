@@ -90,6 +90,11 @@
       "coreId": "id",
       "leaseToken": "id"
     },
+    "KosLogEntry": {
+      "coreId": "id",
+      "requestId": "id",
+      "seq": "n/a"
+    },
     "KosProcessorInfo": {
       "bootFilePath": "text",
       "coreId": "id",
@@ -106,8 +111,10 @@
     },
     "KosRunResult": {
       "coreId": "id",
+      "dropped": "n/a",
       "ended": "flag",
       "error": "text",
+      "logged": "n/a",
       "requestId": "id"
     },
     "KosTerminalCloseArgs": {

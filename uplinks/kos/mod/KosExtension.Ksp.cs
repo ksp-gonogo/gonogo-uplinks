@@ -115,6 +115,7 @@ namespace Gonogo.KosUplink
                 Debug.Log("[Gonogo.KosUplink] this kOS lacks what a native run needs, so kos.run is refused: " + string.Join(", ", missing));
             }
             KosGonogoAddon.Sink = (coreId, fields) => OnScriptReturn(coreId, fields);
+            KosGonogoAddon.LogSink = (coreId, value) => OnScriptLog(coreId, value);
             KosReturnFields.ReferenceReader = KosReturnReferences.Read;
             try
             {
@@ -195,7 +196,12 @@ namespace Gonogo.KosUplink
             // hardcoded case for the raw POCO.
             _runManager.SetPublisher((coreId, result) =>
                 _runSource?.Publisher(KosChannels.RunSubTopic(coreId)).Publish(
-                    KosRunResultBuilder.Build(result.CoreId, result.RequestId, result.Fields, result.Error, result.Ended),
+                    KosRunResultBuilder.Build(result.CoreId, result.RequestId, result.Fields, result.Error, result.Ended, result.Logged, result.Dropped),
+                    host.NowUt()));
+            _logSource = host.RegisterDynamicNamespace(KosChannels.LogPrefix, RunNamespace());
+            _runManager.SetLogPublisher((coreId, entry) =>
+                _logSource?.Publisher(KosChannels.RunSubTopic(coreId)).Publish(
+                    KosRunResultBuilder.BuildLog(entry.CoreId, entry.RequestId, entry.Seq, entry.Value),
                     host.NowUt()));
             CpuIsIdle = IsCpuIdle;
             host.AddCommandHandler<KosRunArgs, CommandResult>(KosChannels.RunCommand, Run);

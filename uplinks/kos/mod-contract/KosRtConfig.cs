@@ -96,6 +96,8 @@ public static class KosRtConfig
             typeof(KosRunArgs),
             typeof(KosRunResult),
             typeof(KosCancelArgs),
+            // kos.log.<coreId> values a running script hands back mid-run
+            typeof(KosLogEntry),
             // kos.files.list: a volume's file list read without the terminal
             typeof(KosFilesListArgs),
             typeof(KosFilesReadArgs),

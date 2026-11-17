@@ -124,10 +124,52 @@ public class KosRunResult
     /// <summary>
     /// True when the program finished without handing anything back, so the
     /// run has nothing to report: <see cref="Fields"/> and <see cref="Error"/>
-    /// are both null. False on every result that carries one of them.
+    /// are both null. False on every result that carries one of them, so the
+    /// final result of a run that returned a value or failed reads false.
     /// </summary>
     [SitrepUnit(Units.Flag)]
     public bool Ended { get; set; }
+
+    /// <summary>
+    /// How many <see cref="KosLogEntry"/> the run sent before it ended. A log
+    /// entry rides its own channel, so it is not ordered against this result:
+    /// a reader that has seen fewer entries than this knows more are still
+    /// crossing the delay.
+    /// </summary>
+    [SitrepUnit(Units.NotApplicable)]
+    public int Logged { get; set; }
+
+    /// <summary>How many <c>ADDONS:GONOGO:LOG</c> calls the run made that the rate limit dropped.</summary>
+    [SitrepUnit(Units.NotApplicable)]
+    public int Dropped { get; set; }
+}
+
+/// <summary>
+/// One value a running script handed to <c>ADDONS:GONOGO:LOG</c>, delivered on
+/// the <c>kos.log.&lt;coreId&gt;</c> dynamic channel
+/// (<c>Delivery.ReliableOrdered</c>, <c>DelayRole.Delayed</c>). The run goes on
+/// after it; the run's own result still arrives once on <c>kos.run.&lt;coreId&gt;</c>.
+/// </summary>
+[SitrepContract]
+#if SITREP_CODEGEN
+[TsInterface]
+#endif
+public class KosLogEntry
+{
+    /// <summary>The emitting CPU's <see cref="KosProcessorInfo.CoreId"/>.</summary>
+    [SitrepUnit(Units.Id)]
+    public int CoreId { get; set; }
+
+    /// <summary>The <see cref="KosRunArgs.RequestId"/> of the run that logged it.</summary>
+    [SitrepUnit(Units.Id)]
+    public string RequestId { get; set; } = "";
+
+    /// <summary>This entry's place in its run, counting from zero.</summary>
+    [SitrepUnit(Units.NotApplicable)]
+    public int Seq { get; set; }
+
+    /// <summary>The logged value, in the shape described on <see cref="KosRunResult.Fields"/> for one field.</summary>
+    public object? Value { get; set; }
 }
 
 /// <summary>

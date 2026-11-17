@@ -106,5 +106,15 @@ namespace Gonogo.KosUplink
 
         /// <summary>The full result topic for one CPU: <c>kos.run.&lt;coreId&gt;</c>.</summary>
         public static string RunTopic(int coreId) => RunPrefix + RunSubTopic(coreId);
+
+        /// <summary>
+        /// Dynamic namespace prefix for the log channel: <c>kos.log.&lt;coreId&gt;</c>
+        /// (<c>Delivery.ReliableOrdered</c>, <c>DelayRole.Delayed</c>). Payload =
+        /// <see cref="Sitrep.Contract.KosLogEntry"/>.
+        /// </summary>
+        public const string LogPrefix = "kos.log.";
+
+        /// <summary>The full log topic for one CPU: <c>kos.log.&lt;coreId&gt;</c>.</summary>
+        public static string LogTopic(int coreId) => LogPrefix + RunSubTopic(coreId);
     }
 }

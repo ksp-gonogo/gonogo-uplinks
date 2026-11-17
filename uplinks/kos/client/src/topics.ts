@@ -24,6 +24,7 @@
 //
 //   kos.terminal.<coreId>       KosTerminalFrame   one channel per CPU
 //   kos.run.<coreId>            KosRunResult       one channel per CPU
+//   kos.log.<coreId>            KosLogEntry        values a running script logs
 //   (seven command args)                           inbound only
 //
 // A runtime-computed sub-topic has no fixed member in the Topic union, which the
@@ -72,6 +73,9 @@ registerUplinkTopic(KOS_PROCESSORS_TOPIC);
 
 // One terminal channel per CPU; matches `KosChannels.TerminalPrefix` in the mod.
 registerDynamicTopicPrefix("kos.terminal.");
+
+// One log channel per CPU; matches `KosChannels.LogPrefix` in the mod.
+registerDynamicTopicPrefix("kos.log.");
 
 // The unit map below describes one CPU, not the list, so a field path under
 // `kos.processors` names no value of the Topic's own.

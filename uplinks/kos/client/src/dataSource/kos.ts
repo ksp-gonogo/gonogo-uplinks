@@ -18,7 +18,7 @@ import {
   renameAnswer,
   writeAnswer,
 } from "./kosFiles.js";
-import { KosUplinkExecutor } from "./kosUplinkExecutor.js";
+import { KosUplinkExecutor, type KosRunListeners } from "./kosUplinkExecutor.js";
 
 export type {
   KosFileDeleted,
@@ -131,11 +131,14 @@ export class KosDataSource {
    * parallel. Rejects if the CPU's tagname doesn't resolve to a known
    * `coreId`, no `kos.run.<coreId>` result arrives within the call timeout,
    * or no telemetry stream is mounted at all (`kOS Uplink not connected`).
+   * `listeners.onLog` hears each value the script hands to
+   * `ADDONS:GONOGO:LOG` while it runs (see {@link KosRunListeners}).
    */
   executeScript(
     cpu: string,
     script: string,
     args: KosScriptArg[],
+    listeners?: KosRunListeners,
   ): Promise<KosData> {
     KOS_DISPATCH_BUDGET.record();
     const client = getActiveTelemetryClient();
@@ -146,7 +149,7 @@ export class KosDataSource {
         ),
       );
     }
-    return this.uplinkExecutor.run(client, cpu, script, args);
+    return this.uplinkExecutor.run(client, cpu, script, args, listeners);
   }
 
   /**

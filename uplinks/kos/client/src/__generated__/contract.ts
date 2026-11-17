@@ -274,9 +274,38 @@ export interface KosRunResult
 	/**
 	* True when the program finished without handing anything back, so the run has
 	* nothing to report: `KosRunResult.fields` and `KosRunResult.error` are both
-	* null. False on every result that carries one of them.
+	* null. False on every result that carries one of them, so the final result of
+	* a run that returned a value or failed reads false.
 	*/
 	ended: boolean;
+	/**
+	* How many `KosLogEntry` the run sent before it ended. A log entry rides its
+	* own channel, so it is not ordered against this result: a reader that has
+	* seen fewer entries than this knows more are still crossing the delay.
+	*/
+	logged: number;
+	/** How many `ADDONS:GONOGO:LOG` calls the run made that the rate limit dropped. */
+	dropped: number;
+}
+/**
+* One value a running script handed to `ADDONS:GONOGO:LOG`, delivered on the
+* `kos.log.<coreId>` dynamic channel (`Delivery.ReliableOrdered`,
+* `DelayRole.Delayed`). The run goes on after it; the run's own result still
+* arrives once on `kos.run.<coreId>`.
+*/
+export interface KosLogEntry
+{
+	/** The emitting CPU's `KosProcessorInfo.coreId`. */
+	coreId: number;
+	/** The `KosRunArgs.requestId` of the run that logged it. */
+	requestId: string;
+	/** This entry's place in its run, counting from zero. */
+	seq: number;
+	/**
+	* The logged value, in the shape described on `KosRunResult.fields` for one
+	* field.
+	*/
+	value?: any | null;
 }
 /**
 * Args for the `kos.cancel` command: abandons the `kos.run` a caller stopped

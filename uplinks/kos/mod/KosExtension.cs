@@ -110,6 +110,7 @@ namespace Gonogo.KosUplink
         }
 #pragma warning disable CS0169 // field is never read in this compilation unit (RegisterKspBindings is the only reader)
         private IDynamicChannelSource? _runSource;
+        private IDynamicChannelSource? _logSource;
 #pragma warning restore CS0169
 
         // Error sink for the command main-thread path. Kept as a delegate (not
@@ -270,6 +271,7 @@ namespace Gonogo.KosUplink
             {
                 new NamespaceDeclaration { Prefix = KosChannels.TerminalPrefix, Template = TerminalNamespace() },
                 new NamespaceDeclaration { Prefix = KosChannels.RunPrefix, Template = RunNamespace() },
+                new NamespaceDeclaration { Prefix = KosChannels.LogPrefix, Template = RunNamespace() },
             },
         };
 
@@ -404,6 +406,10 @@ namespace Gonogo.KosUplink
         /// armed on that CPU ends with them. Returns false when no run was
         /// armed there, so the value had nowhere to go.
         /// </summary>
+        internal bool OnScriptLog(int coreId, object? value) => _runManager.Log(coreId, value);
+
+        internal void WireLogForTests(Action<int, KosLogEntry> publish) => _runManager.SetLogPublisher(publish);
+
         internal bool OnScriptReturn(int coreId, Dictionary<string, object?> fields) =>
             _runManager.Complete(coreId, fields);
 
