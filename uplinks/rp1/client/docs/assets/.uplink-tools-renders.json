@@ -69,6 +69,8 @@
   "construction-full-queue--default.png",
   "construction-not-costed--default.png",
   "construction-rate-and-cancel--default.png",
+  "construction-rate-held--default.png",
+  "construction-rate-in-flight--default.gif",
   "construction-rushing-and-stalled--default.png",
   "contract-payload--default.png",
   "crew-core-stats--default.png",

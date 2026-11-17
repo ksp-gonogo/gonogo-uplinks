@@ -2,12 +2,14 @@ import {
   registerAugment,
   useCommand,
   useTelemetry,
+  type Value,
   value,
 } from "@ksp-gonogo/sitrep-sdk";
 import {
   Badge,
   Countdown,
   EmptyState,
+  heldFigureOf,
   magnitudeOf,
   NULL_DISPLAY,
   Section,
@@ -65,7 +67,8 @@ import "../topics.js";
  * waiting its turn.</para>
  */
 export function KscConstruction() {
-  const available = latest(useTelemetry("rp1.available"));
+  const availableReading = useTelemetry("rp1.available");
+  const available = latest(availableReading);
   const constructionsReading = useTelemetry("rp1.constructions");
   const constructions = latest(constructionsReading);
   const centres = latest(useTelemetry("rp1.centres"));
@@ -83,6 +86,8 @@ export function KscConstruction() {
   }
 
   const rows = constructions ?? [];
+  const held =
+    constructionsReading.state === "held" || availableReading.state === "held";
   // Only worth naming a centre when the career has more than one. RP-1 supports
   // several through KSCSwitcher and most careers run one.
   const nameCentres = (centres ?? []).length > 1;
@@ -115,7 +120,11 @@ export function KscConstruction() {
         // an Uplink that is not reporting look identical if this is left out.
         // The kit's absence chrome rather than a sentence, so it reads as the
         // same kind of thing as every other empty state in this panel.
-        <EmptyState>Nothing being built</EmptyState>
+        <EmptyState>
+          {held
+            ? "Nothing was being built when the link dropped"
+            : "Nothing being built"}
+        </EmptyState>
       ) : (
         <>
           <BuildsTotal
@@ -128,7 +137,8 @@ export function KscConstruction() {
             <ConstructionRow
               cancel={cancel}
               centreNames={centreNames}
-              held={constructionsReading.state === "held"}
+              held={held}
+              reading={constructionsReading}
               key={rowKey(row)}
               nameCentre={nameCentres}
               row={row}
@@ -235,8 +245,10 @@ function ConstructionRow({
   setRate,
   cancel,
   held,
+  reading,
 }: Readonly<{
   held: boolean;
+  reading: Parameters<typeof heldFigureOf>[1];
   row: Rp1ConstructionEntry;
   nameCentre: boolean;
   centreNames: ReadonlyMap<string, string>;
@@ -246,6 +258,8 @@ function ConstructionRow({
 }>) {
   const ratio = magnitudeOf(row.progressRatio);
   const label = rowLabel(row);
+  const marked = <U extends string>(figure: Value<U> | null | undefined) =>
+    figure == null ? figure : heldFigureOf(figure, held ? reading : undefined);
   const centre =
     nameCentre && row.kscName !== undefined && row.kscName !== null
       ? (centreNames.get(row.kscName) ?? row.kscName)
@@ -275,7 +289,8 @@ function ConstructionRow({
         {/* Both figures, never a difference: RP-1's own outstanding balance
             runs through a currency query this Uplink will not evaluate, so a
             subtraction here would look like that number and not be it. */}
-        paid <Unit value={row.spentCost} /> of <Unit value={row.cost} />
+        paid <Unit value={marked(row.spentCost)} /> of{" "}
+        <Unit value={marked(row.cost)} />
       </Text>
 
       {row.isModify === true && (
