@@ -1,7 +1,7 @@
 import type { KosScriptArg } from "../shared/kos-data.js";
 
 /**
- * Parse the trigger widget's free-text args field into typed `KosScriptArg`s
+ * Parse the Script Runner widget's free-text args field into typed `KosScriptArg`s
  * for `executeScript`. Whitespace-separated tokens, with light type
  * inference so a typed `5` reaches the script as the number 5 rather than
  * the string "5" (which the executor would quote), matching an operator's

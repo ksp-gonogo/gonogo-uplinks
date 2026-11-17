@@ -373,9 +373,9 @@ function KosScriptRunnerConfigComponent({
   return (
     <ConfigForm>
       <Field>
-        <FieldLabel htmlFor="kos-trigger-cpu">Pin to CPU</FieldLabel>
+        <FieldLabel htmlFor="kos-runner-cpu">Pin to CPU</FieldLabel>
         <Input
-          id="kos-trigger-cpu"
+          id="kos-runner-cpu"
           type="text"
           value={cpuName}
           onChange={(e) => setCpuName(e.target.value)}
@@ -388,9 +388,9 @@ function KosScriptRunnerConfigComponent({
       </Field>
 
       <Field>
-        <FieldLabel htmlFor="kos-trigger-path">Default script path</FieldLabel>
+        <FieldLabel htmlFor="kos-runner-path">Default script path</FieldLabel>
         <Input
-          id="kos-trigger-path"
+          id="kos-runner-path"
           type="text"
           value={scriptPath}
           onChange={(e) => setScriptPath(e.target.value)}
