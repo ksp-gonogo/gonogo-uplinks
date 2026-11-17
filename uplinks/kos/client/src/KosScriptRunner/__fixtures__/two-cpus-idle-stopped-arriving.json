@@ -4,7 +4,7 @@
     "scenario": "two-cpus-idle-stopped-arriving"
   },
   "_scene": {
-    "widget": "kos-script-trigger",
+    "widget": "kos-script-runner",
     "caption": "The same two CPUs once the link drops",
     "unchangedWhenHeld": "A dispatch control: the CPU tags it lists change only with the craft's parts, so a held list is still the list, and the path, arguments and Run button are the operator's own.",
     "config": {

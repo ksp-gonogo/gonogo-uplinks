@@ -61,7 +61,7 @@ import type {
   KosTerminalOpenArgs,
   KosTerminalResizeArgs,
 } from "../__generated__/contract.js";
-import { parseScriptArgs } from "../KosScriptTrigger/args.js";
+import { parseScriptArgs } from "../KosScriptRunner/args.js";
 import type { KosScriptArg } from "../shared/kos-data.js";
 import { KOS } from "../uplink.js";
 import {
@@ -412,7 +412,7 @@ interface ScriptRunRequest {
 /**
  * Builds the run a confirmed script path and its whitespace-separated argument
  * tokens describe. Each token reaches the script as a number, a boolean or a
- * string, read the same way the Script Trigger reads its arguments.
+ * string, read the same way the Script Runner reads its arguments.
  */
 function buildRunRequest(
   path: string,

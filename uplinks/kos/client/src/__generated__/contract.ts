@@ -312,7 +312,7 @@ export interface KosLogEntry
 * waiting for. The CPU is released for the next run, and the program still
 * running on it is stopped, but only while `KosCancelArgs.requestId` is still
 * the run the CPU is armed for, so a late cancel never disturbs a newer run.
-* Sent by a script trigger when its run times out.
+* Sent by a script runner when its run times out.
 */
 export interface KosCancelArgs
 {

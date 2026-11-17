@@ -53,7 +53,7 @@ export type {
 // the emitted `dist/index.d.ts` and the augmentation would not cross the package
 // boundary.
 export { UPLINK_COMMAND_IDS } from "./commands.js";
-export * from "./KosScriptTrigger/index.js";
+export * from "./KosScriptRunner/index.js";
 export * from "./KosTerminal/index.js";
 // Non-widget infra (defineUplinkClient/registerUplinkHandle side effects,
 // KosCpuDiscovery, the shared CpuRegistryService/Context and the result

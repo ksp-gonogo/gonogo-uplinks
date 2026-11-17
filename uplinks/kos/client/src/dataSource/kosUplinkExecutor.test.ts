@@ -147,7 +147,7 @@ describe("KosUplinkExecutor", () => {
     // `KosRunResult`'s contract is that exactly one of fields/error is
     // non-null, so neither being set is a frame we cannot read. Resolving
     // it as `{}` claimed the script ran and returned nothing, and
-    // KosScriptTrigger drew a green OK over "No fields returned." for a
+    // KosScriptRunner drew a green OK over "No fields returned." for a
     // run whose result never arrived intact.
     const { transport, client } = makeClient();
     const commands = captureDispatches(transport);

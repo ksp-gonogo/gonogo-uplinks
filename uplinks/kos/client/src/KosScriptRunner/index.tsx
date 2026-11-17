@@ -42,7 +42,7 @@ import { parseScriptArgs } from "./args.js";
 import { LogStream, withEntry } from "./LogStream.js";
 import { ResultFields } from "./ResultFields.js";
 
-interface KosScriptTriggerConfig {
+interface KosScriptRunnerConfig {
   /**
    * Tagname of the CPU to run on. When set and present in the live
    * `kos.processors` list it pins the target; the in-widget CPU selector is
@@ -94,9 +94,9 @@ function errorMessage(err: unknown): string {
   return err instanceof Error ? err.message : String(err);
 }
 
-function KosScriptTriggerComponent({
+function KosScriptRunnerComponent({
   config,
-}: Readonly<ComponentProps<KosScriptTriggerConfig>>) {
+}: Readonly<ComponentProps<KosScriptRunnerConfig>>) {
   /*
    * Only CPUs that carry a tagname are dispatchable: `executeScript` resolves
    * its target by tag, so an untagged CPU has no address to run on.
@@ -214,7 +214,7 @@ function KosScriptTriggerComponent({
 
   return (
     <Panel
-      panelTitle="kOS SCRIPT TRIGGER"
+      panelTitle="kOS SCRIPT RUNNER"
       sections={[
         /* One section per field, so a landscape tile runs CPU, path and
            arguments side by side. The button row and the result span, because
@@ -349,14 +349,14 @@ function KosScriptTriggerComponent({
   );
 }
 
-function KosScriptTriggerConfigComponent({
+function KosScriptRunnerConfigComponent({
   config,
   onSave,
-}: Readonly<ConfigComponentProps<KosScriptTriggerConfig>>) {
+}: Readonly<ConfigComponentProps<KosScriptRunnerConfig>>) {
   const [cpuName, setCpuName] = useState(config?.cpuName ?? "");
   const [scriptPath, setScriptPath] = useState(config?.scriptPath ?? "");
 
-  const candidate = useMemo<KosScriptTriggerConfig>(
+  const candidate = useMemo<KosScriptRunnerConfig>(
     () => ({
       cpuName: cpuName.trim() ? cpuName.trim() : undefined,
       scriptPath: scriptPath.trim() ? scriptPath.trim() : undefined,
@@ -421,16 +421,16 @@ function KosScriptTriggerConfigComponent({
   );
 }
 
-registerComponent<KosScriptTriggerConfig>({
-  id: "kos-script-trigger",
-  name: "kOS Script Trigger",
+registerComponent<KosScriptRunnerConfig>({
+  id: "kos-script-runner",
+  name: "kOS Script Runner",
   description: "Run a kerboscript on a kOS CPU and see the result.",
   tags: ["kos", "control"],
   defaultSize: { w: 10, h: 9 },
   minSize: { w: 6, h: 7 },
   openConfigOnAdd: false,
-  component: KosScriptTriggerComponent,
-  configComponent: KosScriptTriggerConfigComponent,
+  component: KosScriptRunnerComponent,
+  configComponent: KosScriptRunnerConfigComponent,
   // The CPU discovery channel this widget picks its target from. Same
   // under-declaration the terminal beside it carried: the app carries
   // `kos.processors` by default so nothing broke, while the declaration a
@@ -441,7 +441,7 @@ registerComponent<KosScriptTriggerConfig>({
   owner: KOS,
 });
 
-export { KosScriptTriggerComponent };
+export { KosScriptRunnerComponent };
 
 const Code = styled.code`
   font-family: var(--font-family-mono, monospace);

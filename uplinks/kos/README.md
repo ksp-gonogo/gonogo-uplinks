@@ -19,7 +19,7 @@ Releases: https://github.com/ksp-gonogo/gonogo-uplinks/releases?q=kos-v
 
 ## Widgets
 
-### kOS Script Trigger
+### kOS Script Runner
 
 Run a kerboscript on a kOS CPU and see the result.
 
@@ -30,7 +30,7 @@ Run a kerboscript on a kOS CPU and see the result.
 
 | | |
 | --- | --- |
-| Widget id | `kos-script-trigger` |
+| Widget id | `kos-script-runner` |
 | Reads, as dotted paths (a Topic id or a field of its payload) | `kos.processors` |
 | Default size, in grid units | 10 × 9 |
 | Smallest size, in grid units | 6 × 7 |

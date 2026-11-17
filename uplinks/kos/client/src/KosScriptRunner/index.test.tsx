@@ -1,5 +1,5 @@
 /**
- * Integration proof for the kOS Script Trigger widget: the real component,
+ * Integration proof for the kOS Script Runner widget: the real component,
  * the real `useStream("kos.processors")` CPU read, and the real
  * `kosSource.executeScript` dispatch → correlate → resolve pipeline, over a
  * real `TelemetryProvider`. Nothing internal is mocked: only the wire is
@@ -19,19 +19,19 @@ import { expectNoA11yViolations } from "@ksp-gonogo/ui-kit/testing";
 import { afterEach, describe, expect, it } from "vitest";
 import { FakeKosUplink } from "../test/FakeKosUplink.js";
 import { kosSource } from "../dataSource/kos.js";
-import { KosScriptTriggerComponent } from "./index.js";
+import { KosScriptRunnerComponent } from "./index.js";
 
 function renderWidget(config: { cpuName?: string; scriptPath?: string } = {}) {
   const fake = FakeKosUplink.install();
   const utils = render(
     <TelemetryProvider client={fake.client}>
-      <KosScriptTriggerComponent id="kos-script-trigger-1" config={config} />
+      <KosScriptRunnerComponent id="kos-script-runner-1" config={config} />
     </TelemetryProvider>,
   );
   return { fake, ...utils };
 }
 
-describe("KosScriptTrigger", () => {
+describe("KosScriptRunner", () => {
   afterEach(() => {
     kosSource.disconnect();
     FakeKosUplink.uninstall();
