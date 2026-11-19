@@ -1203,7 +1203,6 @@ registerComponent<ShipSystemsConfig>({
   ],
   defaultConfig: {},
   actions: [],
-  requires: ["flight"],
   // The slot the Greenhouse augment fills, now named for the widget that
   // actually hosts it. It carried the deleted LifeSupportSystems widget's
   // `life-support.` prefix until the rename, which matched no registered

@@ -303,7 +303,6 @@ registerComponent<MechJebConfig>({
   dataRequirements: ["comms.delay"],
   defaultConfig: { defaultAscentAltitudeKm: DEFAULT_ASCENT_ALTITUDE_KM },
   actions: mechjebActions,
-  requires: ["flight"],
   owner: MECHJEB,
 });
 

@@ -33,7 +33,6 @@ Kerbalism resources, habitat, wear and radiation for your vessel.
 | Widget id | `ship-systems` |
 | Reads | `kerbalism.profile`, `kerbalism.lifesupport`, `vessel.resources`, `vessel.crew`, `vessel.identity` |
 | Slots of its own | `ship-systems.life-support` |
-| Needs | a vessel in flight |
 | Default size, in grid units | 12 × 24 |
 | Smallest size, in grid units | 4 × 5 |
 | Scenes | 6 |
@@ -54,7 +53,6 @@ Solar activity, coronal mass ejections and your craft's radiation dose.
 | Widget id | `space-weather` |
 | Reads | `kerbalism.spaceweather` |
 | Also reads, if the mod publishes them | `vessel.flight` |
-| Needs | a vessel in flight |
 | Default size, in grid units | 8 × 11 |
 | Smallest size, in grid units | 3 × 4 |
 | Scenes | 8 |

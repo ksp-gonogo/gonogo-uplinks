@@ -32,7 +32,6 @@ Angle of attack, stall, lift and drag from FAR.
 | --- | --- |
 | Widget id | `aerodynamics` |
 | Reads | `aero.state` |
-| Needs | a vessel in flight |
 | Default size, in grid units | 4 × 7 |
 | Smallest size, in grid units | 4 × 5 |
 | Scenes | 4 |

@@ -33,9 +33,7 @@
         "ship-systems.life-support"
       ],
       "contributionSlots": [],
-      "requires": [
-        "flight"
-      ],
+      "requires": [],
       "replaces": null,
       "pushable": false,
       "defaultSize": {
@@ -71,9 +69,7 @@
       "actions": [],
       "augmentSlots": [],
       "contributionSlots": [],
-      "requires": [
-        "flight"
-      ],
+      "requires": [],
       "replaces": null,
       "pushable": false,
       "defaultSize": {
