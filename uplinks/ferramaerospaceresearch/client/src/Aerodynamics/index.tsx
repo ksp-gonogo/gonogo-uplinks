@@ -210,6 +210,5 @@ registerComponent<AeroConfig>({
   channels: ["aero.state"],
   defaultConfig: {},
   actions: [],
-  requires: ["flight"],
   owner: AERO,
 });
