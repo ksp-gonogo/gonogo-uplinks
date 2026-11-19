@@ -1527,6 +1527,7 @@ registerComponent<SpaceWeatherConfig>({
   optionalChannels: ["vessel.flight"],
   defaultConfig: {},
   actions: [],
+  requires: ["flight"],
   owner: KERBALISM,
 });
 
