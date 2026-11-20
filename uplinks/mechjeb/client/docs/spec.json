@@ -7,7 +7,7 @@
     "description": "Integrates MechJeb controls into the dashboard.",
     "wraps": {
       "name": "MechJeb2",
-      "builtAgainst": "2.15.3.0",
+      "builtAgainst": "2.15.4.0",
       "tier": "ckan"
     }
   },
