@@ -6,14 +6,23 @@
   "gamedata": "GonogoFerramAerospaceResearchUplink",
   "dll": "GonogoFerramAerospaceResearchUplink.dll",
   "minAppVersion": "0.0.0",
-  "spacedock": { "modId": 4833 },
+  "spacedock": {
+    "modId": 4833
+  },
   "mod": {
     "name": "Ferram Aerospace Research",
     "tier": "ckan",
     "ckan": "FerramAerospaceResearchContinued",
-    "builtAgainst": "0.16.1.2",
-    "ckanVersion": "3:0.16.1.2",
-    "channels": [{ "ckan": "FerramAerospaceResearchContinued" }, { "github": "KSPModStewards/Ferram-Aerospace-Research" }]
+    "builtAgainst": "0.17.0.0",
+    "ckanVersion": "3:0.17.0.0",
+    "channels": [
+      {
+        "ckan": "FerramAerospaceResearchContinued"
+      },
+      {
+        "github": "KSPModStewards/Ferram-Aerospace-Research"
+      }
+    ]
   },
   "codegen": {
     "assembly": "GonogoFerramAerospaceResearchUplink.Contract",

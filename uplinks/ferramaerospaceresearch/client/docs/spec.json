@@ -7,7 +7,7 @@
     "description": "Adds Ferram Aerospace Research's own aerodynamics data to the dashboard, including through its own Aerodynamics widget.",
     "wraps": {
       "name": "Ferram Aerospace Research",
-      "builtAgainst": "0.16.1.2",
+      "builtAgainst": "0.17.0.0",
       "tier": "ckan"
     }
   },
