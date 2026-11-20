@@ -7,7 +7,7 @@
     "description": "Integrates RealAntennas' model into Gonogo. Antenna data is shown in the CommNet widget.",
     "wraps": {
       "name": "RealAntennas",
-      "builtAgainst": "2.11.1.0",
+      "builtAgainst": "2.12.0.0",
       "tier": "ckan"
     }
   },
