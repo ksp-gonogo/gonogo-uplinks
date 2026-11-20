@@ -7,7 +7,7 @@
     "description": "Adds life support meters for crew status, and new widgets for tracking life support systems and CMEs.",
     "wraps": {
       "name": "Kerbalism",
-      "builtAgainst": "3.32",
+      "builtAgainst": "3.44",
       "tier": "ckan"
     }
   },
