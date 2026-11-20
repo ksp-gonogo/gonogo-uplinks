@@ -35,6 +35,9 @@ const legs = JSON.parse(
   }),
 );
 
+// The built-against version stays out of the table: it moves with every
+// dependency bump, and a shared file every bump rewrites makes bump pull
+// requests conflict. Each Uplink's own README carries its version.
 const rows = legs.map((leg) => {
   const declared = JSON.parse(
     readFileSync(join(ROOT, "uplinks", leg.name, "uplink.json"), "utf8"),
@@ -46,7 +49,7 @@ const rows = legs.map((leg) => {
     ? `uplinks/${leg.name}/README.md`
     : `uplinks/${leg.name}/`;
   const wraps = declared.mod
-    ? `${declared.mod.name} ${declared.mod.builtAgainst} (${declared.mod.tier})`
+    ? `${declared.mod.name} (${declared.mod.tier})`
     : "nothing, self-contained";
   return `| [${declared.name}](${href}) | \`${declared.id}\` | ${wraps} |`;
 });
@@ -80,7 +83,7 @@ if (check) {
     console.error(
       "✖ the root README's Uplink table is out of date. Run:\n" +
         "    node tooling/generate-root-readme.mjs\n" +
-        "  An Uplink was added, renamed, or changed what it wraps, and the front door still\n" +
+        "  An Uplink was added, renamed, or wraps a different mod, and the front door still\n" +
         "  describes the repo as it was.",
     );
     process.exit(1);

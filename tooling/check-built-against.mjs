@@ -68,7 +68,11 @@ function compilesAgainst(dir, assembly) {
 const readJson = (path) => JSON.parse(readFileSync(path, "utf8"));
 
 /** Every disagreement found for one Uplink, as sentences. */
-export function problemsFor(name, root = ROOT, { requireAssembly = false } = {}) {
+export function problemsFor(
+  name,
+  root = ROOT,
+  { requireAssembly = false, gamedata = join(root, "vendor", "gamedata") } = {},
+) {
   const dir = join(root, "uplinks", name);
   const uplink = readJson(join(dir, "uplink.json"));
   const claimed = uplink.mod?.builtAgainst;
@@ -96,7 +100,7 @@ export function problemsFor(name, root = ROOT, { requireAssembly = false } = {})
   }
 
   if (uplink.mod?.assembly) {
-    const dll = join(root, "vendor", "gamedata", uplink.mod.assembly);
+    const dll = join(gamedata, uplink.mod.assembly);
     if (!existsSync(dll)) {
       if (requireAssembly && compilesAgainst(dir, uplink.mod.assembly)) problems.push(`${name}: ${dll} is not in the reference set`);
     } else {

@@ -394,7 +394,7 @@ jobs:
         if: (failure() || steps.docs.outcome == 'failure') && inputs.client && inputs.prepare_args == ''
         continue-on-error: true
         run: |
-          (cd "uplinks/${{ inputs.name }}/client" && npm exec --no -- uplink-tools render --out "$GITHUB_WORKSPACE/artifacts/renders-${{ inputs.id }}")
+          node tooling/uplink-tools.mjs "${{ inputs.name }}" render --out "$GITHUB_WORKSPACE/artifacts/renders-${{ inputs.id }}"
 
       # Uploaded on failure as well as success: a leg that fails is the one whose
       # output someone needs to read, and a success-only upload throws exactly

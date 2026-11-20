@@ -29,6 +29,7 @@ import { tmpdir } from "node:os";
 import { dirname, join, relative, resolve } from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
 import { buildClientlessReadme } from "./clientless-page.mjs";
+import { problemsFor } from "./check-built-against.mjs";
 import { describeMoves, diffInterface, parseDeclarations, usedBy } from "./principia-proto.mjs";
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), "..");
@@ -103,6 +104,16 @@ export const supersededBy = (items, uplink, dependency, version) =>
       olderThan(found.version, version)
     );
   });
+
+/**
+ * What the reference set `main` of ksp-managed holds lacks for a bump to pass
+ * CI, as one sentence per gap, or none when the set already carries the version
+ * the Uplink now says it builds against. Read from the checked-out set the leg
+ * resolved, before the new assemblies are committed to a branch of it.
+ */
+export function referenceGaps(name, gamedata, root = ROOT) {
+  return problemsFor(name, root, { requireAssembly: true, gamedata });
+}
 
 const FOOTER =
   "Types and tests passed; behaviour is not checked. Load order, patches and play against the game are not attempted, so a change in how the mod behaves stays an in-game test.";
@@ -320,15 +331,6 @@ export function rebakeAndCheck(name) {
 }
 
 /**
- * Rewrites the root README's Uplink table, which lists the version each Uplink is
- * built against. A bump moves that version, and CI's `discover` job fails a table
- * that no longer matches the `uplink.json` files.
- */
-export function refreshRootReadme(root = ROOT) {
-  sh("node", [join(root, "tooling", "generate-root-readme.mjs")], { cwd: root });
-}
-
-/**
  * Rewrites the README of an Uplink with no client from its `uplink.json`, the way
  * `uplink-docs.mjs` does, so its "Built against" line follows a bump. An Uplink
  * with a client gets its page from the client's docs run and is left alone.
@@ -474,7 +476,6 @@ export async function main(argv) {
       try {
         applyCheck(result, rebakeAndCheck(name));
         refreshClientlessReadme(name);
-        refreshRootReadme();
         const watch = PROTO_WATCH[name];
         if (watch) {
           const verdict = await interfaceCheck({ name, watch, report, dep });
@@ -501,11 +502,18 @@ export async function main(argv) {
           branch,
           subject: `${dep.name} ${dep.newest}`,
         }).note;
+        const gaps = gamedata ? referenceGaps(name, resolve(gamedata)) : [];
+        if (gaps.length > 0) {
+          const reason = `ksp-managed must be updated first: merge ${managedNote} into its main, then this runs again. ${gaps.join("; ")}`;
+          console.error(`::warning title=${key}::${reason}`);
+          record(dep, "reference-first", { reason });
+          continue;
+        }
       }
       if (proto && result.verdict !== "red") {
         writeFileSync(join(ROOT, "uplinks", name, PROTO_WATCH[name].vetted), proto);
       }
-      sh("git", ["add", "-A", `uplinks/${name}`, "README.md"]);
+      sh("git", ["add", "-A", `uplinks/${name}`]);
       sh("git", ["commit", "-q", "-m", subject]);
       sh("git", ["push", "--force", "origin", `HEAD:refs/heads/${branch}`]);
 

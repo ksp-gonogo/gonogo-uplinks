@@ -48,7 +48,7 @@ export function compose({ uplink, code, report, outcomes, runUrl }) {
       .filter((d) => d.state === "behind")
       .map((d) => ({ name: d.name, from: d.pinned, to: d.newest, outcome: "error", reason: "the bump did not finish" }));
   }
-  const worst = ["error", "red", "unverified", "green", "already-open", "behind"].find((o) =>
+  const worst = ["error", "red", "reference-first", "unverified", "green", "already-open", "behind"].find((o) =>
     dependencies.some((d) => d.outcome === o),
   );
   return {

@@ -18,7 +18,7 @@ import {
   prTitle,
   reasonOf,
   refreshClientlessReadme,
-  refreshRootReadme,
+  referenceGaps,
   supersededBy,
 } from "./uplink-deps.mjs";
 
@@ -133,7 +133,7 @@ test("a passing check leaves an unverified verdict alone", () => {
   assert.equal(r.verdict, "unverified");
 });
 
-test("a bump leaves the root README table current", () => {
+test("a bump leaves the root README table as it was, so bump pull requests cannot conflict on it", () => {
   const repo = join(dirname(fileURLToPath(import.meta.url)), "..");
   const root = mkdtempSync(join(tmpdir(), "uplink-deps-readme-"));
   try {
@@ -149,18 +149,40 @@ test("a bump leaves the root README table current", () => {
         JSON.stringify({ id: "demo", name: "Demo", mod: { name: "DemoMod", builtAgainst, tier: "reflection" } }),
       );
     writeFileSync(join(root, "README.md"), "# Repo\n<!-- uplinks:start -->\n<!-- uplinks:end -->\n");
-    const check = () =>
-      spawnSync("node", [join(root, "tooling", "generate-root-readme.mjs"), "--check"], { encoding: "utf8" }).status;
+    const run = (...args) =>
+      spawnSync("node", [join(root, "tooling", "generate-root-readme.mjs"), ...args], { encoding: "utf8" }).status;
 
     declare("1.0.0");
-    refreshRootReadme(root);
-    assert.equal(check(), 0);
-
+    assert.equal(run(), 0);
     declare("1.1.0");
-    assert.equal(check(), 1, "the bump moved the version the table lists");
-    refreshRootReadme(root);
-    assert.equal(check(), 0);
-    assert.ok(readFileSync(join(root, "README.md"), "utf8").includes("DemoMod 1.1.0"));
+    assert.equal(run("--check"), 0, "a new built-against version does not make the table stale");
+    assert.ok(!readFileSync(join(root, "README.md"), "utf8").includes("1.0.0"));
+  } finally {
+    rmSync(root, { recursive: true, force: true });
+  }
+});
+
+test("a reference set holding the old assembly is a gap, one holding the new version is not", () => {
+  const root = mkdtempSync(join(tmpdir(), "uplink-deps-gap-"));
+  try {
+    mkdirSync(join(root, "uplinks", "demo", "mod"), { recursive: true });
+    writeFileSync(
+      join(root, "uplinks", "demo", "uplink.json"),
+      JSON.stringify({ mod: { name: "Demo", builtAgainst: "2.0.0.0", assembly: "Demo/Demo.dll" } }),
+    );
+    writeFileSync(
+      join(root, "uplinks", "demo", "mod", "x.csproj"),
+      "<Project><HintPath>$(KspGameData)/Demo/Demo.dll</HintPath></Project>",
+    );
+    const gamedata = join(root, "gamedata");
+    assert.equal(referenceGaps("demo", gamedata, root).length, 1, "no assembly at all");
+    mkdirSync(join(gamedata, "Demo"), { recursive: true });
+    const dll = (version) =>
+      Buffer.from(`FileVersion\0\0${version}\0`, "utf16le");
+    writeFileSync(join(gamedata, "Demo", "Demo.dll"), dll("1.0.0.0"));
+    assert.match(referenceGaps("demo", gamedata, root)[0], /is 1\.0\.0\.0, builtAgainst is 2\.0\.0\.0/);
+    writeFileSync(join(gamedata, "Demo", "Demo.dll"), dll("2.0.0.0"));
+    assert.deepEqual(referenceGaps("demo", gamedata, root), []);
   } finally {
     rmSync(root, { recursive: true, force: true });
   }
