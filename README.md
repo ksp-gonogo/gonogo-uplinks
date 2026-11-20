@@ -8,7 +8,7 @@ built and released on its own, and loaded by the app at runtime.
 | Uplink | id | wraps |
 |---|---|---|
 | [Action Groups Extended](uplinks/actiongroupsextended/README.md) | `actionGroupsExtended` | Action Groups Extended 2.4.1.4 (ckan) |
-| [Contract Configurator](uplinks/contractconfigurator/README.md) | `contractConfigurator` | Contract Configurator 2.13.3.0 (ckan) |
+| [Contract Configurator](uplinks/contractconfigurator/README.md) | `contractConfigurator` | Contract Configurator 2.14.0.0 (ckan) |
 | [Ferram Aerospace Research](uplinks/ferramaerospaceresearch/README.md) | `aero` | Ferram Aerospace Research 0.16.1.2 (ckan) |
 | [Kerbalism](uplinks/kerbalism/README.md) | `kerbalism` | Kerbalism 3.32 (ckan) |
 | [Kerbcast](uplinks/kerbcast/README.md) | `kerbcast` | kerbcast 1.13.0 (ckan) |
