@@ -7,7 +7,7 @@ Adds Ferram Aerospace Research's own aerodynamics data to the dashboard, includi
 
 An Uplink for [Gonogo](https://ksp-gonogo.github.io/), the mission-control dashboard for Kerbal Space Program that runs in a web browser on any screen.
 
-Built against Ferram Aerospace Research 0.16.1.2.
+Built against Ferram Aerospace Research 0.17.0.0.
 
 ## Install
 
