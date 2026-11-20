@@ -7,7 +7,7 @@ Integrates RealAntennas' model into Gonogo. Antenna data is shown in the CommNet
 
 An Uplink for [Gonogo](https://ksp-gonogo.github.io/), the mission-control dashboard for Kerbal Space Program that runs in a web browser on any screen.
 
-Built against RealAntennas 2.11.1.0.
+Built against RealAntennas 2.12.0.0.
 
 ## Install
 
