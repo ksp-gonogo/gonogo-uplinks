@@ -17,6 +17,7 @@ import {
   prBody,
   prTitle,
   reasonOf,
+  refreshClientlessReadme,
   refreshRootReadme,
   supersededBy,
 } from "./uplink-deps.mjs";
@@ -160,6 +161,42 @@ test("a bump leaves the root README table current", () => {
     refreshRootReadme(root);
     assert.equal(check(), 0);
     assert.ok(readFileSync(join(root, "README.md"), "utf8").includes("DemoMod 1.1.0"));
+  } finally {
+    rmSync(root, { recursive: true, force: true });
+  }
+});
+
+test("a bump of an Uplink with no client rewrites its own README, and leaves a client Uplink's alone", () => {
+  const root = mkdtempSync(join(tmpdir(), "uplink-deps-clientless-"));
+  try {
+    const declare = (name, builtAgainst) => {
+      mkdirSync(join(root, "uplinks", name), { recursive: true });
+      writeFileSync(
+        join(root, "uplinks", name, "uplink.json"),
+        JSON.stringify({
+          id: name,
+          name: "Demo",
+          description: "Integrates Demo with Gonogo.",
+          repo: "https://github.com/o/r",
+          gamedata: "GonogoDemoUplink",
+          mod: { name: "Demo", tier: "ckan", builtAgainst },
+        }),
+      );
+    };
+    const readme = (name) => join(root, "uplinks", name, "README.md");
+
+    declare("bare", "1.0.0");
+    refreshClientlessReadme("bare", root);
+    assert.match(readFileSync(readme("bare"), "utf8"), /Built against Demo 1\.0\.0\./);
+    declare("bare", "1.1.0");
+    refreshClientlessReadme("bare", root);
+    assert.match(readFileSync(readme("bare"), "utf8"), /Built against Demo 1\.1\.0\./);
+
+    declare("withclient", "1.0.0");
+    mkdirSync(join(root, "uplinks", "withclient", "client"));
+    writeFileSync(join(root, "uplinks", "withclient", "client", "package.json"), "{}\n");
+    refreshClientlessReadme("withclient", root);
+    assert.throws(() => readFileSync(readme("withclient"), "utf8"), /ENOENT/);
   } finally {
     rmSync(root, { recursive: true, force: true });
   }

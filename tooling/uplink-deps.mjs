@@ -28,6 +28,7 @@ import {
 import { tmpdir } from "node:os";
 import { dirname, join, relative, resolve } from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
+import { buildClientlessReadme } from "./clientless-page.mjs";
 import { describeMoves, diffInterface, parseDeclarations, usedBy } from "./principia-proto.mjs";
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), "..");
@@ -327,6 +328,18 @@ export function refreshRootReadme(root = ROOT) {
   sh("node", [join(root, "tooling", "generate-root-readme.mjs")], { cwd: root });
 }
 
+/**
+ * Rewrites the README of an Uplink with no client from its `uplink.json`, the way
+ * `uplink-docs.mjs` does, so its "Built against" line follows a bump. An Uplink
+ * with a client gets its page from the client's docs run and is left alone.
+ */
+export function refreshClientlessReadme(name, root = ROOT) {
+  const dir = join(root, "uplinks", name);
+  if (existsSync(join(dir, "client", "package.json"))) return;
+  const declared = JSON.parse(readFileSync(join(dir, "uplink.json"), "utf8"));
+  writeFileSync(join(dir, "README.md"), buildClientlessReadme(declared));
+}
+
 function findClientBundle(dir) {
   for (const entry of readdirSync(dir)) {
     const path = join(dir, entry);
@@ -460,6 +473,7 @@ export async function main(argv) {
       let proto;
       try {
         applyCheck(result, rebakeAndCheck(name));
+        refreshClientlessReadme(name);
         refreshRootReadme();
         const watch = PROTO_WATCH[name];
         if (watch) {
