@@ -318,6 +318,15 @@ export function rebakeAndCheck(name) {
       };
 }
 
+/**
+ * Rewrites the root README's Uplink table, which lists the version each Uplink is
+ * built against. A bump moves that version, and CI's `discover` job fails a table
+ * that no longer matches the `uplink.json` files.
+ */
+export function refreshRootReadme(root = ROOT) {
+  sh("node", [join(root, "tooling", "generate-root-readme.mjs")], { cwd: root });
+}
+
 function findClientBundle(dir) {
   for (const entry of readdirSync(dir)) {
     const path = join(dir, entry);
@@ -451,6 +460,7 @@ export async function main(argv) {
       let proto;
       try {
         applyCheck(result, rebakeAndCheck(name));
+        refreshRootReadme();
         const watch = PROTO_WATCH[name];
         if (watch) {
           const verdict = await interfaceCheck({ name, watch, report, dep });
@@ -481,7 +491,7 @@ export async function main(argv) {
       if (proto && result.verdict !== "red") {
         writeFileSync(join(ROOT, "uplinks", name, PROTO_WATCH[name].vetted), proto);
       }
-      sh("git", ["add", "-A", `uplinks/${name}`]);
+      sh("git", ["add", "-A", `uplinks/${name}`, "README.md"]);
       sh("git", ["commit", "-q", "-m", subject]);
       sh("git", ["push", "--force", "origin", `HEAD:refs/heads/${branch}`]);
 

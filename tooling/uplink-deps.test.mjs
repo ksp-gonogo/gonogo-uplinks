@@ -1,5 +1,10 @@
 import assert from "node:assert/strict";
+import { spawnSync } from "node:child_process";
+import { cpSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
+import { tmpdir } from "node:os";
+import { dirname, join } from "node:path";
 import { test } from "node:test";
+import { fileURLToPath } from "node:url";
 import {
   applyCheck,
   branchOf,
@@ -12,6 +17,7 @@ import {
   prBody,
   prTitle,
   reasonOf,
+  refreshRootReadme,
   supersededBy,
 } from "./uplink-deps.mjs";
 
@@ -124,4 +130,37 @@ test("a passing check leaves an unverified verdict alone", () => {
   const r = result("unverified", { checks: [{ name: "check", status: "skipped" }] });
   applyCheck(r, { name: "check", status: "pass" });
   assert.equal(r.verdict, "unverified");
+});
+
+test("a bump leaves the root README table current", () => {
+  const repo = join(dirname(fileURLToPath(import.meta.url)), "..");
+  const root = mkdtempSync(join(tmpdir(), "uplink-deps-readme-"));
+  try {
+    mkdirSync(join(root, "tooling"));
+    mkdirSync(join(root, "scripts"));
+    cpSync(join(repo, "tooling", "generate-root-readme.mjs"), join(root, "tooling", "generate-root-readme.mjs"));
+    cpSync(join(repo, "scripts", "uplink-matrix.mjs"), join(root, "scripts", "uplink-matrix.mjs"));
+    mkdirSync(join(root, "uplinks", "demo", "client"), { recursive: true });
+    writeFileSync(join(root, "uplinks", "demo", "client", "package.json"), "{}\n");
+    const declare = (builtAgainst) =>
+      writeFileSync(
+        join(root, "uplinks", "demo", "uplink.json"),
+        JSON.stringify({ id: "demo", name: "Demo", mod: { name: "DemoMod", builtAgainst, tier: "reflection" } }),
+      );
+    writeFileSync(join(root, "README.md"), "# Repo\n<!-- uplinks:start -->\n<!-- uplinks:end -->\n");
+    const check = () =>
+      spawnSync("node", [join(root, "tooling", "generate-root-readme.mjs"), "--check"], { encoding: "utf8" }).status;
+
+    declare("1.0.0");
+    refreshRootReadme(root);
+    assert.equal(check(), 0);
+
+    declare("1.1.0");
+    assert.equal(check(), 1, "the bump moved the version the table lists");
+    refreshRootReadme(root);
+    assert.equal(check(), 0);
+    assert.ok(readFileSync(join(root, "README.md"), "utf8").includes("DemoMod 1.1.0"));
+  } finally {
+    rmSync(root, { recursive: true, force: true });
+  }
 });
