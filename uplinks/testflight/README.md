@@ -7,7 +7,7 @@ Adds the ability for Gonogo to display TestFlight reliability in the Vessel Cata
 
 An Uplink for [Gonogo](https://ksp-gonogo.github.io/), the mission-control dashboard for Kerbal Space Program that runs in a web browser on any screen.
 
-Built against TestFlight 2.12.0.0.
+Built against TestFlight 2.12.1.0.
 
 ## Install
 
