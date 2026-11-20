@@ -7,16 +7,29 @@
   "gamedata": "GonogoContractConfiguratorUplink",
   "dll": "GonogoContractConfiguratorUplink.dll",
   "minAppVersion": "0.0.0",
-  "spacedock": { "modId": 4832 },
+  "spacedock": {
+    "modId": 4832
+  },
   "mod": {
     "name": "Contract Configurator",
     "tier": "ckan",
     "ckan": "ContractConfigurator",
-    "builtAgainst": "2.13.3.0",
-    "ckanVersion": "v2.13.3.0",
+    "builtAgainst": "2.14.0.0",
+    "ckanVersion": "v2.14.0.0",
     "assembly": "ContractConfigurator/ContractConfigurator.dll",
-    "channels": [{ "ckan": "ContractConfigurator" }, { "github": "KSP-RO/ContractConfigurator" }]
+    "channels": [
+      {
+        "ckan": "ContractConfigurator"
+      },
+      {
+        "github": "KSP-RO/ContractConfigurator"
+      }
+    ]
   },
-  "ckanDepends": [{ "name": "Harmony2" }],
+  "ckanDepends": [
+    {
+      "name": "Harmony2"
+    }
+  ],
   "csharpNamespace": "Gonogo.ContractConfiguratorUplink"
 }

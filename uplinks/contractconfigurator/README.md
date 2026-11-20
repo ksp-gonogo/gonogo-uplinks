@@ -7,7 +7,7 @@ Integrates the Contract Configurator model with Gonogo.
 
 An Uplink for [Gonogo](https://ksp-gonogo.github.io/), the mission-control dashboard for Kerbal Space Program that runs in a web browser on any screen.
 
-Built against Contract Configurator 2.13.3.0.
+Built against Contract Configurator 2.14.0.0.
 
 ## Install
 
