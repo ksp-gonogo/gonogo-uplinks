@@ -7,7 +7,7 @@
     "description": "Adds the RP-1 career to the dashboard: Programs, build queues, research.",
     "wraps": {
       "name": "RP-1",
-      "builtAgainst": "4.7.0.0",
+      "builtAgainst": "4.8.1.0",
       "tier": "ckan"
     }
   },

@@ -6,26 +6,51 @@
   "gamedata": "GonogoRp1Uplink",
   "dll": "GonogoRp1Uplink.dll",
   "minAppVersion": "0.0.0",
-  "spacedock": { "modId": 4841 },
+  "spacedock": {
+    "modId": 4841
+  },
   "mod": {
     "name": "RP-1",
     "tier": "ckan",
     "ckan": "RP-1",
-    "builtAgainst": "4.7.0.0",
-    "ckanVersion": "v4.7.0.0",
-    "channels": [{ "ckan": "RP-1" }, { "github": "KSP-RO/RP-1" }]
+    "builtAgainst": "4.8.1.0",
+    "ckanVersion": "v4.8.1.0",
+    "channels": [
+      {
+        "ckan": "RP-1"
+      },
+      {
+        "github": "KSP-RO/RP-1"
+      }
+    ]
   },
   "ckanDepends": [
-    { "name": "GonogoContractConfiguratorUplink" },
-    { "name": "GonogoFerramAerospaceResearchUplink" },
-    { "name": "GonogoKerbalismUplink" },
-    { "name": "GonogoRealFuelsUplink" }
+    {
+      "name": "GonogoContractConfiguratorUplink"
+    },
+    {
+      "name": "GonogoFerramAerospaceResearchUplink"
+    },
+    {
+      "name": "GonogoKerbalismUplink"
+    },
+    {
+      "name": "GonogoRealFuelsUplink"
+    }
   ],
   "ckanRecommends": [
-    { "name": "GonogoKosUplink" },
-    { "name": "GonogoMechJebUplink" },
-    { "name": "GonogoRealAntennasUplink" },
-    { "name": "GonogoTestFlightUplink" }
+    {
+      "name": "GonogoKosUplink"
+    },
+    {
+      "name": "GonogoMechJebUplink"
+    },
+    {
+      "name": "GonogoRealAntennasUplink"
+    },
+    {
+      "name": "GonogoTestFlightUplink"
+    }
   ],
   "codegen": {
     "assembly": "GonogoRp1Uplink.Contract",
