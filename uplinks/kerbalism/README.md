@@ -7,7 +7,7 @@ Adds life support meters for crew status, and new widgets for tracking life supp
 
 An Uplink for [Gonogo](https://ksp-gonogo.github.io/), the mission-control dashboard for Kerbal Space Program that runs in a web browser on any screen.
 
-Built against Kerbalism 3.32.
+Built against Kerbalism 3.44.
 
 ## Install
 
