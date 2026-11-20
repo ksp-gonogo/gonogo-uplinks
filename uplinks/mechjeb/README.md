@@ -7,7 +7,7 @@ Integrates MechJeb controls into the dashboard.
 
 An Uplink for [Gonogo](https://ksp-gonogo.github.io/), the mission-control dashboard for Kerbal Space Program that runs in a web browser on any screen.
 
-Built against MechJeb2 2.15.3.0.
+Built against MechJeb2 2.15.4.0.
 
 ## Install
 

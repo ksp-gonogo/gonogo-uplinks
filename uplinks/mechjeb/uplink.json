@@ -6,15 +6,24 @@
   "gamedata": "GonogoMechJebUplink",
   "dll": "GonogoMechJebUplink.dll",
   "minAppVersion": "0.0.0",
-  "spacedock": { "modId": 4837 },
+  "spacedock": {
+    "modId": 4837
+  },
   "mod": {
     "name": "MechJeb2",
     "tier": "ckan",
     "ckan": "MechJeb2",
-    "builtAgainst": "2.15.3.0",
-    "ckanVersion": "2.15.3.0",
+    "builtAgainst": "2.15.4.0",
+    "ckanVersion": "2.15.4.0",
     "assembly": "MechJeb2/Plugins/MechJeb2.dll",
-    "channels": [{ "ckan": "MechJeb2" }, { "github": "MuMech/MechJeb2" }]
+    "channels": [
+      {
+        "ckan": "MechJeb2"
+      },
+      {
+        "github": "MuMech/MechJeb2"
+      }
+    ]
   },
   "codegen": {
     "assembly": "GonogoMechJebUplink.Contract",
