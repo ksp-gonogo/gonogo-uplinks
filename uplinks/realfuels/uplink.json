@@ -6,15 +6,24 @@
   "gamedata": "GonogoRealFuelsUplink",
   "dll": "GonogoRealFuelsUplink.dll",
   "minAppVersion": "0.0.0",
-  "spacedock": { "modId": 4840 },
+  "spacedock": {
+    "modId": 4840
+  },
   "mod": {
     "name": "RealFuels",
     "tier": "ckan",
     "ckan": "RealFuels",
-    "builtAgainst": "15.15.0",
-    "ckanVersion": "1:v15.15.0.0",
+    "builtAgainst": "15.16.1.0",
+    "ckanVersion": "1:v15.16.1.0",
     "assembly": "RealFuels/Plugins/RealFuels.dll",
-    "channels": [{ "ckan": "RealFuels" }, { "github": "KSP-RO/RealFuels" }]
+    "channels": [
+      {
+        "ckan": "RealFuels"
+      },
+      {
+        "github": "KSP-RO/RealFuels"
+      }
+    ]
   },
   "codegen": {
     "assembly": "GonogoRealFuelsUplink.Contract",
