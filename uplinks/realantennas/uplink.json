@@ -6,14 +6,23 @@
   "gamedata": "GonogoRealAntennasUplink",
   "dll": "GonogoRealAntennasUplink.dll",
   "minAppVersion": "0.0.0",
-  "spacedock": { "modId": 4839 },
+  "spacedock": {
+    "modId": 4839
+  },
   "mod": {
     "name": "RealAntennas",
     "tier": "ckan",
     "ckan": "RealAntennas",
-    "builtAgainst": "2.11.1.0",
-    "ckanVersion": "v2.11.1.0",
-    "channels": [{ "ckan": "RealAntennas" }, { "github": "KSP-RO/RealAntennas" }]
+    "builtAgainst": "2.12.0.0",
+    "ckanVersion": "v2.12.0.0",
+    "channels": [
+      {
+        "ckan": "RealAntennas"
+      },
+      {
+        "github": "KSP-RO/RealAntennas"
+      }
+    ]
   },
   "codegen": {
     "assembly": "GonogoRealAntennasUplink.Contract",
