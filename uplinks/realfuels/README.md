@@ -7,7 +7,7 @@ Integrates RealFuels data into Gonogo.
 
 An Uplink for [Gonogo](https://ksp-gonogo.github.io/), the mission-control dashboard for Kerbal Space Program that runs in a web browser on any screen.
 
-Built against RealFuels 15.15.0.
+Built against RealFuels 15.16.1.0.
 
 ## Install
 

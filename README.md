@@ -16,7 +16,7 @@ built and released on its own, and loaded by the app at runtime.
 | [MechJeb](uplinks/mechjeb/README.md) | `mechjeb` | MechJeb2 2.15.3.0 (ckan) |
 | [Principia](uplinks/principia/README.md) | `principia` | Principia 2026110907-Lie (manual) |
 | [RealAntennas](uplinks/realantennas/README.md) | `realantennas` | RealAntennas 2.11.1.0 (ckan) |
-| [RealFuels](uplinks/realfuels/README.md) | `realfuels` | RealFuels 15.15.0 (ckan) |
+| [RealFuels](uplinks/realfuels/README.md) | `realfuels` | RealFuels 15.16.1.0 (ckan) |
 | [RP-1](uplinks/rp1/README.md) | `rp1` | RP-1 4.7.0.0 (ckan) |
 | [SCANsat](uplinks/scansat/README.md) | `scansat` | SCANsat 21.1 (ckan) |
 | [TestFlight](uplinks/testflight/README.md) | `testflight` | TestFlight 2.12.0.0 (ckan) |

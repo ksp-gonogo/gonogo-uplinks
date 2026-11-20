@@ -7,7 +7,7 @@
     "description": "Integrates RealFuels data into Gonogo.",
     "wraps": {
       "name": "RealFuels",
-      "builtAgainst": "15.15.0",
+      "builtAgainst": "15.16.1.0",
       "tier": "ckan"
     }
   },
