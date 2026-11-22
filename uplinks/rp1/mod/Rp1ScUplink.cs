@@ -588,8 +588,7 @@ namespace GonogoRp1Uplink
                 _trainingWrites.IsAvailable, _complexLifecycle.IsAvailable,
                 _complexConstruction.IsAvailable, _complexConstruction.IsPadAvailable,
                 _toolingWrites.IsAvailable, _contracts.IsAvailable,
-                _constructionWrites.IsAvailable, _researchRateWrites.IsAvailable,
-                _start.IsUnlockAvailable);
+                _constructionWrites.IsAvailable, _researchRateWrites.IsAvailable);
             _crewStanding = new Rp1CrewStandingBackend(_crew);
         }
 
@@ -610,8 +609,7 @@ namespace GonogoRp1Uplink
             bool toolingModelResolved,
             bool contractModelResolved,
             bool constructionModelResolved,
-            bool researchRateModelResolved,
-            bool unlockModelResolved) => new UplinkManifest
+            bool researchRateModelResolved) => new UplinkManifest
         {
             Id = "rp1",
             Version = UplinkBuildVersion.Value,
@@ -786,8 +784,7 @@ namespace GonogoRp1Uplink
                 trainingModelResolved, complexLifecycleModelResolved,
                 complexConstructionModelResolved, padConstructionModelResolved,
                 toolingModelResolved, contractModelResolved,
-                constructionModelResolved, researchRateModelResolved,
-                unlockModelResolved),
+                constructionModelResolved, researchRateModelResolved),
             ErrorCodes = ErrorCodeCatalog.Of(typeof(Rp1ErrorCodes)),
         };
 
@@ -827,8 +824,7 @@ namespace GonogoRp1Uplink
             bool toolingModelResolved,
             bool contractModelResolved,
             bool constructionModelResolved,
-            bool researchRateModelResolved,
-            bool unlockModelResolved)
+            bool researchRateModelResolved)
         {
             var commands = new List<CommandDeclaration>();
             if (buildModelResolved)
@@ -856,33 +852,6 @@ namespace GonogoRp1Uplink
                 commands.Add(new CommandDeclaration
                 {
                     Command = Rp1BuildStartCommands.QuoteCommand,
-                    Subject = BuildQueueTopic,
-                    AllowMetaVantage = true,
-                    Requires = new[]
-                    {
-                        Rp1BuildCommands.Requirements()[0],
-                        Rp1BuildStartCommands.Requirement(),
-                    },
-                });
-            }
-            // Its own flag: the unlock reaches RP-1's entry-cost helper and unlock
-            // credit, which the build does not. It addresses a craft file the way
-            // the build does, so it carries the same two requirements.
-            if (unlockModelResolved)
-            {
-                commands.Add(new CommandDeclaration
-                {
-                    Command = Rp1BuildStartCommands.UnlockCommand,
-                    Subject = BuildQueueTopic,
-                    Requires = new[]
-                    {
-                        Rp1BuildCommands.Requirements()[0],
-                        Rp1BuildStartCommands.Requirement(),
-                    },
-                });
-                commands.Add(new CommandDeclaration
-                {
-                    Command = Rp1BuildStartCommands.UnlockQuoteCommand,
                     Subject = BuildQueueTopic,
                     AllowMetaVantage = true,
                     Requires = new[]
@@ -1228,8 +1197,7 @@ namespace GonogoRp1Uplink
                     || _researchCommands.IsAvailable
                     || _strategies.IsAvailable || _targets.IsAvailable
                     || _trainingWrites.IsAvailable || _toolingWrites.IsAvailable
-                    || _constructionWrites.IsAvailable || _researchRateWrites.IsAvailable
-                    || _start.IsUnlockAvailable)
+                    || _constructionWrites.IsAvailable || _researchRateWrites.IsAvailable)
                 {
                     host.AddGateEvaluator(_build);
                 }
@@ -1251,23 +1219,6 @@ namespace GonogoRp1Uplink
                         Rp1BuildStartCommands.StartCommand, _start.Start);
                     host.AddCommandHandler<Rp1BuildQuoteArgs, CommandResult<Rp1BuildQuote>>(
                         Rp1BuildStartCommands.QuoteCommand, _start.Quote);
-                }
-            });
-            Register(() =>
-            {
-                if (_start.IsUnlockAvailable)
-                {
-                    // The craft-catalogue requirement the declaration carries is
-                    // answered by this evaluator, which the build registers when
-                    // it is itself available.
-                    if (!_start.IsAvailable)
-                    {
-                        host.AddGateEvaluator(_start);
-                    }
-                    host.AddCommandHandler<Rp1PartUnlockArgs, CommandResult>(
-                        Rp1BuildStartCommands.UnlockCommand, _start.Unlock);
-                    host.AddCommandHandler<Rp1PartUnlockQuoteArgs, CommandResult<Rp1PartUnlockQuote>>(
-                        Rp1BuildStartCommands.UnlockQuoteCommand, _start.UnlockQuote);
                 }
             });
             Register(() =>

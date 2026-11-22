@@ -64,9 +64,6 @@ import type {
   Rp1PadDismantleArgs,
   Rp1PadNewArgs,
   Rp1PadRenameArgs,
-  Rp1PartUnlockArgs,
-  Rp1PartUnlockQuote,
-  Rp1PartUnlockQuoteArgs,
   Rp1PersonnelAssignArgs,
   Rp1PersonnelHeadcountArgs,
   Rp1ProgramAcceptArgs,
@@ -106,8 +103,6 @@ export interface GeneratedCommandArgsMap {
   "rp1.pad.dismantle": Rp1PadDismantleArgs;
   "rp1.pad.new": Rp1PadNewArgs;
   "rp1.pad.rename": Rp1PadRenameArgs;
-  "rp1.parts.unlock": Rp1PartUnlockArgs;
-  "rp1.parts.unlock.quote": Rp1PartUnlockQuoteArgs;
   "rp1.personnel.assign": Rp1PersonnelAssignArgs;
   "rp1.personnel.fire": Rp1PersonnelHeadcountArgs;
   "rp1.personnel.hire": Rp1PersonnelHeadcountArgs;
@@ -145,8 +140,6 @@ export interface GeneratedCommandReplyMap {
   "rp1.pad.dismantle": CommandResult;
   "rp1.pad.new": CommandResultOf<Record<string, unknown>>;
   "rp1.pad.rename": CommandResult;
-  "rp1.parts.unlock": CommandResult;
-  "rp1.parts.unlock.quote": CommandResultOf<Rp1PartUnlockQuote>;
   "rp1.personnel.assign": CommandResult;
   "rp1.personnel.fire": CommandResult;
   "rp1.personnel.hire": CommandResult;
@@ -194,8 +187,6 @@ export const GENERATED_COMMAND_REPLY_TYPES = {
   "rp1.pad.dismantle": "CommandResult",
   "rp1.pad.new": "CommandResultOf<Record<string, unknown>>",
   "rp1.pad.rename": "CommandResult",
-  "rp1.parts.unlock": "CommandResult",
-  "rp1.parts.unlock.quote": "CommandResultOf<Rp1PartUnlockQuote>",
   "rp1.personnel.assign": "CommandResult",
   "rp1.personnel.fire": "CommandResult",
   "rp1.personnel.hire": "CommandResult",
@@ -278,8 +269,6 @@ export const GENERATED_COMMAND_RAIL = {
   "rp1.pad.dismantle": { replies: true, delayed: true },
   "rp1.pad.new": { replies: true, delayed: true },
   "rp1.pad.rename": { replies: true, delayed: true },
-  "rp1.parts.unlock": { replies: true, delayed: true },
-  "rp1.parts.unlock.quote": { replies: true, delayed: true },
   "rp1.personnel.assign": { replies: true, delayed: true },
   "rp1.personnel.fire": { replies: true, delayed: true },
   "rp1.personnel.hire": { replies: true, delayed: true },
@@ -317,8 +306,6 @@ export const GENERATED_COMMAND_IDS = [
   "rp1.pad.dismantle",
   "rp1.pad.new",
   "rp1.pad.rename",
-  "rp1.parts.unlock",
-  "rp1.parts.unlock.quote",
   "rp1.personnel.assign",
   "rp1.personnel.fire",
   "rp1.personnel.hire",

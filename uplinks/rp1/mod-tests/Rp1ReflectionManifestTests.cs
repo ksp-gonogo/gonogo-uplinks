@@ -33,7 +33,6 @@ namespace GonogoRp1Uplink.Tests
         private static readonly string[] ReflectionSources =
         {
             "Rp1Types.cs",
-            "Rp1PartUnlockCommands.cs",
             "Rp1ScReflection.cs",
             "Rp1SiteNames.cs",
             "Rp1FacilitiesReflection.cs",

@@ -33,9 +33,7 @@ import { RP1 } from "../uplink.js";
 // than left to the entry point's import order, because this file is the
 // consumer that would silently receive bare numbers without it.
 import "../topics.js";
-import { asFunds } from "./funds.js";
 import { VEHICLE_ASSEMBLY_SECTIONS } from "./slot.js";
-import { UnlockParts } from "./UnlockParts.js";
 
 /**
  * Start integrating a design the space centre has never held. Must match
@@ -151,14 +149,6 @@ function CraftCard({
   const complexes = craft.complexes ?? [];
   const eligible = complexes.filter((complex) => complex.eligible === true);
   const partBlock = partRefusal(craft);
-  const unpurchased = distinct(craft.unpurchasedParts ?? []);
-  /* Only a craft whose single outstanding need is buying parts offers the
-     unlock: a part still to be researched or one this install lacks cannot be
-     bought, and the Build buttons say so. */
-  const unlockable =
-    unpurchased.length > 0 &&
-    (craft.missingParts ?? []).length === 0 &&
-    (craft.lockedParts ?? []).length === 0;
   /* A craft with no file name has no address, and guessing one from the ship
      name would build whichever file the folder listed first. */
   const blockReason = partBlock ?? (file === null ? NO_FILE_NAME : null);
@@ -180,26 +170,12 @@ function CraftCard({
       </Text>
 
       {blockReason !== null || file === null ? (
-        unlockable && file !== null ? (
-          <UnlockParts
-            craft={craft}
-            file={file}
-            name={name}
-            parts={unpurchased}
-          >
-            <DeadButtons
-              complexes={complexes}
-              reason={blockReason ?? NO_FILE_NAME}
-            />
-          </UnlockParts>
-        ) : (
-          <Cluster gap="related-dense" justify="start" wrap>
-            <DeadButtons
-              complexes={complexes}
-              reason={blockReason ?? NO_FILE_NAME}
-            />
-          </Cluster>
-        )
+        <Cluster gap="related-dense" justify="start" wrap>
+          <DeadButtons
+            complexes={complexes}
+            reason={blockReason ?? NO_FILE_NAME}
+          />
+        </Cluster>
       ) : (
         <Stack gap="related-dense">
           {eligible.map((complex) => (
@@ -282,6 +258,19 @@ function asSeconds(
     return null;
   }
   return typeof amount === "number" ? value("s", amount) : amount;
+}
+
+function asFunds(amount: Value<"funds"> | number): Value<"funds">;
+function asFunds(
+  amount: Value<"funds"> | number | null | undefined,
+): Value<"funds"> | null;
+function asFunds(
+  amount: Value<"funds"> | number | null | undefined,
+): Value<"funds"> | null {
+  if (amount === null || amount === undefined) {
+    return null;
+  }
+  return typeof amount === "number" ? value("funds", amount) : amount;
 }
 
 /**
@@ -480,9 +469,10 @@ function DeadButtons({
  * <para>Three separate causes with three different remedies, and each is named
  * rather than collapsed into "cannot be built": a part this install does not
  * have needs the mod installing, a part whose tech is not researched needs the
- * research queue, and a part researched but not bought needs unlocking, which
- * the card's own control does, paid from unlock credit first and funds second.
- * Building stays dark until it has, because starting a build buys no part.</para>
+ * research queue, and a part researched but not bought needs money spent at
+ * R&amp;D. The last is the one that would otherwise surprise: RP-1's own window
+ * offers to spend it for you through a popup, and a command dispatched from
+ * another machine has nobody to answer that.</para>
  */
 function partRefusal(craft: Rp1BuildableCraftEntry): string | null {
   const missing = craft.missingParts ?? [];
@@ -493,16 +483,11 @@ function partRefusal(craft: Rp1BuildableCraftEntry): string | null {
   if (locked.length > 0) {
     return `not researched yet: ${locked.join(", ")}`;
   }
-  const unpurchased = distinct(craft.unpurchasedParts ?? []);
+  const unpurchased = craft.unpurchasedParts ?? [];
   if (unpurchased.length > 0) {
-    return `researched but not bought, unlock them first: ${unpurchased.join(", ")}`;
+    return `researched but not bought, unlock at R&D first: ${unpurchased.join(", ")}`;
   }
   return null;
-}
-
-/** Each name once, in the order first met: a craft carrying several of a part lists it per copy. */
-function distinct(names: readonly string[]): string[] {
-  return [...new Set(names)];
 }
 
 /**

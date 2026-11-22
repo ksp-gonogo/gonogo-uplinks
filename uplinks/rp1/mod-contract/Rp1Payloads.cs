@@ -2468,53 +2468,6 @@ public sealed class Rp1BuildQuote
 }
 
 /// <summary>
-/// What unlocking one saved craft's researched parts would cost, and whether
-/// the career can pay it.
-///
-/// <para>The reply to <c>rp1.parts.unlock.quote</c>. RP-1 charges an unlock in
-/// full when it is made, in unlock credit first and funds for whatever the
-/// credit does not cover, so the price, the credit it uses and the funds still
-/// to pay are three figures and not one. Shown beside the Unlock parts control
-/// of a craft with researched parts not yet bought. The press is still RP-1's
-/// decision: a balance that moves between the quote and the press can change
-/// the answer.</para>
-/// </summary>
-[SitrepContract]
-#if SITREP_CODEGEN
-[TsInterface]
-#endif
-public sealed class Rp1PartUnlockQuote
-{
-    /// <summary>How many distinct parts the unlock would buy.</summary>
-    [SitrepUnit(Units.Count)]
-    public int PartCount { get; set; }
-
-    /// <summary>What the parts cost after leaders and strategies have moved it, before any unlock credit is applied.</summary>
-    [SitrepUnit(Units.Funds)]
-    public double Price { get; set; }
-
-    /// <summary>The unlock credit the unlock would use: the smaller of <see cref="Price"/> and the credit balance.</summary>
-    [SitrepUnit(Units.Funds)]
-    public double CreditApplied { get; set; }
-
-    /// <summary>What the career still pays in funds once the credit is applied.</summary>
-    [SitrepUnit(Units.Funds)]
-    public double FundsToPay { get; set; }
-
-    /// <summary>The career's unlock credit when the quote was given. Null when RP-1's balance could not be read.</summary>
-    [SitrepUnit(Units.Funds)]
-    public double? CreditBalance { get; set; }
-
-    /// <summary>The career's funds when the quote was given. Null when RP-1's balance could not be read.</summary>
-    [SitrepUnit(Units.Funds)]
-    public double? Balance { get; set; }
-
-    /// <summary>Whether the funds balance covers <see cref="FundsToPay"/>, as RP-1's own check answers it.</summary>
-    [SitrepUnit(Units.Flag)]
-    public bool Affordable { get; set; }
-}
-
-/// <summary>
 /// One saved craft file, and what each launch complex would make of it.
 ///
 /// <para><b>Why this exists beside <c>spaceCenter.savedShips</c>.</b> That
@@ -2583,7 +2536,7 @@ public sealed class Rp1BuildableCraftEntry
     [SitrepUnit(Units.Text)]
     public string[]? LockedParts { get; set; }
 
-    /// <summary>Parts researched but not bought. The remedy is to unlock them, which RP-1 pays from unlock credit first and funds second.</summary>
+    /// <summary>Parts researched but not bought. The remedy is money, spent at R&amp;D.</summary>
     [SitrepUnit(Units.Text)]
     public string[]? UnpurchasedParts { get; set; }
 

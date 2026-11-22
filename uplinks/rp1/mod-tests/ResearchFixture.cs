@@ -235,9 +235,6 @@ public class AvailablePart
 {
     public string name = "";
 
-    /// <summary>The tech node this part waits for, as KSP's own member names it.</summary>
-    public string TechRequired = "";
-
     public AvailablePart(string name)
     {
         this.name = name;

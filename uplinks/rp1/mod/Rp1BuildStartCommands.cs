@@ -36,9 +36,9 @@
 //                           command running at the moment of a press, which is
 //                           exactly where RP-1's own button calls it
 //   ProcessPartAvailability REFUSES, naming the parts. RP-1's own arm offers to
-//                           buy them through a popup; here the purchase is the
-//                           separate rp1.parts.unlock command, which shows its
-//                           price before it charges
+//                           spend funds unlocking them through a popup, and a
+//                           command that answered that popup on an operator's
+//                           behalf would spend money nobody asked it to
 //   ProcessPartConfigs      REFUSES, quoting each module. Rp1PartConfigs walks
 //                           the loaded craft's live part modules the way RP-1's
 //                           GetConfigErrorsDict does, resolving what RP-1
@@ -117,7 +117,7 @@ namespace GonogoRp1Uplink
     /// The handler for <c>rp1.build.start</c>, and the gate that darkens it when
     /// no craft catalogue is elected.
     /// </summary>
-    public sealed partial class Rp1BuildStartCommands : ICommandGateEvaluator
+    public sealed class Rp1BuildStartCommands : ICommandGateEvaluator
     {
         /// <summary>Start integrating a design RP-1 has never held. Must match the client's constant.</summary>
         public const string StartCommand = "rp1.build.start";
@@ -714,11 +714,11 @@ namespace GonogoRp1Uplink
         /// things and a refusal an operator cannot act on is worse than the gap
         /// it replaced: a part this install does not have needs the mod
         /// installing, a part whose tech is not researched needs the R&amp;D
-        /// queue, a part researched but not bought needs unlocking with
-        /// <c>rp1.parts.unlock</c>, and a config a module reports locked needs
-        /// unlocking in the editor. This command makes no purchase of its own, so
-        /// it names the parts and leaves the spend to the command that shows its
-        /// price.</para>
+        /// queue, a part researched but not bought needs money spending in a
+        /// building, and a config a module reports locked needs unlocking in the
+        /// editor. RP-1's own window collapses the last two into a popup that
+        /// offers to spend, and a command that answered that popup would spend an
+        /// operator's funds on a question nobody asked it.</para>
         ///
         /// <para>Measured at the press rather than taken off the listing, so a
         /// part unlocked since the last folder rescan counts.</para>
@@ -742,10 +742,9 @@ namespace GonogoRp1Uplink
             var unpurchased = Named(measured?.UnpurchasedParts);
             if (unpurchased != null)
             {
-                return "the craft uses parts that are researched but not bought: " + unpurchased
-                    + ". Unlock them first, from Vehicle Assembly or at R&D, where RP-1 spends "
-                    + "unlock credit before funds. This command does not buy parts, so nothing "
-                    + "was started";
+                return "the craft uses parts that are researched but not bought. Unlock them at "
+                    + "R&D first, because starting the build would spend funds on them without "
+                    + "asking: " + unpurchased;
             }
 
             // Last, as RP-1 orders it, because the walk may unlock a free config

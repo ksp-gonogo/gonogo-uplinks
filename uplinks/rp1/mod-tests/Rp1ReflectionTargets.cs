@@ -196,9 +196,6 @@ namespace GonogoRp1Uplink.Tests
             new Rp1TypeTarget(Rp0, "RP0.TransactionReasonsRP0", "Rp1BuildCommands"),
             new Rp1TypeTarget(Rp0, "RP0.CurrencyRP0", "Rp1BuildCommands"),
             new Rp1TypeTarget(Rp0, "RP0.KCTUtilities", "Rp1BuildCommands, Rp1BuildStartCommands, Rp1VehicleCommands"),
-            new Rp1TypeTarget(Rp0, "RP0.ECMHelper", "Rp1PartUnlockCommands"),
-            new Rp1TypeTarget(Rp0, "RP0.UnlockCreditHandler", "Rp1PartUnlockCommands"),
-            new Rp1TypeTarget(Rp0, "RP0.TransactionReasonsRP0", "Rp1PartUnlockCommands"),
             new Rp1TypeTarget(Rp0, "RP0.VesselProject", "Rp1BuildStartCommands"),
             // Internal, and pointed at an error's tech for the length of a free
             // config resolve, which is what routes the purchase through RP-1's
@@ -357,7 +354,6 @@ namespace GonogoRp1Uplink.Tests
             new Rp1EnumMemberTarget(Rp0, "RP0.TransactionReasonsRP0", "Subsidy", "Rp1BudgetReflection"),
             new Rp1EnumMemberTarget(Rp0, "RP0.TransactionReasonsRP0", "DailyRepDecline", "Rp1BudgetReflection"),
             new Rp1EnumMemberTarget(Rp0, "RP0.TransactionReasonsRP0", "RateUnlockCreditIncrease", "Rp1BudgetReflection"),
-            new Rp1EnumMemberTarget(Rp0, "RP0.TransactionReasonsRP0", "PartOrUpgradeUnlock", "Rp1PartUnlockCommands"),
             new Rp1EnumMemberTarget(Rp0, "RP0.TransactionReasonsRP0", "StructureRepair", "Rp1BudgetReflection"),
             new Rp1EnumMemberTarget(Rp0, "RP0.TransactionReasonsRP0", "StructureRepairLC", "Rp1BudgetReflection"),
             new Rp1EnumMemberTarget(Rp0, "RP0.TransactionReasonsRP0", "SalaryEngineers", "Rp1BudgetReflection"),
@@ -547,17 +543,6 @@ namespace GonogoRp1Uplink.Tests
              */
             new Rp1MethodTarget(Rp0, "RP0.Formula", "GetRolloutCost", 1, true, "Rp1ScReflection"),
             new Rp1MethodTarget(Rp0, "RP0.KCTUtilities", "AddVesselToBuildList", 2, true, "Rp1BuildCommands, Rp1BuildStartCommands"),
-            /*
-             * The part unlock, in the order RP-1's Integrate button runs it.
-             * ECMHelper is an INTERNAL class with a public method, which is how
-             * reflection reaches it; the other two are public on a public class.
-             * GetPartsWithPurchasability has two overloads of one arity (over Part
-             * and over AvailablePart) and production picks on the list's element
-             * type, so arity here only proves a member of that name exists.
-             */
-            new Rp1MethodTarget(Rp0, "RP0.ECMHelper", "FindUnlockCost", 1, true, "Rp1PartUnlockCommands"),
-            new Rp1MethodTarget(Rp0, "RP0.KCTUtilities", "GetPartsWithPurchasability", 1, true, "Rp1PartUnlockCommands"),
-            new Rp1MethodTarget(Rp0, "RP0.KCTUtilities", "UnlockExperimentalParts", 1, true, "Rp1PartUnlockCommands"),
             new Rp1MethodTarget(Rp0, "RP0.CurrencyModifierQueryRP0", "RunQuery", 4, true, "Rp1Pricing"),
             new Rp1MethodTarget(Rp0, "RP0.CurrencyModifierQueryRP0", "CanAfford", 1, false, "Rp1Pricing"),
             new Rp1MethodTarget(Rp0, "RP0.CurrencyModifierQueryRP0", "GetTotal", 2, false, "Rp1Pricing"),
@@ -697,7 +682,7 @@ namespace GonogoRp1Uplink.Tests
             // here as well trips the cross-Uplink boundary scan, which reads the
             // word as a reference to another Uplink's domain.)
             new Rp1MethodTarget(Rp0, "RP0.Tooling.Parameters", "GetParametersForToolingType", 1, true, "Rp1ToolingReflection"),
-            new Rp1MethodTarget(Rp0, "RP0.UnlockCreditHandler", "GetPrePostCostAndAffordability", 6, false, "Rp1ToolingCommands, Rp1PartUnlockCommands"),
+            new Rp1MethodTarget(Rp0, "RP0.UnlockCreditHandler", "GetPrePostCostAndAffordability", 6, false, "Rp1ToolingCommands"),
             // The money calls. All three are read-only on the shipped assembly
             // and are CALLED rather than mirrored for that reason: they return a
             // figure RP-1 actually bills, and the salary ladder behind them has
@@ -815,9 +800,6 @@ namespace GonogoRp1Uplink.Tests
             ["Funds"] = "KSP's Funding.Funds, read only to put a balance beside a refusal (and also the name of RP0.CurrencyRP0.Funds, which IS checked)",
             ["Instance"] = "checked on every RP-1 handler that has one; ALSO KSP's Funding.Instance, which is not RP-1's to guard",
             ["Funding"] = "KSP's own career balance type, resolved by the same Find as RP-1's types but belonging to Assembly-CSharp",
-            ["PartLoader"] = "KSP's part database, resolved by the same Find as RP-1's types but belonging to Assembly-CSharp",
-            ["AvailablePart"] = "KSP's part record, resolved by the same Find as RP-1's types but belonging to Assembly-CSharp",
-            ["getPartInfoByName"] = "KSP's PartLoader.getPartInfoByName, the lookup RP-1's own validator and unlock helpers make for a part name",
             ["vesselName"] = "KSP's Vessel.vesselName, read off the craft LCLaunchPad.HasVesselWaitingToBeLaunched hands back so a refusal can name it",
             ["Add"] = "the list's own Add, on ROUtils.DataTypes.PersistentObservableList<T> from a separate assembly, resolved by arity on whatever collection LaunchComplex.Recon_Rollout hands back rather than named on an RP-1 type",
             ["name"] = "checked on RP-1's own types; ALSO KSP's ProtoCrewMember.name, read off the students in a training course",
@@ -1473,10 +1455,6 @@ namespace GonogoRp1Uplink.Tests
             Add("RP0.ToolingEntry", "Children", Rp1Reader.Presence, Tooling);
             Add("RP0.ToolingEntry", "Sources", Rp1Reader.Presence, Tooling);
             Add("RP0.UnlockCreditHandler", "Instance", Rp1Reader.Presence, ToolingWrites, @static: true);
-            // The part unlock reads the same handler for the balance beside a quote,
-            // and the purchasability struct RP-1 hands back for each part.
-            Add("RP0.UnlockCreditHandler", "TotalCredit", Rp1Reader.Numeric, "Rp1PartUnlockCommands");
-            Add("RP0.PartPurchasability", "Status", Rp1Reader.EnumText, "Rp1PartUnlockCommands");
 
             // ── The funds breakdown, and the career log ─────────────────────
             // The vehicle being designed, and the four figures RP-1 keeps beside it.

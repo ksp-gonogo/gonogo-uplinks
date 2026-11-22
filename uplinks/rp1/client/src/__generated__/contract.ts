@@ -251,50 +251,6 @@ export interface Rp1BuildQuoteArgs
 	lcId?: string;
 }
 /**
-* Args for `rp1.parts.unlock`: buy the parts a saved craft uses that the
-* career has researched and not yet bought, paid from unlock credit first and
-* funds second.
-*
-* Addressed like the build commands, by the craft file and the editor folder
-* that holds it, and carries no launch complex because what a part costs does
-* not depend on where the vehicle would be built. The unlock is its own press,
-* ahead of `rp1.build.start`, so an operator sees what the parts cost before
-* the build is priced.
-*/
-export interface Rp1PartUnlockArgs
-{
-	/**
-	* The craft file's own name, without its `.craft` extension, as
-	* `rp1.buildable[].craftFile` publishes it.
-	*/
-	craftFile?: string;
-	/**
-	* Which editor's folder holds the file, as the KSP ordinal
-	* `rp1.buildable[].facility` publishes. Required.
-	*/
-	facility?: number;
-}
-/**
-* Args for `rp1.parts.unlock.quote`: what unlocking this craft's researched
-* parts would cost, asked without unlocking anything.
-*
-* The same two fields `Rp1PartUnlockArgs` carries, because the quote is for
-* exactly the unlock those arguments would make.
-*/
-export interface Rp1PartUnlockQuoteArgs
-{
-	/**
-	* The craft file's own name, without its extension, as
-	* `rp1.buildable[].craftFile` publishes it.
-	*/
-	craftFile?: string;
-	/**
-	* Which editor's folder holds the file, as the KSP ordinal
-	* `rp1.buildable[].facility` publishes. Required.
-	*/
-	facility?: number;
-}
-/**
 * Args for `rp1.facility.upgrade`: queue a space-centre facility's next tier
 * as an RP-1 construction project.
 *
@@ -2695,49 +2651,6 @@ export interface Rp1BuildQuote
 	integrationSeconds?: Value<"s"> | null;
 }
 /**
-* What unlocking one saved craft's researched parts would cost, and whether
-* the career can pay it.
-*
-* The reply to `rp1.parts.unlock.quote`. RP-1 charges an unlock in full when
-* it is made, in unlock credit first and funds for whatever the credit does
-* not cover, so the price, the credit it uses and the funds still to pay are
-* three figures and not one. Shown beside the Unlock parts control of a craft
-* with researched parts not yet bought. The press is still RP-1's decision: a
-* balance that moves between the quote and the press can change the answer.
-*/
-export interface Rp1PartUnlockQuote
-{
-	/** How many distinct parts the unlock would buy. */
-	partCount: Value<"count">;
-	/**
-	* What the parts cost after leaders and strategies have moved it, before any
-	* unlock credit is applied.
-	*/
-	price: Value<"funds">;
-	/**
-	* The unlock credit the unlock would use: the smaller of
-	* `Rp1PartUnlockQuote.price` and the credit balance.
-	*/
-	creditApplied: Value<"funds">;
-	/** What the career still pays in funds once the credit is applied. */
-	fundsToPay: Value<"funds">;
-	/**
-	* The career's unlock credit when the quote was given. Null when RP-1's
-	* balance could not be read.
-	*/
-	creditBalance?: Value<"funds"> | null;
-	/**
-	* The career's funds when the quote was given. Null when RP-1's balance could
-	* not be read.
-	*/
-	balance?: Value<"funds"> | null;
-	/**
-	* Whether the funds balance covers `Rp1PartUnlockQuote.fundsToPay`, as RP-1's
-	* own check answers it.
-	*/
-	affordable: boolean;
-}
-/**
 * One saved craft file, and what each launch complex would make of it.
 *
 * **Why this exists beside `spaceCenter.savedShips`.** That channel is the
@@ -2795,10 +2708,7 @@ export interface Rp1BuildableCraftEntry
 	* queue.
 	*/
 	lockedParts?: string[] | null;
-	/**
-	* Parts researched but not bought. The remedy is to unlock them, which RP-1
-	* pays from unlock credit first and funds second.
-	*/
+	/** Parts researched but not bought. The remedy is money, spent at R&D. */
 	unpurchasedParts?: string[] | null;
 	/**
 	* What each launch complex would do with it, one entry per complex at every
