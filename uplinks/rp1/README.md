@@ -130,6 +130,7 @@ Start, roll out, roll back and scrap RP-1 vehicle builds.
 | `Rp1LcResourcePrice` | `name` id, `padCostPerUnit` funds |
 | `Rp1LedgerPeriodEntry` | `confidenceAtClose` confidence, `constructionFees` funds, `endUt` ut, `engineersAtClose` count, `entryCosts` funds, `facilityMaintenance` funds, `fundsAtClose` funds, `hiringEngineers` funds, `hiringResearchers` funds, `launchFees` funds, `lcMaintenance` funds, `maintenanceFees` funds, `open` flag, `otherFees` funds, `otherFundsEarned` funds, `programFunds` funds, `repFromPrograms` rep, `reputationAtClose` rep, `researchersAtClose` count, `salaryCrew` funds, `salaryEngineers` funds, `salaryResearchers` funds, `scienceAtClose` science, `scienceEarnedAtClose` science, `spentUnlockCredit` funds, `startUt` ut, `subsidyPaidOut` funds, `subsidySize` funds, `toolingFees` funds, `trainingFees` funds, `unlockCreditAtClose` funds, `vesselPurchase` funds, `vesselRecovery` funds |
 | `Rp1NewComplexRate` | `buildRate` bp/s, `centre` id, `fundsMultiplier` ratio |
+| `Rp1PartUnlockQuote` | `affordable` flag, `balance` funds, `creditApplied` funds, `creditBalance` funds, `fundsToPay` funds, `partCount` count, `price` funds |
 | `Rp1ProgramFundingEntry` | `deadlineUt` ut, `funding` Rp1BudgetHorizons, `name` id, `title` text |
 | `Rp1ProgramPaymentEntry` | `cumulativeFunds` funds, `funds` funds, `year` count |
 | `Rp1ProgramSpeedOption` | `confidenceCost` confidence, `durationSeconds` s, `fundingPerDay` f/day, `label` text, `speed` enum |
@@ -166,6 +167,8 @@ Start, roll out, roll back and scrap RP-1 vehicle builds.
 | `rp1.pad.dismantle` | `Rp1PadDismantleArgs` | `CommandResult` |
 | `rp1.pad.new` | `Rp1PadNewArgs` | `CommandResultOf<Record<string, unknown>>` |
 | `rp1.pad.rename` | `Rp1PadRenameArgs` | `CommandResult` |
+| `rp1.parts.unlock` | `Rp1PartUnlockArgs` | `CommandResult` |
+| `rp1.parts.unlock.quote` | `Rp1PartUnlockQuoteArgs` | `CommandResultOf<Rp1PartUnlockQuote>` |
 | `rp1.personnel.assign` | `Rp1PersonnelAssignArgs` | `CommandResult` |
 | `rp1.personnel.fire` | `Rp1PersonnelHeadcountArgs` | `CommandResult` |
 | `rp1.personnel.hire` | `Rp1PersonnelHeadcountArgs` | `CommandResult` |
@@ -201,6 +204,8 @@ Start, roll out, roll back and scrap RP-1 vehicle builds.
 | `Rp1PadDismantleArgs` | `lcId` id, `padId` id |
 | `Rp1PadNewArgs` | `lcId` id, `name` id |
 | `Rp1PadRenameArgs` | `lcId` id, `name` id, `padId` id |
+| `Rp1PartUnlockArgs` | `craftFile` id, `facility` enum |
+| `Rp1PartUnlockQuoteArgs` | `craftFile` id, `facility` enum |
 | `Rp1PersonnelAssignArgs` | `engineers` count, `lcId` id |
 | `Rp1PersonnelHeadcountArgs` | `count` count, `kscName` id, `research` flag |
 | `Rp1ProgramAcceptArgs` | `speed` enum, `strategyId` id |

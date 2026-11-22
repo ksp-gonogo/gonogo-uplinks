@@ -560,6 +560,23 @@ export const GENERATED_TYPE_UNITS: Readonly<Record<string, UnitsByField>> = {
     name: "id",
     padId: "id",
   },
+  "Rp1PartUnlockArgs": {
+    craftFile: "id",
+    facility: "enum",
+  },
+  "Rp1PartUnlockQuote": {
+    affordable: "flag",
+    balance: "funds",
+    creditApplied: "funds",
+    creditBalance: "funds",
+    fundsToPay: "funds",
+    partCount: "count",
+    price: "funds",
+  },
+  "Rp1PartUnlockQuoteArgs": {
+    craftFile: "id",
+    facility: "enum",
+  },
   "Rp1Personnel": {
     applicants: "count",
     engineerHireQuote: "funds",
@@ -1398,6 +1415,12 @@ export const GENERATED_TYPE_ENUMS: Readonly<Record<string, EnumsByField>> = {
   },
   "Rp1PadEntry": {
     status: null,
+  },
+  "Rp1PartUnlockArgs": {
+    facility: "KspEditorFacility",
+  },
+  "Rp1PartUnlockQuoteArgs": {
+    facility: "KspEditorFacility",
   },
   "Rp1ProgramAcceptArgs": {
     speed: null,

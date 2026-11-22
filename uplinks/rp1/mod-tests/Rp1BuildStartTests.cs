@@ -254,10 +254,11 @@ namespace GonogoRp1Uplink.Tests
             Assert.False(result.Success);
             Assert.Equal(Rp1ErrorCodes.NotReady, result.ErrorCode);
             Assert.Contains("RO-Vanguard-X405", result.Detail!);
-            // RP-1's own window offers to spend the funds here, through a popup.
-            // Nobody can answer a popup on a command dispatched from another
-            // machine, and spending an operator's money on an unasked question is
-            // not the safe direction, so the refusal names the remedy instead.
+            // The refusal names the remedy and does not claim the build would
+            // have spent funds: starting a build buys no part, and the parts are
+            // unlocked by rp1.parts.unlock.
+            Assert.Contains("This command does not buy parts", result.Detail!);
+            Assert.DoesNotContain("would spend funds", result.Detail!);
             Assert.Equal(1_000_000.0, Funding.Instance!.Funds);
             Assert.Empty(lc.BuildList);
         }
