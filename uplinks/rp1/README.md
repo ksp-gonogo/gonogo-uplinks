@@ -7,7 +7,7 @@ Adds the RP-1 career to the dashboard: Programs, build queues, research.
 
 An Uplink for [Gonogo](https://ksp-gonogo.github.io/), the mission-control dashboard for Kerbal Space Program that runs in a web browser on any screen.
 
-Built against RP-1 4.8.1.0.
+Built against RP-1 4.9.0.0.
 
 ## Install
 

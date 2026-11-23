@@ -13,8 +13,8 @@
     "name": "RP-1",
     "tier": "ckan",
     "ckan": "RP-1",
-    "builtAgainst": "4.8.1.0",
-    "ckanVersion": "v4.8.1.0",
+    "builtAgainst": "4.9.0.0",
+    "ckanVersion": "v4.9.0.0",
     "channels": [
       {
         "ckan": "RP-1"
