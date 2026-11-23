@@ -626,7 +626,7 @@ namespace RP0
     /// affordability test of its own, and both halves of that are reproduced,
     /// because the second is the reason the handler has a currency query at all.
     /// </summary>
-    public static class KCTUtilities
+    public static partial class KCTUtilities
     {
         /// <summary>
         /// What a test says finishes next, and the reason the warp commands ask it
@@ -817,6 +817,9 @@ namespace RP0
 
         /// <summary>Researching a tech node, the reason RP-1's own R&D tooltip prices against.</summary>
         RnDTechResearch = 0x4000L,
+
+        /// <summary>Unlocking a researched part or an upgrade, the reason an unlock is priced under.</summary>
+        PartOrUpgradeUnlock = 0x8000L,
 
         /// <summary>The two a construction is charged under: a building, and a complex or pad.</summary>
         StructureConstruction = 0x2000L,

@@ -414,18 +414,17 @@ describe("starting a build from a saved craft", () => {
     ).toHaveAccessibleName("Start building Atlas LV-3B at LC-1 at Cape");
   });
 
-  it("refuses a craft whose parts are researched but not bought, and says where to buy them", async () => {
+  it("keeps Build dark for a craft whose parts are researched but not bought, and says to unlock them", async () => {
     /*
-     * RP-1's own window offers to spend the funds through a popup, which a
-     * command dispatched from another machine has nobody to answer, so the
-     * remedy is named instead of taken.
+     * Starting a build buys no part, so the Build buttons stay dark with the
+     * remedy named; the Unlock parts control beside them does the buying.
      */
     await withOneSavedCraft({ unpurchasedParts: ["RO-Vanguard-X405"] });
 
     expect(
       (await screen.findAllByRole("button", { name: /Build at/i }))[0],
     ).toHaveAccessibleDescription(
-      expect.stringContaining("researched but not bought, unlock at R&D first"),
+      expect.stringContaining("researched but not bought, unlock them first"),
     );
     expect(
       screen.queryByRole("button", { name: /Start building/i }),

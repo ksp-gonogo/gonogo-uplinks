@@ -322,6 +322,56 @@ public class Rp1BuildQuoteArgs
 }
 
 /// <summary>
+/// Args for <c>rp1.parts.unlock</c>: buy the parts a saved craft uses that
+/// the career has researched and not yet bought, paid from unlock credit first
+/// and funds second.
+///
+/// <para>Addressed like the build commands, by the craft file and the editor
+/// folder that holds it, and carries no launch complex because what a part
+/// costs does not depend on where the vehicle would be built. The unlock is
+/// its own press, ahead of <c>rp1.build.start</c>, so an operator sees what the
+/// parts cost before the build is priced.</para>
+/// </summary>
+[SitrepContract]
+#if SITREP_CODEGEN
+[TsInterface]
+#endif
+[SitrepCommand("rp1.parts.unlock")]
+public class Rp1PartUnlockArgs
+{
+    /// <summary>The craft file's own name, without its <c>.craft</c> extension, as <c>rp1.buildable[].craftFile</c> publishes it.</summary>
+    [SitrepUnit(Units.Id)]
+    public string? CraftFile { get; set; }
+
+    /// <summary>Which editor's folder holds the file, as the KSP ordinal <c>rp1.buildable[].facility</c> publishes. Required.</summary>
+    [SitrepUnit(Units.Enumeration)]
+    public KspEditorFacility? Facility { get; set; }
+}
+
+/// <summary>
+/// Args for <c>rp1.parts.unlock.quote</c>: what unlocking this craft's
+/// researched parts would cost, asked without unlocking anything.
+///
+/// <para>The same two fields <see cref="Rp1PartUnlockArgs"/> carries, because
+/// the quote is for exactly the unlock those arguments would make.</para>
+/// </summary>
+[SitrepContract]
+#if SITREP_CODEGEN
+[TsInterface]
+#endif
+[SitrepCommand("rp1.parts.unlock.quote", Payload = typeof(Rp1PartUnlockQuote))]
+public class Rp1PartUnlockQuoteArgs
+{
+    /// <summary>The craft file's own name, without its extension, as <c>rp1.buildable[].craftFile</c> publishes it.</summary>
+    [SitrepUnit(Units.Id)]
+    public string? CraftFile { get; set; }
+
+    /// <summary>Which editor's folder holds the file, as the KSP ordinal <c>rp1.buildable[].facility</c> publishes. Required.</summary>
+    [SitrepUnit(Units.Enumeration)]
+    public KspEditorFacility? Facility { get; set; }
+}
+
+/// <summary>
 /// Which Program to accept and at what speed, for <c>rp1.program.accept</c>.
 /// </summary>
 /// <remarks>

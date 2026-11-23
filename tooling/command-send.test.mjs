@@ -40,6 +40,10 @@ const SEND_WITHOUT_INPUT = {
     reads: 1,
     why: "sends a saved draft for the composer's upload control, which owns the press",
   },
+  "uplinks/rp1/client/src/VehicleAssembly/UnlockParts.tsx": {
+    reads: 2,
+    why: "unlock price quote asked for on mount, no press",
+  },
   "uplinks/rp1/client/src/VehicleAssembly/Buildable.tsx": {
     reads: 2,
     why: "price quote asked for on mount, no press",

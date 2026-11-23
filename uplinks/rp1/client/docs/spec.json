@@ -2524,6 +2524,39 @@
           "unit": "funds"
         }
       ]
+    },
+    {
+      "name": "Rp1PartUnlockQuote",
+      "fields": [
+        {
+          "name": "affordable",
+          "unit": "flag"
+        },
+        {
+          "name": "balance",
+          "unit": "funds"
+        },
+        {
+          "name": "creditApplied",
+          "unit": "funds"
+        },
+        {
+          "name": "creditBalance",
+          "unit": "funds"
+        },
+        {
+          "name": "fundsToPay",
+          "unit": "funds"
+        },
+        {
+          "name": "partCount",
+          "unit": "count"
+        },
+        {
+          "name": "price",
+          "unit": "funds"
+        }
+      ]
     }
   ],
   "commands": [
@@ -2621,6 +2654,16 @@
       "id": "rp1.pad.rename",
       "args": "Rp1PadRenameArgs",
       "result": "CommandResult"
+    },
+    {
+      "id": "rp1.parts.unlock",
+      "args": "Rp1PartUnlockArgs",
+      "result": "CommandResult"
+    },
+    {
+      "id": "rp1.parts.unlock.quote",
+      "args": "Rp1PartUnlockQuoteArgs",
+      "result": "CommandResultOf<Rp1PartUnlockQuote>"
     },
     {
       "id": "rp1.personnel.assign",
@@ -2945,6 +2988,32 @@
         {
           "name": "padId",
           "unit": "id"
+        }
+      ]
+    },
+    {
+      "name": "Rp1PartUnlockArgs",
+      "fields": [
+        {
+          "name": "craftFile",
+          "unit": "id"
+        },
+        {
+          "name": "facility",
+          "unit": "enum"
+        }
+      ]
+    },
+    {
+      "name": "Rp1PartUnlockQuoteArgs",
+      "fields": [
+        {
+          "name": "craftFile",
+          "unit": "id"
+        },
+        {
+          "name": "facility",
+          "unit": "enum"
         }
       ]
     },

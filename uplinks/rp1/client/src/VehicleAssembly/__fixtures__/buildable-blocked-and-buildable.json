@@ -1,6 +1,6 @@
 {
   "_meta": {
-    "notes": "The three answers this section has to be able to give about a saved craft, side by side. One is buildable at either complex, so it draws a button per complex named after the complex rather than a bare Start build; one is buildable at only one and has the other complex's button dead, which tells an operator which complex to modify; one is blocked by parts researched but never bought, so its buttons are dead, a state RP-1's own window resolves with a popup that a command sent from another machine has nobody to answer. No funds line: the balance is the host's, drawn once for every section"
+    "notes": "The three answers this section has to be able to give about a saved craft, side by side. One is buildable at either complex, so it draws a button per complex named after the complex rather than a bare Start build; one is buildable at only one and has the other complex's button dead, which tells an operator which complex to modify; one is blocked by parts researched but never bought, so its Build button is dead and an Unlock parts control stands beside it, which buys the parts before the build is started. No funds line: the balance is the host's, drawn once for every section"
   },
   "_scene": {
     "hero": true,
